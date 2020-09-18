@@ -1,0 +1,49 @@
+.block_questionreport .teachers ul,
+.block_questionreport .teachers li {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.block_questionreport .teachers li {
+    margin-bottom: 15px;
+    display: table;
+    width: 100%;
+}
+
+.block_questionreport .teachers .details {
+    display: table-cell;
+    line-height: 1;
+    vertical-align: top;
+}
+
+.block_questionreport .teachers .image {
+    width: 45px;
+    display: table-cell;
+    vertical-align: top;
+}
+
+.block_questionreport .teachers .icons {
+    min-height: 22px;
+    padding-top: 3px;
+}
+
+.block_questionreport .teachers .icons img,
+.block_questionreport .participants img {
+    margin-right: 10px;
+}
+
+.block_questionreport .content .teachers h3,
+.block_questionreport .content .participants h3 {
+    font-size: 1.143rem;
+    font-weight: bold;
+}
+
+.block_questionreport .content .teachers .userpicture {
+    height: inherit;
+    width: inherit;
+}
+
+.block_questionreport .participants .hint {
+    font-size: 90%;
+}
