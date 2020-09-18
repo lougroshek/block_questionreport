@@ -127,16 +127,34 @@ class block_questionreport extends block_base {
 
         // Start teachers list.
         $this->content->text .= html_writer::start_tag('div', array('class' => 'teachers'));
-
-        // Initialize running variables.
+        $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
+                         JOIN {questionnaire_question} mq on mq.surveyid = ms.id
+                         WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
+        $quest = $DB->get_record_sql($questlistsql);
+        $qid = $quest->id;
+        $surveyid = $quest->surveyid;
         $teacherrole = null;
         $displayedteachers = array();
-        //$sqlresp = "SELECT COUNT(r.id) FROM {questionnaire_response} r 
-        //             WHERE r.questionnaireid = :questionnaireid AND r.complete = 'y'";
-        //$paramsresp = array();
-                     
-        $totrespcourse = 10;
-        $totresp = 20;
+        $sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
+                     WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
+
+        $resp = $DB->get_record_sql($sqlresp);
+
+        $totrespcourse = $resp->crid;
+        $totresp = 0;
+        $surveysql = "SELECT distinct(ms.id) surveyid from {questionnaire_survey} ms
+                         JOIN {questionnaire_question} mq on mq.surveyid = ms.id
+                         WHERE mq.name = 'Course Ratings' ";
+        $surveys = $DB->get_record_sql($surveysql);
+        foreach($surveys as $survey) {
+           $sid = $surveyid;
+           $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
+                     WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
+
+           $respsql = $DB->get_record_sql($sqltot);
+           $totresp = $respsql->crid + $totresp;
+        }
+
         $this->content->text .= html_writer::start_tag('table');
         $this->content->text .= html_writer::start_tag('tr');
         $this->content->text .= html_writer::start_tag('td');
@@ -159,6 +177,16 @@ class block_questionreport extends block_base {
         $this->content->text .= html_writer::end_tag('td');
         $this->content->text .= html_writer::end_tag('tr');
 
+//      blank line
+        $this->content->text .= html_writer::start_tag('tr');
+        $this->content->text .= html_writer::start_tag('td');
+        $this->content->text .= html_writer::end_tag('td');
+        $this->content->text .= html_writer::start_tag('td');
+        $this->content->text .= html_writer::end_tag('td');
+        $this->content->text .= html_writer::start_tag('td');
+        $this->content->text .= html_writer::end_tag('td');
+        $this->content->text .= html_writer::end_tag('tr');
+
 
         $this->content->text .= html_writer::start_tag('tr');
         $this->content->text .= html_writer::start_tag('td');
@@ -172,9 +200,9 @@ class block_questionreport extends block_base {
         $this->content->text .= html_writer::end_tag('td');
         $this->content->text .= html_writer::end_tag('tr');
         // Get the questions
-        $questlistsql = "SELECT mq.id, mq.extradata from {questionnaire_survey} ms 
+        $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
                          JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                         WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";  
+                         WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
         $quest = $DB->get_record_sql($questlistsql);
         $qid = $quest->id;
         $extra = $quest->extradata;
@@ -196,35 +224,14 @@ class block_questionreport extends block_base {
            $this->content->text .= $grandtotal;
            $this->content->text .= html_writer::end_tag('td');
            $this->content->text .= html_writer::end_tag('tr');
-        }        
-        
+        }
+
         $this->content->text .= html_writer::end_tag('table');
 
 
-        // End teachers list.
         $this->content->text .= html_writer::end_tag('div');
 
-        // Output participants list if the setting linkparticipantspage is enabled.
-        if ((get_config('block_people', 'linkparticipantspage')) != 0) {
-            $this->content->text .= html_writer::start_tag('div', array('class' => 'participants'));
-            $this->content->text .= html_writer::tag('h3', get_string('participants'));
-
-            // Only if user is allow to see participants list.
-            if (course_can_view_participants($currentcontext)) {
-                $this->content->text .= html_writer::start_tag('a',
-                    array('href'  => new moodle_url('/user/index.php', array('contextid' => $currentcontext->id)),
-                          'title' => get_string('participants')));
-                $this->content->text .= $OUTPUT->pix_icon('i/users',
-                        get_string('participants', 'core'), 'moodle');
-                $this->content->text .= get_string('participantslist', 'block_people');
-                $this->content->text .= html_writer::end_tag('a');
-            } else {
-                $this->content->text .= html_writer::start_tag('span', array('class' => 'hint'));
-                $this->content->text .= get_string('noparticipantslist', 'block_people');
-                $this->content->text .= html_writer::end_tag('span');
-            }
-
-            $this->content->text .= html_writer::end_tag('div');
+        $this->content->text .= html_writer::end_tag('div');
         }
 
         return $this->content;
