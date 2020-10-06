@@ -227,13 +227,8 @@ class block_questionreport extends block_base {
         }
 
         $this->content->text .= html_writer::end_tag('table');
-
-
         $this->content->text .= html_writer::end_tag('div');
-
         $this->content->text .= html_writer::end_tag('div');
-        }
-
         return $this->content;
     }
 
