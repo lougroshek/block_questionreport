@@ -103,133 +103,14 @@ class block_questionreport extends block_base {
         $this->content->footer = '';
 
         // Get context.
+        $this->content->text = block_questionreport_get_evaluations();
         $currentcontext = $this->page->context;
-
-        // Get teachers separated by roles.
-        $roles = get_config('block_questionreport', 'roles');
-        if (!empty($roles)) {
-            $teacherroles = explode(',', $roles);
-            $teachers = get_role_users($teacherroles,
-                    $currentcontext,
-                    true,
-                    'ra.id AS raid, r.id AS roleid, r.sortorder, u.id, u.lastname, u.firstname, u.firstnamephonetic,
-                            u.lastnamephonetic, u.middlename, u.alternatename, u.picture, u.imagealt, u.email',
-                    'r.sortorder ASC, u.lastname ASC, u.firstname ASC');
-        } else {
-            $teachers = array();
-        }
-
-        // Get role names / aliases in course context.
-        $rolenames = role_get_names($currentcontext, ROLENAME_ALIAS, true);
-
-        // Get multiple roles config.
-        $multipleroles = get_config('block_questionreport', 'multipleroles');
-
-        // Start teachers list.
-        $this->content->text .= html_writer::start_tag('div', array('class' => 'teachers'));
-        $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
-                         JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                         WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
-        $quest = $DB->get_record_sql($questlistsql);
-        $qid = $quest->id;
-        $surveyid = $quest->surveyid;
-        $teacherrole = null;
-        $displayedteachers = array();
-        $sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
-                     WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
-
-        $resp = $DB->get_record_sql($sqlresp);
-
-        $totrespcourse = $resp->crid;
-        $totresp = 0;
-        $surveysql = "SELECT distinct(ms.id) surveyid from {questionnaire_survey} ms
-                         JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                         WHERE mq.name = 'Course Ratings' ";
-        $surveys = $DB->get_record_sql($surveysql);
-        foreach($surveys as $survey) {
-           $sid = $surveyid;
-           $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
-                     WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
-
-           $respsql = $DB->get_record_sql($sqltot);
-           $totresp = $respsql->crid + $totresp;
-        }
-
-        $this->content->text .= html_writer::start_tag('table');
-        $this->content->text .= html_writer::start_tag('tr');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('allcourses',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::end_tag('tr');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('surveyresp',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.$totrespcourse.'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.$totresp.'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::end_tag('tr');
-
-//      blank line
-        $this->content->text .= html_writer::start_tag('tr');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::end_tag('tr');
-
-
-        $this->content->text .= html_writer::start_tag('tr');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('session',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::start_tag('td');
-        $this->content->text .= '<b>'.get_string('allcourses',$plugin).'</b>';
-        $this->content->text .= html_writer::end_tag('td');
-        $this->content->text .= html_writer::end_tag('tr');
-        // Get the questions
-        $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
-                         JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                         WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
-        $quest = $DB->get_record_sql($questlistsql);
-        $qid = $quest->id;
-        $extra = $quest->extradata;
-        $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-        foreach($choices as $choice) {
-           $choicename = $choice->content;
-           $curtotal = 0;
-           $curtotal = block_questionreport_get_choice_current($choice->id);
-           $grandtotal = block_questionreport_get_choice_all($choicename);
-
-           $this->content->text .= html_writer::start_tag('tr');
-           $this->content->text .= html_writer::start_tag('td');
-           $this->content->text .= $choicename;
-           $this->content->text .= html_writer::end_tag('td');
-           $this->content->text .= html_writer::start_tag('td');
-           $this->content->text .= $curtotal;
-           $this->content->text .= html_writer::end_tag('td');
-           $this->content->text .= html_writer::start_tag('td');
-           $this->content->text .= $grandtotal;
-           $this->content->text .= html_writer::end_tag('td');
-           $this->content->text .= html_writer::end_tag('tr');
-        }
-
-        $this->content->text .= html_writer::end_tag('table');
-        $this->content->text .= html_writer::end_tag('div');
-        $this->content->text .= html_writer::end_tag('div');
-        return $this->content;
+        $this->content->text .= '<a href="'.$CFG->wwwroot.'/blocks/questionreport/report.php" class="btn btn-primary">'.
+                      get_string('reports', $plugin).'</a>';
+        $this->content->text .= '<a href="'.$CFG->wwwroot.'/blocks/questionreport/charts.php" class="btn btn-primary">'.
+                     get_string('charts', $plugin).'</a>';
+        
+        return $this->content; 
     }
 
     /**

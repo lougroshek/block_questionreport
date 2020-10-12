@@ -94,15 +94,3 @@ function block_questionreport_get_courses() {
     }
     return $courselist;
 }
-
-function block_questionreport_get_partners() {
-    global $DB;     
-    $plugin = 'block_questionreport';
-    $courselist = array();
-    $courselist[0] = get_string('all', $plugin);
-    $coursenames = $DB->get_records('course', array('visible' => '1'));
-    foreach ($coursenames as $coursecert) {
-        $courselist[$coursecert->id] = $coursecert->fullname;
-    }
-    return $courselist;
-}
