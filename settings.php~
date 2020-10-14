@@ -18,6 +18,7 @@
  * Block "questionreport" - Settings
  *
  * @package    block_questionreport
+ * @copyright  2017 Kathrin Osswald, Ulm University <kathrin.osswald@uni-ulm.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -52,10 +53,6 @@ if ($ADMIN->fulltree) {
     $title = get_string('setting_linkparticipantspage', 'block_questionreport', null, true);
     $description = get_string('setting_linkparticipantspage_desc', 'block_questionreport', null, true);
     $settings->add(new admin_setting_configcheckbox($name, $title, $description, 1));
-    
-    $settings->add(new admin_setting_configtext(
-         'block_questionreport/tag_value',get_string('tagvalue', 'block_questionreport'),
-          get_string('tagvalue_desc', 'block_questionreport'),'teachinglab', PARAM_RAW ));
     
 }
 

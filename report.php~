@@ -21,6 +21,8 @@
   * @copyright  (C) 2018 Remote Learner.net Inc http://www.remote-learner.net
   */
 require_once(dirname(__FILE__).'/../../config.php');
+$cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
+$action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $plugin = 'block_questionreport';
 
 $PAGE->set_pagelayout('standard');
@@ -31,12 +33,18 @@ $PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add($header, new moodle_url('/blocks/questionreport/report.php'));
-global $COURSE, $CFG, $OUTPUT, $USER, $DB;
-require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 
+global $CFG, $OUTPUT, $USER, $DB;
+require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
+require_login($cid);
+global $COURSE;
 echo $OUTPUT->header();
 // Build up the filters
 $courselist = block_questionreport_get_courses();
+echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+
 echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($courselist, "course", 'courseid', get_string("all", $plugin));
 
@@ -49,6 +57,8 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" />';
 echo html_writer::label(get_string('to'), false, array('class' => 'accesshide'));
 echo '<input type="date" id="end-date" name="end_date" />';
+echo '<input type="submit" value="'.get_string('gettheselogs').'" />';
+echo '</form>';
  
 $content = '';
 // Get teachers separated by roles.
@@ -73,8 +83,26 @@ $rolenames = role_get_names($context, ROLENAME_ALIAS, true);
 
 // Get multiple roles config.
 $multipleroles = get_config($plugin, 'multipleroles');
+
+// Get the tags list.
+$tagvalue = get_config($plugin, 'tag_value');
+$tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
+$moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
+$sqlcourse = "SELECT m.course, m.id
+               FROM {course_modules} m
+               JOIN {tag_instance} ti on ti.itemid = m.id
+              WHERE m.module = ".$moduleid. "
+               AND ti.tagid = ".$tagid . "
+               AND m.course = ".$cid . "
+               AND m.deletioninprogress = 0";
+
+
+$surveys = $DB->get_record_sql($sqlcourse);
+$surveyid = $surveys->id;
+echo 'surveyid '.$surveyid;
+exit();
 // Start teachers list.
-$cid= 2;
+//$cid= 2;
 $content .= html_writer::start_tag('div', array('class' => 'teachers'));
 $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
                  JOIN {questionnaire_question} mq on mq.surveyid = ms.id
@@ -214,7 +242,7 @@ if ($quest) {
 $content .= '<b>Text responses by question</b>';
 $questionlist = block_questionreport_get_partners();
 echo html_writer::label('questionlist', false, array('class' => 'accesshide'));
-echo html_writer::select($questionlist, "questionlist', 'questionid', get_string("all", $plugin));
+echo html_writer::select($questionlist, 'questionlist', 'questionid', get_string("all", $plugin));
 
   
     

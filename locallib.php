@@ -88,7 +88,19 @@ function block_questionreport_get_courses() {
     $plugin = 'block_questionreport';
     $courselist = array();
     $courselist[0] = get_string('all', $plugin);
-    $coursenames = $DB->get_records('course', array('visible' => '1'));
+    $tagvalue = get_config($plugin, 'tag_value');
+    $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
+    $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
+    $sqlcourse = "SELECT m.course, c.id, c.fullname
+               FROM {course_modules} m
+               JOIN {tag_instance} ti on ti.itemid = m.id
+               JOIN {course} c on c.id = m.course
+              WHERE m.module = ".$moduleid. "
+               AND ti.tagid = ".$tagid . "
+               AND m.deletioninprogress = 0
+               AND c.visible = 1";
+
+    $coursenames = $DB->get_records_sql($sqlcourse);
     foreach ($coursenames as $coursecert) {
         $courselist[$coursecert->id] = $coursecert->fullname;
     }
