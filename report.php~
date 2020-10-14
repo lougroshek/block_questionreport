@@ -46,9 +46,9 @@ echo html_writer::select($partnerlist, "partner", 'partnerid', get_string("all",
 
 $datelist = block_questionreport_get_courses();
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($datelist, "date", 'dateid', get_string("all", $plugin));
-
 echo '<input type="date" id="start-date" name="start_date" />';
+echo html_writer::label(get_string('to'), false, array('class' => 'accesshide'));
+echo '<input type="date" id="end-date" name="end_date" />';
  
 $content = '';
 // Get teachers separated by roles.
@@ -74,10 +74,11 @@ $rolenames = role_get_names($context, ROLENAME_ALIAS, true);
 // Get multiple roles config.
 $multipleroles = get_config($plugin, 'multipleroles');
 // Start teachers list.
+$cid= 2;
 $content .= html_writer::start_tag('div', array('class' => 'teachers'));
 $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
                  JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                 WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
+                 WHERE ms.courseid =".$cid ." and mq.name = 'Course Ratings' ";
 $quest = $DB->get_record_sql($questlistsql);
 if ($quest) {
     $qid = $quest->id;     
@@ -125,20 +126,12 @@ if ($quest) {
     $content .= '<b>'.$totresp.'</b>';
     $content .= html_writer::end_tag('td');
     $content .= html_writer::end_tag('tr');
-
-//      blank line
+    $content .= html_writer::end_tag('table');
+    $content .= '<br>';
+    $content .= html_writer::start_tag('table');
     $content .= html_writer::start_tag('tr');
     $content .= html_writer::start_tag('td');
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('session',$plugin).'</b>';
+    $content .= '<b>Facilitation Summary (% Agree & Strongly Agree)</b>';
     $content .= html_writer::end_tag('td');
     $content .= html_writer::start_tag('td');
     $content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
@@ -147,10 +140,92 @@ if ($quest) {
     $content .= '<b>'.get_string('allcourses',$plugin).'</b>';
     $content .= html_writer::end_tag('td');
     $content .= html_writer::end_tag('tr');
+    $content .= html_writer::start_tag('tr');
+    $content .= html_writer::start_tag('td');
+    $content .= 'S/he facilitated the content clearly.';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '9';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '15';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::end_tag('tr');
+    $content .= html_writer::start_tag('tr');
+    $content .= html_writer::start_tag('td');
+    $content .= 'S/he effectively built a community of learners.';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '42';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '49';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::end_tag('table');
+    $content .= '<br>';
+    $content .= html_writer::start_tag('table');
+    $content .= html_writer::start_tag('tr');
+    $content .= html_writer::start_tag('td');
+    $content .= '<b>Session (% Agree & Strongly Agree)<b>';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '<b>This course</b>';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::start_tag('td');
+    $content .= '<b>All Courses</b>';
+    $content .= html_writer::end_tag('td');
+    $content .= html_writer::end_tag('tr');
+    
+    $arr = array('I am satisfied with the overall quality of this course.',
+                 'The topics for this course were relevant for my role.',
+                 'The topics for this course were relevant for my role.',
+                 'The topics for this course were relevant for my role.',
+                 'This course helped me prepare for school opening after COVID-19.',
+                 'How likely are you to apply this learning to your practice in the next 4-6 weeks?'
+                 );
+    foreach ($arr as $value) {
+        $content .= html_writer::start_tag('tr');
+        $content .= html_writer::start_tag('td');
+        $content .= '<b>'.$value.'</b>';
+        $content .= html_writer::end_tag('td');
+        $content .= html_writer::start_tag('td');
+        $content .= '22';
+        $content .= html_writer::end_tag('td');
+        $content .= html_writer::start_tag('td');
+        $content .= '45';
+        $content .= html_writer::end_tag('td');
+        $content .= html_writer::end_tag('tr');
+
+    }
+    $content .= html_writer::end_tag('table');
+    $content .= 'Text response word cloud';
+    $content .= '<table>';
+    $content .= '<tr><td><b>Word</b></td></td><td><b>Count</b></td></tr>';
+      $content .= html_writer::start_tag('tr');
+        $content .= html_writer::start_tag('td');
+        $content .= '<b>lemon</b>';
+        $content .= html_writer::end_tag('td');
+        $content .= html_writer::start_tag('td');
+        $content .= '22';
+        $content .= html_writer::end_tag('td');
+        $content .= html_writer::end_tag('tr');
+      $content .= html_writer::end_tag('table');
+$content .= '<b>Text responses by question</b>';
+$questionlist = block_questionreport_get_partners();
+echo html_writer::label('questionlist', false, array('class' => 'accesshide'));
+echo html_writer::select($questionlist, "questionlist', 'questionid', get_string("all", $plugin));
+
+  
+    
     // Get the questions
+    
+    $cid = 2;
     $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
                       JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                     WHERE ms.courseid =".$COURSE->id ." and mq.name = 'Course Ratings' ";
+                     WHERE ms.courseid =".$cid ." and mq.name = 'Course Ratings' ";
+  //  echo $questlistsql;
+/*                     
     $quest = $DB->get_record_sql($questlistsql);
     $qid = $quest->id;
     $extra = $quest->extradata;
@@ -173,8 +248,9 @@ if ($quest) {
        $content .= html_writer::end_tag('td');
        $content .= html_writer::end_tag('tr');
     }
-
-    $content .= html_writer::end_tag('table');
+*/
+//    $content .= html_writer::end_tag('table');
 }
+
 echo $content;  
 echo $OUTPUT->footer();

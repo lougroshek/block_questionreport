@@ -67,3 +67,4 @@ $string['coursefilter'] = 'Filter by Course';
 $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site';
 $string['all'] = 'All';
+$string['numberofsurvey'] = 'Number of survey responses';
