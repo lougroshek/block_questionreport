@@ -18,7 +18,6 @@
   * Block questionreport Report File.
   *
   * @package    block_questionreport
-  * @copyright  (C) 2018 Remote Learner.net Inc http://www.remote-learner.net
   */
 require_once(dirname(__FILE__).'/../../config.php');
 $cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
@@ -43,10 +42,9 @@ echo $OUTPUT->header();
 $courselist = block_questionreport_get_courses();
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
 
 echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($courselist, "course", 'courseid', get_string("all", $plugin));
+echo html_writer::select($courselist,"cid",$cid, false);
 
 $partnerlist = block_questionreport_get_partners();
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
@@ -57,13 +55,12 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" />';
 echo html_writer::label(get_string('to'), false, array('class' => 'accesshide'));
 echo '<input type="date" id="end-date" name="end_date" />';
-echo '<input type="submit" value="'.get_string('gettheselogs').'" />';
+echo '<input type="submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
  
 $content = '';
 // Get teachers separated by roles.
 $context = context_course::instance($COURSE->id);
-//$context = cr_get_context(CONTEXT_COURSE, $COURSE->id);
   
 $roles = get_config('block_questionreport', 'roles');
 
@@ -88,7 +85,7 @@ $multipleroles = get_config($plugin, 'multipleroles');
 $tagvalue = get_config($plugin, 'tag_value');
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
-$sqlcourse = "SELECT m.course, m.id
+$sqlcourse = "SELECT m.course, m.id, m.instance
                FROM {course_modules} m
                JOIN {tag_instance} ti on ti.itemid = m.id
               WHERE m.module = ".$moduleid. "
@@ -96,136 +93,112 @@ $sqlcourse = "SELECT m.course, m.id
                AND m.course = ".$cid . "
                AND m.deletioninprogress = 0";
 
-
 $surveys = $DB->get_record_sql($sqlcourse);
-$surveyid = $surveys->id;
-echo 'surveyid '.$surveyid;
-exit();
-// Start teachers list.
-//$cid= 2;
-$content .= html_writer::start_tag('div', array('class' => 'teachers'));
-$questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
-                 JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                 WHERE ms.courseid =".$cid ." and mq.name = 'Course Ratings' ";
-$quest = $DB->get_record_sql($questlistsql);
-if ($quest) {
-    $qid = $quest->id;     
-    $surveyid = $quest->surveyid;
-    $teacherrole = null;
-    $displayedteachers = array();
-    $sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
-                WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
+$surveyid = $surveys->instance;
 
-    $resp = $DB->get_record_sql($sqlresp);
+// Get the survey results from this course.
+$displayedteachers = array();
+$sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
+             WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
 
-    $totrespcourse = $resp->crid;
-    $totresp = 0;
-    $surveysql = "SELECT distinct(ms.id) surveyid from {questionnaire_survey} ms
-                    JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                   WHERE mq.name = 'Course Ratings' ";
-    $surveys = $DB->get_record_sql($surveysql);
-    foreach($surveys as $survey) {
-       $sid = $surveyid;
+$resp = $DB->get_record_sql($sqlresp);
+
+$totrespcourse = $resp->crid;
+
+// Get the total responses.    
+$totresp = 0;
+$sqlcourses = "SELECT m.course, m.id, m.instance
+               FROM {course_modules} m
+               JOIN {tag_instance} ti on ti.itemid = m.id
+              WHERE m.module = ".$moduleid. "
+               AND ti.tagid = ".$tagid . "
+               AND m.deletioninprogress = 0";
+$surveys = $DB->get_records_sql($sqlcourses);
+foreach($surveys as $survey) {
+       $sid = $survey->instance;
        $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
                    WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
 
        $respsql = $DB->get_record_sql($sqltot);
        $totresp = $respsql->crid + $totresp;
-    }
+}
+$content .= html_writer::start_tag('table');
+$content .= html_writer::start_tag('tr');
+$content .= html_writer::start_tag('td');
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::end_tag('tr');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.get_string('surveyresp',$plugin).'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.$totrespcourse.'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.$totresp.'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::end_tag('tr');
+$content .= html_writer::end_tag('table');
+$content .= '<br>';
 
-    $content .= html_writer::start_tag('table');
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('surveyresp',$plugin).'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.$totrespcourse.'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.$totresp.'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-    $content .= html_writer::end_tag('table');
-    $content .= '<br>';
-    $content .= html_writer::start_tag('table');
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>Facilitation Summary (% Agree & Strongly Agree)</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= 'S/he facilitated the content clearly.';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '9';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '15';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= 'S/he effectively built a community of learners.';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '42';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '49';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('table');
-    $content .= '<br>';
-    $content .= html_writer::start_tag('table');
-    $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>Session (% Agree & Strongly Agree)<b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>This course</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::start_tag('td');
-    $content .= '<b>All Courses</b>';
-    $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
-    
-    $arr = array('I am satisfied with the overall quality of this course.',
-                 'The topics for this course were relevant for my role.',
-                 'The topics for this course were relevant for my role.',
-                 'The topics for this course were relevant for my role.',
-                 'This course helped me prepare for school opening after COVID-19.',
-                 'How likely are you to apply this learning to your practice in the next 4-6 weeks?'
-                 );
-    foreach ($arr as $value) {
-        $content .= html_writer::start_tag('tr');
-        $content .= html_writer::start_tag('td');
-        $content .= '<b>'.$value.'</b>';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::start_tag('td');
-        $content .= '22';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::start_tag('td');
-        $content .= '45';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::end_tag('tr');
-
-    }
+$content .= html_writer::start_tag('table');
+$content .= html_writer::start_tag('tr');
+$content .= html_writer::start_tag('td');
+$content .= '<b>Facilitation Summary (% Agree & Strongly Agree)</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::end_tag('tr');
+for ($x = 1; $x <= 2; $x++) {
+     $content .= html_writer::start_tag('tr');
+     $content .= html_writer::start_tag('td');
+     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $x, 'surveyid' => $surveyid));
+     $content .= $qcontent;
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::start_tag('td');
+     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid);
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::start_tag('td');
+     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid);
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::end_tag('tr');
+}
+$content .= html_writer::end_tag('table');
+$content .= html_writer::start_tag('table');
+$content .= html_writer::start_tag('tr');
+$content .= html_writer::start_tag('td');
+$content .= '<b>Session (% Agree & Strongly Agree)<b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>This course</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::start_tag('td');
+$content .= '<b>All Courses</b>';
+$content .= html_writer::end_tag('td');
+$content .= html_writer::end_tag('tr');
+for ($x = 3; $x <= 5; $x++) {
+     $content .= html_writer::start_tag('tr');
+     $content .= html_writer::start_tag('td');
+     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $x, 'surveyid' => $surveyid));
+     $content .= $qcontent;
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::start_tag('td');
+     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid);
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::start_tag('td');
+     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid);
+     $content .= html_writer::end_tag('td');
+     $content .= html_writer::end_tag('tr');
+}    
     $content .= html_writer::end_tag('table');
     $content .= 'Text response word cloud';
     $content .= '<table>';
@@ -278,7 +251,7 @@ echo html_writer::select($questionlist, 'questionlist', 'questionid', get_string
     }
 */
 //    $content .= html_writer::end_tag('table');
-}
+//}
 
 echo $content;  
 echo $OUTPUT->footer();

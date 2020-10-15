@@ -68,7 +68,9 @@ $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site';
 $string['all'] = 'All';
 $string['numberofsurvey'] = 'Number of survey responses';
-$string['tagvalue'] = 'Tag value used to identify questionnaires';
-$string['tagvalue'] = 'Questionnaires must have this value in their tags to be included in the stats';
+$string['tagvalue'] = 'Tag value used to end of course survey questionnaires';
+$string['tagvalue_desc'] = 'Questionnaires must have this value in their tags to be included in the stats';
+$string['tagvalue_diagnostic'] = 'Tag value used to identify diagnostic questionnaires';
+$string['tagvalue_desc_diagnostic'] = 'Questionnaires must have this value in their tags to be included in the stats';
 
 

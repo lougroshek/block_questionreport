@@ -57,5 +57,9 @@ if ($ADMIN->fulltree) {
          'block_questionreport/tag_value',get_string('tagvalue', 'block_questionreport'),
           get_string('tagvalue_desc', 'block_questionreport'),'teachinglab', PARAM_RAW ));
     
+    $settings->add(new admin_setting_configtext(
+         'block_questionreport/tag_value_diagnostic',get_string('tagvalue', 'block_questionreport'),
+          get_string('tagvalue_desc_diagnostic', 'block_questionreport'),'teachinglab', PARAM_RAW ));
+    
 }
 

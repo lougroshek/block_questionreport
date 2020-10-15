@@ -118,3 +118,54 @@ function block_questionreport_get_partners() {
     }
     return $courselist;
 }
+
+function block_questionreport_get_question_results($position, $cid, $surveyid, $moduleid, $tagid) {
+	 // Return the percentage of questions answered with a rank 4, 5;
+	 // position is the question #
+	 // cid is the current course, if its 0 then its all courses;
+	 // surveyid is the surveyid for the selected course. If its all courses, then it will 0;
+    global $DB;
+    $retval = 0;
+    if ($surveyid > 0) {
+        // Get the question id;
+        $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
+        $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));
+        if($totres > 0) {
+           $totgood = $DB->count_records_select('questionnaire_response_rank', 'question_id = '.$questionid .' AND (rankvalue = 4 or rankvalue = 5)');
+           if ($totgood > 0) {
+               $percent = ($totgood / $totres) * 100;
+               $retval = round($percent, 2);
+           }  
+        }    
+    } else  {
+    	   // Get all the courses;
+    	   $gtres = 0;
+    	   $gttotres = 0;
+         $sqlcourses = "SELECT m.course, m.id, m.instance
+                          FROM {course_modules} m
+                          JOIN {tag_instance} ti on ti.itemid = m.id
+                         WHERE m.module = ".$moduleid. "
+                           AND ti.tagid = ".$tagid . "
+                           AND m.deletioninprogress = 0";
+        $surveys = $DB->get_records_sql($sqlcourses);
+        foreach($surveys as $survey) {
+           $sid = $survey->instance;
+           $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid));
+           $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));
+           if($totres > 0) {
+           	  $gtres = $gtres + $totres;
+              $totgood = $DB->count_records_select('questionnaire_response_rank', 'question_id = '.$questionid .' AND (rankvalue = 4 or rankvalue = 5)');
+              if ($totgood > 0) {
+                  $gttotres = $gttotres + $totgood;        
+              }  
+           }
+        }
+        if ($gttotres > 0) {
+            $percent = ($gttotres / $gtres) * 100;
+            $retval = round($percent, 2);
+
+        }
+}
+    
+    return $retval;
+}
