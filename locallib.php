@@ -32,7 +32,38 @@ function block_questionreport_get_choice_current($choiceid) {
     return $recs;
 }
 
+function block_questionreport_check_has_choices($choiceid) {
+    global $DB;
+    $recsql = "SELECT count(id) from {questionnaire_response_rank} where choice_id = ".$choiceid;
+    $recs = $DB->count_records_sql($recsql); 
+    // Total the results from this course for this choice.
+    return $recs;
+}
+
+function block_questionreport_is_teacher() {
+    global $USER;
+    $valid = false;
+    if (!is_siteadmin($USER)) {
+         $context = context_course::instance($courseid);
+         $roles = get_user_roles($context, $USER->id, true);
+         foreach ($roles as $role) {
+            if (in_array($role, $teacherroles)) {
+                $valid = true;                
+            }              
+         }
+    } else {
+        $valid = true;         
+    }  
+    return $valid;
+}
+
+function block_questionreport_is_admin() {
+    global $USER;
+    return is_siteadmin($USER);
+}
+
 function block_questionreport_get_evaluations() {
+
     global $DB, $COURSE;  
     $plugin = 'block_questionreport';
     // Get the tags list.
@@ -80,7 +111,70 @@ function block_questionreport_get_evaluations() {
         $content = $content .$qcontent . ' ' .$cnt2;    
     }
     return $content;
+
+    // global $CFG, $COURSE, $PAGE, $OUTPUT;
+    // // Declare plugin name.
+    // $plugin = 'block_questionreport';
+    // // The object we will pass to mustache.
+    // $data = new stdClass();
+    // 
+    // // TODO: Does the current course have results to display? 
+    // $has_responses_contentq = true;
+    // $has_responses_commq = true;
+    // 
+    // // Is the user a teacher or an admin?
+    // $is_admin = block_questionreport_is_admin();
+    // $is_teacher = block_questionreport_is_teacher();
+    // if (!$is_admin && !$is_teacher) {
+    //     return;
+    // }
+    // 
+    // // Add buttons object.
+    // $data->buttons = new stdClass();
+    // // Build reports button object.
+    // $reports = new stdClass();
+    // $reports->text = get_string('reports', $plugin);
+    // $reports->href = $CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$COURSE->id;
+    // $data->buttons->reports = $reports;
+    // // Conditionally add charts button object.
+    // if (!!$is_admin) {
+    //     // echo 'user is admin';
+    //     $data->role = 'admin';
+    //     $charts = new stdClass();
+    //     $charts->text = get_string('charts', $plugin);
+    //     $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php';
+    //     $data->buttons->charts = $charts;
+    // } 
+    // if (!!$is_teacher) {
+    //     $data->role = 'teacher';
+    // }
+    // 
+    // // Insert data into object if content responses exist.
+    // if (!!$has_responses_contentq) {
+    //     $contentq = new stdClass();
+    //     $contentq->desc = get_string('contentq_desc', $plugin);
+    //     $contentq->stat = 78; // TODO: Fetch and calculate this.
+    //     $data->contentq = $contentq;
+    // }
+    // // Insert data into object if community responses exist.
+    // if (!!$has_responses_commq) {
+    //     $commq = new stdClass();
+    //     $commq->desc = get_string('commq_desc', $plugin);
+    //     $commq->stat = 82; // TODO: Fetch and calculate this.
+    //     $data->commq = $commq;
+    // }
+    // // If no response data, add no response string to data.
+    // if (!$has_responses_contentq && !$has_responses_contentq) {
+    //     // If no question responses yet, display boilerplate.
+    //     $data->no_responses = get_string('nocoursevals', $plugin);
+    // } else {
+    //     $data->has_responses = true;
+    // }
+    // 
+    // // Return rendered template.
+    // return $OUTPUT->render_from_template('block_questionreport/initial', $data);
 }
+
 function block_questionreport_get_choice_all($choicename) {
     global $DB, $USER;
     // Get teachers separated by roles.

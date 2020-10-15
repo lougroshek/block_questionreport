@@ -104,13 +104,9 @@ class block_questionreport extends block_base {
 
         // Get context.
         $this->content->text = block_questionreport_get_evaluations();
-        $currentcontext = $this->page->context;
-        $this->content->text .= '<a href="'.$CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$COURSE->id.'" class="btn btn-primary">'.
-                      get_string('reports', $plugin).'</a>';
-        $this->content->text .= '<a href="'.$CFG->wwwroot.'/blocks/questionreport/charts.php" class="btn btn-primary">'.
-                     get_string('charts', $plugin).'</a>';
         
         return $this->content; 
+        
     }
 
     /**
