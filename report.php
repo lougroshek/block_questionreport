@@ -22,6 +22,9 @@
 require_once(dirname(__FILE__).'/../../config.php');
 $cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
 $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
+$start_date   = optional_param('start_date', '0', PARAM_RAW);
+$end_date     = optional_param('end_date', '0', PARAM_RAW);
+$partner      = optional_param('partner', 0, PARAM_INT);
 $plugin = 'block_questionreport';
 
 $PAGE->set_pagelayout('standard');
@@ -46,15 +49,15 @@ echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($courselist,"cid",$cid, false);
 
-$partnerlist = block_questionreport_get_partners();
+$partnerlist = block_questionreport_get_partners_list();
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($partnerlist, "partner", 'partnerid', get_string("all", $plugin));
 
 $datelist = block_questionreport_get_courses();
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
-echo '<input type="date" id="start-date" name="start_date" />';
+echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'accesshide'));
-echo '<input type="date" id="end-date" name="end_date" />';
+echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
 echo '<input type="submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
  

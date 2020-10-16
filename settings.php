@@ -60,6 +60,11 @@ if ($ADMIN->fulltree) {
     $settings->add(new admin_setting_configtext(
          'block_questionreport/tag_value_diagnostic',get_string('tagvalue', 'block_questionreport'),
           get_string('tagvalue_desc_diagnostic', 'block_questionreport'),'teachinglab', PARAM_RAW ));
-    
+ 
+    $customcoursefields = block_questionreport_get_partners();
+    $setting = new admin_setting_configselect('partnerfield',
+         get_string('partnerfield', 'block_questionreport'), get_string('partnerfieldhelp', 'block_questionreport'), 0, $customcoursefields);
+    $setting->plugin = 'block_questionreport';
+    $settings->add($setting); 
 }
 

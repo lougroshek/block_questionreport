@@ -112,13 +112,31 @@ function block_questionreport_get_partners() {
     $plugin = 'block_questionreport';
     $courselist = array();
     $courselist[0] = get_string('all', $plugin);
-    $coursenames = $DB->get_records('course', array('visible' => '1'));
-    foreach ($coursenames as $coursecert) {
-        $courselist[$coursecert->id] = $coursecert->fullname;
+    $sql = 'SELECT tif.id, tif.name, tif.shortname
+             FROM {customfield_field} tif
+             WHERE type = :type
+             ORDER BY tif.sortorder ASC';
+ 
+    $customfields = $DB->get_records_sql($sql, array('type' => 'select'));
+    foreach ($customfields as $field) {
+        $courselist[$field->id] = $field->name;
     }
     return $courselist;
 }
 
+function block_questionreport_get_partners_list() {
+    global $DB;     
+    $plugin = 'block_questionreport';
+    $courselist = array();
+    $courselist[0] = get_string('all', $plugin);
+    $fieldid = get_config($plugin, 'partnerfield');
+    $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
+    $x = json_decode($content);
+    $opts = $x->options;
+    $options = preg_split("/\s*\n\s*/", $opts);
+    return array_merge([''], $options);
+
+}
 function block_questionreport_get_question_results($position, $cid, $surveyid, $moduleid, $tagid) {
 	 // Return the percentage of questions answered with a rank 4, 5;
 	 // position is the question #
