@@ -40,17 +40,24 @@ function block_questionreport_check_has_choices($choiceid) {
     return $recs;
 }
 
+/**
+ * Checks whether user has the designated role in the course.
+ */
 function block_questionreport_is_teacher() {
-    global $USER;
+    global $USER, $COURSE;
+    $roles = get_config('block_questionreport', 'roles');
+    $teacherroles = explode(',', $roles);
     $valid = false;
     if (!is_siteadmin($USER)) {
-         $context = context_course::instance($courseid);
-         $roles = get_user_roles($context, $USER->id, true);
-         foreach ($roles as $role) {
-            if (in_array($role, $teacherroles)) {
-                $valid = true;                
-            }              
-         }
+        $courseid = $COURSE->id;
+        $context = context_course::instance($courseid);
+        $userroles = get_user_roles($context, $USER->id, true);
+        foreach ($userroles as $role) {
+            if (in_array($role->roleid, $teacherroles)) {
+                // echo 'Its in the array';
+                $valid = true;
+            }
+        }
     } else {
         $valid = true;         
     }  
