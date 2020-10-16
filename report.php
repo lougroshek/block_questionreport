@@ -277,6 +277,16 @@ $content .= '<b>Text responses by question</b>';
 */
 //    $content .= html_writer::end_tag('table');
 //}
+//}
+
+$data = new stdClass();
+$data->strings = new stdClass();
+$data->strings->this_course = get_string('this_course', $plugin);
+$data->strings->all_courses = get_string('all_courses', $plugin);
+$data->strings->number_responses = get_string('number_responses', $plugin);
+
+// Return rendered template.
+$content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
 
 echo $content;  
 echo $OUTPUT->footer();

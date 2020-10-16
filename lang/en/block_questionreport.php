@@ -83,3 +83,9 @@ $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partne
 // Initial view.
 $string['contentq_desc'] = 'S/he facilitated the content clearly.';
 $string['commq_desc'] = 'S/he effectively built a community of learners.';
+
+// Report view.
+$string['this_course'] = 'This Course';
+$string['all_courses'] = 'All Courses';
+$string['number_responses'] = 'Number of survey responses';
+// $string['commq_desc'] = 'S/he effectively built a community of learners.';
