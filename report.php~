@@ -24,7 +24,7 @@ $cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
 $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
-
+$partner      = optional_param('partner', '', PARAM_RAW);
 $plugin = 'block_questionreport';
 
 $PAGE->set_pagelayout('standard');
@@ -49,9 +49,9 @@ echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($courselist,"cid",$cid, false);
 
-$partnerlist = block_questionreport_get_partners();
+$partnerlist = block_questionreport_get_partners_list();
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($partnerlist, "partner", 'partnerid', get_string("all", $plugin));
+echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
 $datelist = block_questionreport_get_courses();
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
@@ -116,13 +116,35 @@ $sqlcourses = "SELECT m.course, m.id, m.instance
               WHERE m.module = ".$moduleid. "
                AND ti.tagid = ".$tagid . "
                AND m.deletioninprogress = 0";
+
+$sqltot = "SELECT COUNT(r.id) crid ";
+$fromtot = " FROM {questionnaire_response} r ";
+$wheretot = "WHERE r.questionnaireid = :questionnaireid AND r.complete = 'y' ";
+$paramstot = array();
+if ($partner > '') {
+//    $params['questionnaireid'] = $sid
+}
+if ($start_date > 0) {
+    $std = strtotime($start_date);
+    $wheretot = $wheretot . "AND submitted >= :std";
+    $paramstot['std'] = $std;
+}
+
+if ($end_date > 0) {
+    $endtd = strtotime($end_date);
+    $wheretot = $wheretot . "AND submitted <= :endtd";
+    $paramstot['endtd'] = $endtd;
+}
+
 $surveys = $DB->get_records_sql($sqlcourses);
 foreach($surveys as $survey) {
        $sid = $survey->instance;
-       $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
-                   WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
+//       $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
+//                   WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
+       $paramstot['questionnaireid'] = $sid;
 
-       $respsql = $DB->get_record_sql($sqltot);
+       $sqlquestion = $sqltot . $fromtot . $wheretot;
+       $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
        $totresp = $respsql->crid + $totresp;
 }
 $content .= html_writer::start_tag('table');
@@ -168,10 +190,10 @@ for ($x = 1; $x <= 2; $x++) {
      $content .= $qcontent;
      $content .= html_writer::end_tag('td');
      $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid);
+     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
      $content .= html_writer::end_tag('td');
      $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid);
+     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
      $content .= html_writer::end_tag('td');
      $content .= html_writer::end_tag('tr');
 }
@@ -195,10 +217,10 @@ for ($x = 3; $x <= 5; $x++) {
      $content .= $qcontent;
      $content .= html_writer::end_tag('td');
      $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid);
+     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
      $content .= html_writer::end_tag('td');
      $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid);
+     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
      $content .= html_writer::end_tag('td');
      $content .= html_writer::end_tag('tr');
 }    

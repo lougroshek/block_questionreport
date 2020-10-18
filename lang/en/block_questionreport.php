@@ -77,3 +77,4 @@ $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
 
 
+
