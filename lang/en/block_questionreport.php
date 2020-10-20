@@ -88,4 +88,6 @@ $string['commq_desc'] = 'S/he effectively built a community of learners.';
 $string['this_course'] = 'This Course';
 $string['all_courses'] = 'All Courses';
 $string['number_responses'] = 'Number of survey responses';
-// $string['commq_desc'] = 'S/he effectively built a community of learners.';
+
+// Word Cloud template.
+$string['word_cloud_heading'] = 'Text Responses Word Cloud';

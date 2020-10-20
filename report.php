@@ -26,7 +26,8 @@ $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
 $plugin = 'block_questionreport';
-
+// Require the javascript for wordcloud.
+$PAGE->requires->js('/blocks/questionreport/js/wordCloud2.js');
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/report.php');
 $PAGE->set_context(context_system::instance());
@@ -279,6 +280,7 @@ $content .= '<b>Text responses by question</b>';
 //}
 //}
 
+// Assembled data for lead facilitator table.
 $data = new stdClass();
 $data->strings = new stdClass();
 $data->strings->this_course = get_string('this_course', $plugin);
@@ -287,6 +289,30 @@ $data->strings->number_responses = get_string('number_responses', $plugin);
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
+
+// Assemble data for word cloud.
+$word_cloud = new stdClass();
+// Array should be in the list form stipulated here: 
+// https://github.com/timdream/wordcloud2.js/
+// [ [ "word", size], ["word", size], ... ]
+$words = Array(
+        Array('lorem', 54), 
+        Array('ipsum', 36),
+        Array('dolor', 22),
+        Array('sit', 18),
+        Array('amet', 18),
+        Array('consectetur', 8),
+    );
+     // 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'suspendisse', 'consectetur', 'lectus', 'ut', 'nunc', 'gravida', 'sed', 'hendrerit', 'nibh', 'scelerisque', 'sed', 'sollicitudin', 'semper', 'nisi', 'ut', 'volutpat', 'leo', 'pellentesque', 'id', 'vivamus');
+
+// Print wordCloud array to the page.
+$content .= '<script>';
+$content .= 'var wordCloud = '.json_encode($words).';';
+$content .= '</script>';
+// Return rendered word cloud.
+$content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
+
+
 
 echo $content;  
 echo $OUTPUT->footer();

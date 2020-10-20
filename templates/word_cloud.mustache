@@ -1,0 +1,10 @@
+<h3>
+  {{# str }} word_cloud_heading, block_questionreport {{/ str }}
+</h3>
+<div id="word_cloud" style="display:block;width:600px;height:400px;">
+</div>
+{{#js}}
+// console.log(WordCloud.isSupported)
+// console.log(wordCloud)
+WordCloud(document.getElementById('word_cloud'), {list: wordCloud, maxRotation: 0,minRotation: 0});
+{{/js}}
