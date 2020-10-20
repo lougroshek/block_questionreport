@@ -108,3 +108,31 @@
 
 
 /* End initial view */
+
+/* Custom quotes */
+.custom-quotes {
+  
+}
+
+.custom-quotes .quote {
+  position: relative;
+  width: 80%;
+}
+
+.custom-quotes .text {
+  margin-left: 58px;  
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.custom-quotes .quote:before {
+  position: absolute;
+  top: -36px;
+  left: 12px;
+  content: '“';
+  color: gray;
+  font-size: 96px;
+}
+
+
+/* End custom quotes */

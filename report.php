@@ -303,7 +303,6 @@ $words = Array(
         Array('amet', 18),
         Array('consectetur', 8),
     );
-     // 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing', 'elit', 'suspendisse', 'consectetur', 'lectus', 'ut', 'nunc', 'gravida', 'sed', 'hendrerit', 'nibh', 'scelerisque', 'sed', 'sollicitudin', 'semper', 'nisi', 'ut', 'volutpat', 'leo', 'pellentesque', 'id', 'vivamus');
 
 // Print wordCloud array to the page.
 $content .= '<script>';
@@ -312,7 +311,18 @@ $content .= '</script>';
 // Return rendered word cloud.
 $content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
 
-
+// Build data object for text question quotes.
+$quote_data = new stdClass();
+// The text of the question to display:
+$quote_data->question = "What could have improved your experience in this course?";
+// Array of text responses to render.
+$quote_data->quotes = Array(
+    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
+    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
+    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et."
+);
+// Return rendered quote list.
+$content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);
 
 echo $content;  
 echo $OUTPUT->footer();
