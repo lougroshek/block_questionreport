@@ -108,11 +108,18 @@ $resp = $DB->get_record_sql($sqlresp);
 
 $totrespcourse = $resp->crid;
 
-// Get the total responses.    
+// Get the total responses.
+$partnersql = '';
+if ($partner > '') {
+    $comparevalue = $DB->sql_compare_text($partner);
+    $partnerid = get_config($plugin, 'partnerfield');
+    $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
+}
+    
 $totresp = 0;
 $sqlcourses = "SELECT m.course, m.id, m.instance
                FROM {course_modules} m
-               JOIN {tag_instance} ti on ti.itemid = m.id
+               JOIN {tag_instance} ti on ti.itemid = m.id ".$partnersql. " 
               WHERE m.module = ".$moduleid. "
                AND ti.tagid = ".$tagid . "
                AND m.deletioninprogress = 0";
@@ -121,9 +128,6 @@ $sqltot = "SELECT COUNT(r.id) crid ";
 $fromtot = " FROM {questionnaire_response} r ";
 $wheretot = "WHERE r.questionnaireid = :questionnaireid AND r.complete = 'y' ";
 $paramstot = array();
-if ($partner > '') {
-//    $params['questionnaireid'] = $sid
-}
 if ($start_date > 0) {
     $std = strtotime($start_date);
     $wheretot = $wheretot . "AND submitted >= :std";
@@ -138,14 +142,22 @@ if ($end_date > 0) {
 
 $surveys = $DB->get_records_sql($sqlcourses);
 foreach($surveys as $survey) {
-       $sid = $survey->instance;
-//       $sqltot = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
-//                   WHERE r.questionnaireid = ".$sid." AND r.complete = 'y'";
-       $paramstot['questionnaireid'] = $sid;
-
-       $sqlquestion = $sqltot . $fromtot . $wheretot;
-       $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
-       $totresp = $respsql->crid + $totresp;
+	    $valid = false;
+	    if (is_siteadmin() ) {
+           $valid = true;	    
+	    } else {
+    	    $context = get_context_instance(CONTEXT_COURSE,$survey->id);
+	       if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
+              $valid = true;	       
+	       }    
+	    }
+	    if ($valid) {
+           $sid = $survey->instance;
+           $paramstot['questionnaireid'] = $sid;
+           $sqlquestion = $sqltot . $fromtot . $wheretot;
+           $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
+           $totresp = $respsql->crid + $totresp;
+       }
 }
 $content .= html_writer::start_tag('table');
 $content .= html_writer::start_tag('tr');
