@@ -57,12 +57,16 @@ $string['thiscourse'] = 'This Course';
 $string['allcourses'] = 'All Courses';
 $string['session'] = 'Session (% Agree & Strongly Agree)'; 
 $string['surveyresp'] = 'Number of survey responses';
-$string['reports'] = 'Access reports';
-$string['charts'] = 'View Charts';
-$string['nocoursevals'] = 'No course evaluations have been completed for this course.<br>
-                           To access results from previously courses, select <b>Access Reports<b>';
-$string['reportheader'] = 'Survey Reports block data';
-$string['chartsheader'] = 'Survet Reports blocks chart';
+$string['reports'] = 'Access Data';
+$string['charts'] = 'Access Charts';
+$string['nocoursevals'] = '<p>
+No course evaluations have been completed for this course.
+</p>
+<p>
+To access results from previously courses, select <strong>Access Data</strong>.
+</p>';
+$string['reportheader'] = 'Questionnaire Report Data';
+$string['chartsheader'] = 'Questionnaire Report Charts';
 $string['coursefilter'] = 'Filter by Course';
 $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site';
@@ -76,5 +80,15 @@ $string['getthesurveys'] = 'Get the survey results';
 $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
 
+// Initial view.
+$string['contentq_desc'] = 'S/he facilitated the content clearly.';
+$string['commq_desc'] = 'S/he effectively built a community of learners.';
 
+// Report view.
+$string['this_course'] = 'This Course';
+$string['all_courses'] = 'All Courses';
+$string['number_responses'] = 'Number of survey responses';
+$string['by_question'] = 'Text responses by question';
 
+// Word Cloud template.
+$string['word_cloud_heading'] = 'Text Responses Word Cloud';

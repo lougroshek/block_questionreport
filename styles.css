@@ -47,3 +47,92 @@
 .block_questionreport .participants .hint {
     font-size: 90%;
 }
+
+/* For the initial view */
+.view-initial {
+}
+
+.view-initial p {
+  margin: 0.5rem 0;
+}
+
+.view-initial .no-responses,
+.view-initial .responses {
+  margin: 1rem;
+}
+
+.view-initial .response-content,
+.view-initial .response-comm {
+  text-align: center;
+}
+
+.view-initial .response-content .desc,
+.view-initial .response-comm .desc,
+.view-initial .response-content .stat,
+.view-initial .response-comm .stat {
+    display: block;
+    width: 100%;
+}
+
+.view-initial .response-content .desc,
+.view-initial .response-comm .desc {
+  font-size: 1rem;
+  font-weight: 300;
+}
+
+.view-initial .response-content .stat,
+.view-initial .response-comm .stat {
+  font-size: 4rem;
+  font-weight: 600;
+  letter-spacing: -0.2rem;
+}
+
+.view-initial .response-content .stat .percent,
+.view-initial .response-comm .stat .percent {
+  font-size: 2.6rem;
+  font-weight: 600;
+  letter-spacing: 1;
+  vertical-align: text-top;
+}
+
+  
+.view-initial a.btn {
+  display: block;
+  max-width: 70%;
+  width: auto;
+  margin: 0 auto 0.6rem;
+}
+.view-initial a.btn:first-of-type {
+  margin-top: 1rem;
+}
+
+
+/* End initial view */
+
+/* Custom quotes */
+.custom-quotes {
+  
+}
+
+.custom-quotes .quote {
+  position: relative;
+  width: 80%;
+}
+
+.custom-quotes .text {
+  margin-left: 58px;  
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.custom-quotes .quote:before {
+  position: absolute;
+  top: -36px;
+  left: 12px;
+  content: '“';
+  color: gray;
+  font-size: 96px;
+}
+
+
+/* End custom quotes */
