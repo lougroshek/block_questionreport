@@ -282,10 +282,11 @@ $content .= '<b>Text responses by question</b>';
 
 // Assembled data for lead facilitator table.
 $data = new stdClass();
-$data->strings = new stdClass();
-$data->strings->this_course = get_string('this_course', $plugin);
-$data->strings->all_courses = get_string('all_courses', $plugin);
-$data->strings->number_responses = get_string('number_responses', $plugin);
+// Values.
+$data->values = new stdClass();
+$data->values->this_course = $totrespcourse;
+$data->values->all_courses = $totresp;
+
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
@@ -311,6 +312,8 @@ $content .= '</script>';
 // Return rendered word cloud.
 $content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
 
+$content .= '<h2>'.get_string('by_question',$plugin).'</h2>';
+$content .= '[[dropdown element]]';
 // Build data object for text question quotes.
 $quote_data = new stdClass();
 // The text of the question to display:

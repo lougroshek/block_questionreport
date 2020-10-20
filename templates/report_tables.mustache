@@ -1,24 +1,24 @@
 <div class="report-tables">
-  <table class="table-responses table-responsive table table-striped table-bordered">
+  <table class="table-responses table-responsive table table-striped table-bordered" width="100%">
     <thead>
       <td>
       </td>
       <td>
-        {{strings.this_course}}
+        {{# str }} this_course, block_questionreport {{/ str }}
       </td>
       <td>
-        {{strings.all_courses}}
+        {{# str }} all_courses, block_questionreport {{/ str }}
       </td>
     </thead>
     <tbody>
       <th>
-        {{strings.number_responses}}
+        {{# str }} number_responses, block_questionreport {{/ str }}
       </th>
       <td>
-        
+        {{values.this_course}}
       </td>
       <td>
-        
+        {{values.all_courses}}
       </td>
     </tbody>
   </table>
