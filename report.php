@@ -25,6 +25,8 @@ $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
+$questionid   = optional_param('questionid', 0, PARAM_INT);
+
 $plugin = 'block_questionreport';
 
 $PAGE->set_pagelayout('standard');
@@ -95,8 +97,14 @@ $sqlcourse = "SELECT m.course, m.id, m.instance
                AND ti.tagid = ".$tagid . "
                AND m.course = ".$cid . "
                AND m.deletioninprogress = 0";
+echo $sqlcourse;
 
 $surveys = $DB->get_record_sql($sqlcourse);
+if (!$surveys) {
+    echo 'not a valid survey';
+    echo $OUTPUT->footer();
+    exit();        
+}
 $surveyid = $surveys->instance;
 
 // Get the survey results from this course.
@@ -250,14 +258,18 @@ for ($x = 3; $x <= 5; $x++) {
         $content .= html_writer::end_tag('tr');
       $content .= html_writer::end_tag('table');
 $content .= '<b>Text responses by question</b>';
-//$questionlist = block_questionreport_get_partners();
-//echo html_writer::label('questionlist', false, array('class' => 'accesshide'));
-//echo html_writer::select($questionlist, 'questionlist', 'questionid', get_string("all", $plugin));
+$questionlist = block_questionreport_get_essay($surveyid);
+echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
+echo html_writer::select($questionlist,"question",$questionid, false);
+echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+echo '</form>';
 
-  
-    
-    // Get the questions
-    
     $cid = 2;
     $questlistsql = "SELECT mq.id, mq.extradata, ms.id surveyid from {questionnaire_survey} ms
                       JOIN {questionnaire_question} mq on mq.surveyid = ms.id

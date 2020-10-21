@@ -32,6 +32,20 @@ function block_questionreport_get_choice_current($choiceid) {
     return $recs;
 }
 
+function block_questionreport_get_essay($surveyid) {
+    global $DB, $COURSE;  
+    $plugin = 'block_questionreport';
+    $essaylist = array();
+    $essaylist[0] = get_string('all', $plugin);
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => '9'));
+    foreach ($customfields as $field) {
+    	  $content = $field->content;
+    	  $display = strip_tags($content);
+        $customfields[$field->id] = $display;
+    }
+    return $customfields;
+}
+
 function block_questionreport_get_evaluations() {
     global $DB, $COURSE;  
     $plugin = 'block_questionreport';
@@ -49,6 +63,9 @@ function block_questionreport_get_evaluations() {
                AND m.deletioninprogress = 0";
 
     $surveys = $DB->get_record_sql($sqlcourse);
+    if (!$surveys) {
+        return 'no surveys done';    
+    }
     $surveyid = $surveys->instance;
     $cnt = block_questionreport_get_question_results(1, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == 0) {

@@ -75,6 +75,7 @@ $string['tagvalue_desc_diagnostic'] = 'Questionnaires must have this value in th
 $string['getthesurveys'] = 'Get the survey results';
 $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
-
+$string['questionlist'] = 'Question list';
+$string['getthequestion'] = 'Display question results';
 
 

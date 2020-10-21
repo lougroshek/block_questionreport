@@ -49,6 +49,9 @@ function block_questionreport_get_evaluations() {
                AND m.deletioninprogress = 0";
 
     $surveys = $DB->get_record_sql($sqlcourse);
+    if (!$surveys) {
+        return 'no surveys done';    
+    }
     $surveyid = $surveys->instance;
     $cnt = block_questionreport_get_question_results(1, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == 0) {
@@ -211,7 +214,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
     }
     if ($surveyid > 0) {
         // Get the question id;
-        $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
+         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
          $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
         	  $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -267,9 +270,19 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                            AND m.deletioninprogress = 0";
          $surveys = $DB->get_records_sql($sqlcourses);
          foreach($surveys as $survey) {
+           // Check to see if the user has rights.
+           $valid = false;
+           if (is_siteadmin() ) {
+               $valid = true;	    
+	        } else {
+    	         $context = get_context_instance(CONTEXT_COURSE,$survey->id);
+	            if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
+                   $valid = true;	       
+	            }    
+	        }	
            $sid = $survey->instance;
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid));
-           if (empty($questionid)) {
+           if (empty($questionid) or !$valid) {
               $totres = 0;           
            } else {           
               $totresql  = "SELECT count(rankvalue) ";
