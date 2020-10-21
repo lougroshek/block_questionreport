@@ -81,8 +81,8 @@ $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
 
 // Initial view.
-$string['contentq_desc'] = 'S/he facilitated the content clearly.';
-$string['commq_desc'] = 'S/he effectively built a community of learners.';
+$string['contentq_desc'] = 'He/She/They facilitated the content clearly.';
+$string['commq_desc'] = 'He/She/They effectively built a community of learners.';
 
 // Report view.
 $string['this_course'] = 'This Course';
