@@ -127,6 +127,9 @@ function block_questionreport_get_evaluations() {
                AND m.deletioninprogress = 0";
    
     $surveys = $DB->get_record_sql($sqlcourse);
+    if (!$surveys) {
+        return 'no surveys done';    
+    }
     $surveyid = $surveys->instance;
     $cnt = block_questionreport_get_question_results(1, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == 0) {
@@ -441,5 +444,82 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         }
 }
     
-    return $retval;
+    return $retval;  
+
+}
+function block_questionreport_get_essay($surveyid) {
+    global $DB, $COURSE;  
+    $plugin = 'block_questionreport';
+    $essaylist = array();
+    $essaylist[0] = get_string('all', $plugin);
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+    foreach ($customfields as $field) {
+    	  $content = $field->content;
+    	  $display = strip_tags($content);
+        $customfields[$field->id] = $display;
+    }
+    return $customfields;
+}
+
+function block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner ) {
+    global $DB, $COURSE;
+    $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
+    $content = '';
+    foreach($resultlist as $result) {
+        $cr = $result->response;
+    	  $display = strip_tags($cr);
+    	  $content = $content.'<br>'.$display;
+    }
+    return $content;
+}
+
+function block_questionreport_get_words($surveyid) {
+    global $DB;
+    
+    $words = '';
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+    foreach ($customfields as $field) {
+    	   $questionid = $field->id;
+         $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
+         foreach($resultlist as $result) {
+            $cr = $result->response;
+    	      $display = strip_tags($cr);
+    	      $words = $words.' '.$display;
+        }
+    }
+    echo $words;
+    
+    $popwords = calculate_word_popularity($words, 4);
+    return $popwords;
+}    	  
+function calculate_word_popularity($string, $min_word_char = 2, $exclude_words = array()) {
+	// source http://www.bitrepository.com/word-popularity-script.html
+   $string = strip_tags($string);
+   $initial_words_array  =  str_word_count($string, 1);
+   $total_words = sizeof($initial_words_array);
+   $new_string = $string;
+   foreach($exclude_words as $filter_word) {
+       $new_string = preg_replace("/\b".$filter_word."\b/i", "", $new_string); // strip excluded words
+   }
+   $words_array = str_word_count($new_string, 1);
+   $words_array = array_filter($words_array, create_function('$var', 'return (strlen($var) >= '.$min_word_char.');'));
+   $popularity = array();
+   $unique_words_array = array_unique($words_array);
+
+   foreach($unique_words_array as $key => $word) {
+	    preg_match_all('/\b'.$word.'\b/i', $string, $out);
+	    $count = count($out[0]);
+	    $percent = number_format((($count * 100) / $total_words), 2); 
+
+	    $popularity[$key]['word'] = $word;
+	    $popularity[$key]['count'] = $count;
+	    $popularity[$key]['percent'] = $percent.'%';
+	 }
+    function cmp($a, $b) {
+       return ($a['count'] > $b['count']) ? +1 : -1;
+    }
+
+    usort($popularity, "cmp");
+
+return $popularity;
 }

@@ -92,3 +92,7 @@ $string['by_question'] = 'Text responses by question';
 
 // Word Cloud template.
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
+$string['questionlist'] = 'Question list';
+$string['getthequestion'] = 'Display question results';
+
+

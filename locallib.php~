@@ -32,9 +32,87 @@ function block_questionreport_get_choice_current($choiceid) {
     return $recs;
 }
 
+function block_questionreport_check_has_choices($choiceid) {
+    global $DB;
+    $recsql = "SELECT count(id) from {questionnaire_response_rank} where choice_id = ".$choiceid;
+    $recs = $DB->count_records_sql($recsql); 
+    // Total the results from this course for this choice.
+    return $recs;
+}
+
+/**
+ * Checks whether user has the designated role in the course.
+ */
+function block_questionreport_is_teacher() {
+    global $USER, $COURSE;
+    $roles = get_config('block_questionreport', 'roles');
+    $teacherroles = explode(',', $roles);
+    $valid = false;
+    if (!is_siteadmin($USER)) {
+        $courseid = $COURSE->id;
+        $context = context_course::instance($courseid);
+        $userroles = get_user_roles($context, $USER->id, true);
+        foreach ($userroles as $role) {
+            if (in_array($role->roleid, $teacherroles)) {
+                // echo 'Its in the array';
+                $valid = true;
+            }
+        }
+    } else {
+        $valid = true;         
+    }  
+    return $valid;
+}
+
+function block_questionreport_is_admin() {
+    global $USER;
+    return is_siteadmin($USER);
+}
+
 function block_questionreport_get_evaluations() {
-    global $DB, $COURSE;  
+
+    global $DB, $CFG, $COURSE, $PAGE, $OUTPUT; 
     $plugin = 'block_questionreport';
+    
+    // The object we will pass to mustache.
+    $data = new stdClass();
+    
+    // Does the current course have results to display? 
+    $has_responses_contentq = true;
+    $has_responses_commq = true;
+    
+    // Is the user a teacher or an admin?
+    $is_admin = block_questionreport_is_admin();
+    $is_teacher = block_questionreport_is_teacher();
+    if (!$is_admin && !$is_teacher) {
+        return;
+    }
+    
+    // Add buttons object.
+    $data->buttons = new stdClass();
+    // Build reports button object.
+    $reports = new stdClass();
+    $reports->text = get_string('reports', $plugin);
+    $reports->href = $CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$COURSE->id;
+    $data->buttons->reports = $reports;
+    // Conditionally add charts button object.
+    if (!!$is_admin) {
+        // echo 'user is admin';
+        $data->role = 'admin';
+        $charts = new stdClass();
+        $charts->text = get_string('charts', $plugin);
+        $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php';
+        $data->buttons->charts = $charts;
+    } 
+    if (!!$is_teacher) {
+        $data->role = 'teacher';
+    }
+    
+    // Objects for the question and percent display.
+    $contentq = new stdClass();
+    $contentq->desc = get_string('contentq_desc', $plugin);
+    $contentq->stat = null;
+    
     // Get the tags list.
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
@@ -47,40 +125,73 @@ function block_questionreport_get_evaluations() {
                AND ti.tagid = ".$tagid . "
                AND m.course = ".$cid . "
                AND m.deletioninprogress = 0";
-
+   
     $surveys = $DB->get_record_sql($sqlcourse);
+    if (!$surveys) {
+        return 'no surveys done';    
+    }
     $surveyid = $surveys->instance;
     $cnt = block_questionreport_get_question_results(1, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == 0) {
-    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid));
+    	$questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
-        	   $content = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
-            $content .= ' 0%<br>';
-        } else { 
-           $content = get_string('nocoursevals', $plugin);
+        	   // $contentq_str = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
+            // $content .= ' 0%<br>';
+            // Insert data into object if content responses exist.
+            $contentq->stat = 0;
+        } else {
+            $has_responses_contentq = false;
         }
     } else {
-   	  $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
-        $content = $qcontent . ' ' .$cnt;    
+   	  // $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
+        // $content = $qcontent . ' ' .$cnt;   
+        $contentq->stat = $cnt;
     }
     
+    // Object for question 2 text and value.
+    $commq = new stdClass();
+    $commq->desc = get_string('commq_desc', $plugin);
+    $commq->stat = null;
+   
     $cnt2 = block_questionreport_get_question_results(2, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
    if ($cnt2 == 0) {
    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '2', 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
-      	   $content .= $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
-            $content .= ' 0%<br>';
+      	   // $content .= $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
+           //  $content .= ' 0%<br>';
+           $commq->stat = 0;
         } else { 
-           $content = get_string('nocoursevals', $plugin);
+           // $content = get_string('nocoursevals', $plugin);
+           $has_responses_commq = false;
         }
     } else {
-   	  $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
-        $content = $content .$qcontent . ' ' .$cnt2;    
+   	  // $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
+      //   $content = $content .$qcontent . ' ' .$cnt2;  
+        $commq->stat = $cnt2;  
     }
-    return $content;
+ 
+    // Insert data into object if content responses exist.
+    if (!!$has_responses_contentq) {
+        $data->contentq = $contentq;
+    }
+    // Insert data into object if community responses exist.
+    if (!!$has_responses_commq) {
+        $data->commq = $commq;
+    }
+    // If no response data, add no response string to data.
+    if (!$has_responses_contentq && !$has_responses_contentq) {
+        // If no question responses yet, display boilerplate.
+        $data->no_responses = get_string('nocoursevals', $plugin);
+    } else {
+        $data->has_responses = true;
+    }
+        
+    // Return rendered template.
+    return $OUTPUT->render_from_template('block_questionreport/initial', $data);
 }
+
 function block_questionreport_get_choice_all($choicename) {
     global $DB, $USER;
     // Get teachers separated by roles.
@@ -211,7 +322,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
     }
     if ($surveyid > 0) {
         // Get the question id;
-        $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
+         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
          $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
         	  $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -267,9 +378,19 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                            AND m.deletioninprogress = 0";
          $surveys = $DB->get_records_sql($sqlcourses);
          foreach($surveys as $survey) {
+           // Check to see if the user has rights.
+           $valid = false;
+           if (is_siteadmin() ) {
+               $valid = true;	    
+	        } else {
+    	         $context = get_context_instance(CONTEXT_COURSE,$survey->id);
+	            if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
+                   $valid = true;	       
+	            }    
+	        }	
            $sid = $survey->instance;
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid));
-           if (empty($questionid)) {
+           if (empty($questionid) or !$valid) {
               $totres = 0;           
            } else {           
               $totresql  = "SELECT count(rankvalue) ";
@@ -323,5 +444,84 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         }
 }
     
-    return $retval;
+    return $retval;  
+
+}
+function block_questionreport_get_essay($surveyid) {
+    global $DB, $COURSE;  
+    $plugin = 'block_questionreport';
+    $essaylist = array();
+    $essaylist[0] = get_string('all', $plugin);
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+    foreach ($customfields as $field) {
+    	  $content = $field->content;
+    	  $display = strip_tags($content);
+        $customfields[$field->id] = $display;
+    }
+    return $customfields;
+}
+
+function block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner ) {
+    global $DB, $COURSE;
+    $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
+    $content = '';
+    foreach($resultlist as $result) {
+        $cr = $result->response;
+    	  $display = strip_tags($cr);
+    	  $content = $content.'<br>'.$display;
+    }
+    return $content;
+}
+
+function block_questionreport_get_words($surveyid) {
+    global $DB;
+    
+    $words = '';
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+    foreach ($customfields as $field) {
+    	   $questionid = $field->id;
+         $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
+         foreach($resultlist as $result) {
+            $cr = $result->response;
+    	      $display = strip_tags($cr);
+    	      $words = $words.' '.$display;
+        }
+    }
+    echo $words;
+    
+    $popwords = calculate_word_popularity($words, 4);
+    var_dump($popwords);
+exit();    
+    return $popwords;
+}    	  
+function calculate_word_popularity($string, $min_word_char = 2, $exclude_words = array()) {
+	// source http://www.bitrepository.com/word-popularity-script.html
+   $string = strip_tags($string);
+   $initial_words_array  =  str_word_count($string, 1);
+   $total_words = sizeof($initial_words_array);
+   $new_string = $string;
+   foreach($exclude_words as $filter_word) {
+       $new_string = preg_replace("/\b".$filter_word."\b/i", "", $new_string); // strip excluded words
+   }
+   $words_array = str_word_count($new_string, 1);
+   $words_array = array_filter($words_array, create_function('$var', 'return (strlen($var) >= '.$min_word_char.');'));
+   $popularity = array();
+   $unique_words_array = array_unique($words_array);
+
+   foreach($unique_words_array as $key => $word) {
+	    preg_match_all('/\b'.$word.'\b/i', $string, $out);
+	    $count = count($out[0]);
+	    $percent = number_format((($count * 100) / $total_words), 2); 
+
+	    $popularity[$key]['word'] = $word;
+	    $popularity[$key]['count'] = $count;
+	    $popularity[$key]['percent'] = $percent.'%';
+	 }
+    function cmp($a, $b) {
+       return ($a['count'] > $b['count']) ? +1 : -1;
+    }
+
+    usort($popularity, "cmp");
+
+return $popularity;
 }
