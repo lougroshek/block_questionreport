@@ -251,40 +251,21 @@ for ($x = 3; $x <= 5; $x++) {
      $content .= html_writer::end_tag('tr');
 }    
     $content .= html_writer::end_tag('table');
-    $content .= 'Text response word cloud';
-    $content .= '<table>';
-    $content .= '<tr><td><b>Word</b></td></td><td><b>Count</b></td></tr>';
-      $content .= html_writer::start_tag('tr');
-        $content .= html_writer::start_tag('td');
-        $content .= '<b>lemon</b>';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::start_tag('td');
-        $content .= '22';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::end_tag('tr');
-      $content .= html_writer::end_tag('table');
-$questionlist = block_questionreport_get_essay($surveyid);
-echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($questionlist,"question",$questionid, false);
-echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
-echo '</form>';
 
 
-$content .= block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner);
-$wordcount = block_questionreport_get_words($surveyid);
-// wordcount is an array.
 // Assembled data for lead facilitator table.
 $data = new stdClass();
 // Values.
 $data->values = new stdClass();
-$data->values->this_course = $totrespcourse;
-$data->values->all_courses = $totresp;
+$data->values->this_course = $totrespcourse; // Number of responses for course.
+$data->values->all_courses = $totresp; // Number of responses for all courses.
+$data->values->fac_content_course = 45; // TODO: Derek, assign this course response for 'facilitator_rate_content'
+$data->values->fac_content_all = 52;// TODO: Derek, assign all course response for 'facilitator_rate_content'
+$data->values->fac_comm_course = 65; // TODO: Derek, assign this course response for 'facilitator_rate_community'
+$data->values->fac_comm_all = 42;// TODO: Derek, assign all course response for 'facilitator_rate_community'
+
+
+
 
 
 // Return rendered template.
@@ -295,14 +276,15 @@ $word_cloud = new stdClass();
 // Array should be in the list form stipulated here: 
 // https://github.com/timdream/wordcloud2.js/
 // [ [ "word", size], ["word", size], ... ]
-$words = Array(
-        Array('lorem', 54), 
-        Array('ipsum', 36),
-        Array('dolor', 22),
-        Array('sit', 18),
-        Array('amet', 18),
-        Array('consectetur', 8),
-    );
+$wordcount = block_questionreport_get_words($surveyid);
+$default_font_size = 10;
+$words = [];
+foreach ($wordcount as $wd) {
+    $word = [];
+    array_push($word, $wd['word']);
+    array_push($word, $wd['percent'] * $default_font_size);
+    array_push($words, $word);
+}
 
 // Print wordCloud array to the page.
 $content .= '<script>';
@@ -311,18 +293,25 @@ $content .= '</script>';
 // Return rendered word cloud.
 $content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
 
-$content .= '<h2>'.get_string('by_question',$plugin).'</h2>';
-$content .= '[[dropdown element]]';
+// Generate list of questions for select.
+$questionlist = block_questionreport_get_essay($surveyid);
+// Form to all for selection of question.
+$content .=  "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+$content .=  "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+$content .=  "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+$content .=  "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+$content .=  "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+$content .=  "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+$content .=  html_writer::label(get_string('by_question_instr', $plugin), false, array('class' => 'accesshide'));
+$content .=  html_writer::select($questionlist,"question",$questionid, false);
+$content .=  '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+$content .=  '</form>';
+
 // Build data object for text question quotes.
 $quote_data = new stdClass();
-// The text of the question to display:
-$quote_data->question = "What could have improved your experience in this course?";
 // Array of text responses to render.
-$quote_data->quotes = Array(
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et."
-);
+$quote_data->quotes = block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner);
+
 // Return rendered quote list.
 $content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);
 

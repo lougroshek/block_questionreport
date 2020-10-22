@@ -464,11 +464,11 @@ function block_questionreport_get_essay($surveyid) {
 function block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner ) {
     global $DB, $COURSE;
     $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
-    $content = '';
+    $content = [];
     foreach($resultlist as $result) {
-        $cr = $result->response;
-    	  $display = strip_tags($cr);
-    	  $content = $content.'<br>'.$display;
+      $cr = $result->response;
+	  $display = strip_tags($cr);
+	  array_push($content, $display);
     }
     return $content;
 }
@@ -487,7 +487,7 @@ function block_questionreport_get_words($surveyid) {
     	      $words = $words.' '.$display;
         }
     }
-    echo $words;
+    // echo $words;
     
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
@@ -513,7 +513,7 @@ function calculate_word_popularity($string, $min_word_char = 2, $exclude_words =
 
 	    $popularity[$key]['word'] = $word;
 	    $popularity[$key]['count'] = $count;
-	    $popularity[$key]['percent'] = $percent.'%';
+	    $popularity[$key]['percent'] = $percent;
 	 }
     function cmp($a, $b) {
        return ($a['count'] > $b['count']) ? +1 : -1;

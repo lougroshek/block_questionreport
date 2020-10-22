@@ -136,3 +136,12 @@
 
 
 /* End custom quotes */
+
+
+/* Report tables */
+td.center, 
+th.center {
+  text-align: center;
+}
+
+/* End report tables */

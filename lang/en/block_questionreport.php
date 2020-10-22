@@ -76,7 +76,7 @@ $string['tagvalue'] = 'Tag value used to end of course survey questionnaires';
 $string['tagvalue_desc'] = 'Questionnaires must have this value in their tags to be included in the stats';
 $string['tagvalue_diagnostic'] = 'Tag value used to identify diagnostic questionnaires';
 $string['tagvalue_desc_diagnostic'] = 'Questionnaires must have this value in their tags to be included in the stats';
-$string['getthesurveys'] = 'Get the survey results';
+$string['getthesurveys'] = 'Update Filters';
 $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
 
@@ -89,10 +89,13 @@ $string['this_course'] = 'This Course';
 $string['all_courses'] = 'All Courses';
 $string['number_responses'] = 'Number of survey responses';
 $string['by_question'] = 'Text responses by question';
+$string['by_question_instr'] = 'To see anonomous responses to survey questions, select a question below.';
+$string['tables_heading'] = 'Survey Data and Historical Responses';
+$string['table_header_facilitator'] = 'Facilitation Summary (% Agree and Strongly Agree)';
+$string['table_header_session'] = 'Session Summary (% Agree and Strongly Agree)';
 
 // Word Cloud template.
+$string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
-$string['getthequestion'] = 'Display question results';
-
-
+$string['getthequestion'] = 'Update Filters';
