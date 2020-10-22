@@ -89,10 +89,18 @@ $string['this_course'] = 'This Course';
 $string['all_courses'] = 'All Courses';
 $string['number_responses'] = 'Number of survey responses';
 $string['by_question'] = 'Text responses by question';
-$string['by_question_instr'] = 'To see anonomous responses to survey questions, select a question below.';
+$string['by_question_instr'] = 'To see anonymous responses to survey questions, select a question below.';
 $string['tables_heading'] = 'Survey Data and Historical Responses';
 $string['table_header_facilitator'] = 'Facilitation Summary (% Agree and Strongly Agree)';
 $string['table_header_session'] = 'Session Summary (% Agree and Strongly Agree)';
+$string['course_ratings_01'] = 'I am satisfied with the overall quality of this course.';
+$string['course_ratings_02'] = 'The topics for this course were relevant for my role.';
+$string['course_ratings_03'] = 'The independent online work activities were well-designed to help me meet the learning targets.';
+$string['course_ratings_04'] = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
+$string['course_ratings_05'] = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
+$string['course_ratings_06'] = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
+$string['course_ratings_07'] = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
+$string['filters'] = 'Filters';
 
 // Word Cloud template.
 $string['text_responses'] = 'Text Responses';

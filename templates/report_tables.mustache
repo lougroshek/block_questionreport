@@ -62,7 +62,6 @@
         </td>
       </tr>
     </tbody>
-    
   </table>
   <h3>{{# str }} table_header_session, block_questionreport {{/ str }}</h3>
   <table class="table-session table table-responsive-md table-striped table-bordered" width="100%">
@@ -77,15 +76,19 @@
       </th>
     </thead>
     <tbody>
-      <th>
-        {{# str }} number_responses, block_questionreport {{/ str }}
-      </th>
-      <td class="center">
-        {{values.this_course}}%
-      </td>
-      <td class="center">
-        {{values.all_courses}}%
-      </td>
+      {{#values.course_ratings}}
+        <tr>
+          <th>
+            {{text}}
+          </th>
+          <td class="center">
+            {{course}}%
+          </td>
+          <td class="center">
+            {{all}}%
+          </td>
+        </tr>
+      {{/values.course_ratings}}
     </tbody>
   </table>
 </div>
