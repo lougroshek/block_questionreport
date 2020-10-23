@@ -131,44 +131,39 @@ function block_questionreport_get_evaluations() {
         return 'no surveys done';    
     }
     $surveyid = $surveys->instance;
-    $cnt = block_questionreport_get_question_results(1, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
+    $params = array();
+    // Get the first instructor question - type 11.
+    $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
+    $records = $DB->get_record_sql($sql, $params);
+    $stp = $records->mp;
+    $cnt = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == 0) {
-    	$questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid));
+    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
-        	   // $contentq_str = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
-            // $content .= ' 0%<br>';
-            // Insert data into object if content responses exist.
             $contentq->stat = 0;
         } else {
             $has_responses_contentq = false;
         }
     } else {
-   	  // $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid));
-        // $content = $qcontent . ' ' .$cnt;   
-        $contentq->stat = $cnt;
+       $contentq->stat = $cnt;
     }
     
     // Object for question 2 text and value.
     $commq = new stdClass();
     $commq->desc = get_string('commq_desc', $plugin);
     $commq->stat = null;
-   
-    $cnt2 = block_questionreport_get_question_results(2, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-   if ($cnt2 == 0) {
-   	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '2', 'surveyid' => $surveyid));
+    $stp = $stp + 1;    
+    $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
+    if ($cnt2 == 0) {
+   	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
-      	   // $content .= $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
-           //  $content .= ' 0%<br>';
            $commq->stat = 0;
         } else { 
-           // $content = get_string('nocoursevals', $plugin);
            $has_responses_commq = false;
         }
     } else {
-   	  // $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '2', 'surveyid' => $surveyid));
-      //   $content = $content .$qcontent . ' ' .$cnt2;  
         $commq->stat = $cnt2;  
     }
  
@@ -182,7 +177,6 @@ function block_questionreport_get_evaluations() {
     }
     // If no response data, add no response string to data.
     if (!$has_responses_contentq && !$has_responses_contentq) {
-        // If no question responses yet, display boilerplate.
         $data->no_responses = get_string('nocoursevals', $plugin);
     } else {
         $data->has_responses = true;
@@ -241,7 +235,6 @@ function block_questionreport_get_courses() {
     global $DB, $USER;     
     $plugin = 'block_questionreport';
     $courselist = array();
-    $courselist[0] = get_string('all', $plugin);
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
@@ -322,7 +315,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
     }
     if ($surveyid > 0) {
         // Get the question id;
-         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid));
+         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid, 'type_id' => 11));         
          $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
         	  $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -330,16 +323,17 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	  if ($stdate > 0) {
                $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-               $std = strtotime($start_date);
+               $std = strtotime($stdate);
                $paramsql['stdate'] = $std;        	  
         	  }
         	  if ($nddate > 0) {
                $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-               $ndt = strtotime($end_date);
+               $ndt = strtotime($nddate);
                $paramsql['nddate'] = $ndt;        	  
         	  }
-           $totgoodsql = $totresql .$fromressql. $whereressql;
+           $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
+           
            $totres = $DB->count_records_sql($totgoodsql, $paramsql);        
            if ($totres > 0) {
         	      $totgoodsql  = "SELECT count(rankvalue) ";
@@ -349,7 +343,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	      if ($stdate > 0) {
                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                    $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                   $std = strtotime($start_date);
+                   $std = strtotime($stdate);
                    $paramsql['stdate'] = $std;        	  
         	      }
         	      if ($nddate > 0) {
@@ -358,8 +352,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                    $ndt = strtotime($end_date);
                    $paramsql['nddate'] = $ndt;        	  
         	      }
-        	      $totsql = $totgoodsql .$fromgoodsql. $wheregoodsql;
-        	      $paramsql = array();
+        	      $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
@@ -389,7 +382,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
 	            }    
 	        }	
            $sid = $survey->instance;
-           $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid));
+           $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
               $totres = 0;           
            } else {           
@@ -400,16 +393,16 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	     if ($stdate > 0) {
                   $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                   $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-                  $std = strtotime($start_date);
+                  $std = strtotime($stdate);
                   $paramsql['stdate'] = $std;        	  
         	     }
         	     if ($nddate > 0) {
                   $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                   $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-                  $ndt = strtotime($end_date);
+                  $ndt = strtotime($nddate);
                   $paramsql['nddate'] = $ndt;        	  
         	     }
-              $totgoodsql = $totresql .$fromressql. $whereressql;
+              $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
               $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            }
            if($totres > 0) {
@@ -421,16 +414,16 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	     if ($stdate > 0) {
                   $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                   $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                  $std = strtotime($start_date);
+                  $std = strtotime($stdate);
                   $paramsql['stdate'] = $std;        	  
         	     }
         	     if ($nddate > 0) {
                   $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                   $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                  $ndt = strtotime($end_date);
+                  $ndt = strtotime($nddate);
                   $paramsql['nddate'] = $ndt;        	  
         	     }
-     	        $totsql = $totgoodsql .$fromgoodsql. $wheregoodsql;
+     	        $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
           	  $totgood = $DB->count_records_sql($totsql, $paramsql);
               if ($totgood > 0) {
                   $gttotres = $gttotres + $totgood;        
@@ -451,75 +444,88 @@ function block_questionreport_get_essay($surveyid) {
     global $DB, $COURSE;  
     $plugin = 'block_questionreport';
     $essaylist = array();
-    $essaylist[0] = get_string('all', $plugin);
+    $essaylist[0] = get_string('none', $plugin);
     $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
     foreach ($customfields as $field) {
     	  $content = $field->content;
     	  $display = strip_tags($content);
-        $customfields[$field->id] = $display;
+    	  $display = trim($display);
+        $essaylist[$field->id] = $display;
     }
-    return $customfields;
+    return $essaylist;
 }
 
-function block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner ) {
+function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $limit ) {
     global $DB, $COURSE;
-    $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
-    $content = '';
-    foreach($resultlist as $result) {
-        $cr = $result->response;
-    	  $display = strip_tags($cr);
-    	  $content = $content.'<br>'.$display;
-    }
-    return $content;
+    // If limit = 0 return all essay results. Otherwise return the limit.
+    $sqlessay  = "SELECT qt.response, qt.id ";
+    $fromessaysql = " FROM {questionnaire_response_text} qt ";
+    $whereessaysql = "WHERE qt.question_id = ".$questionid;
+    $paramsql = array();
+    if ($stdate > 0) {
+        $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr on qr.id = qt.response_id';
+        $whereessaysql = $whereessaysql . ' AND qr.submitted >= :stdate';
+        $std = strtotime($stdate);
+        $paramsql['stdate'] = $std;        	  
+     }
+     if ($nddate > 0) {
+        $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr2 on qr2.id = qt.response_id';
+        $whereessaysql = $whereessaysql . ' AND qr2.submitted <= :nddate';
+        $ndt = strtotime($nddate);
+        $paramsql['nddate'] = $ndt;        	  
+     }
+     $sql = $sqlessay .' '.$fromessaysql. ' '.$whereessaysql;
+     $essayid = array();     
+     $resultlist = $DB->get_records_sql($sql, $paramsql);
+     foreach($resultlist as $result) {
+         $arrayid[] = $result->id;
+     }
+     shuffle($arrayid);
+     $content = '';
+     $join = ' ';
+     if ($limit > 0 ) {
+         $join = '<br>';
+     }
+     $cnt = 0;
+     foreach($arrayid as $resid) {
+         $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
+     	   $display = strip_tags($cr);    	   
+    	   $content = $content.$join.$display;
+    	   $cnt = $cnt + 1;
+    	   if ($limit > 0 and $limit > $cnt) {
+             break;    	   
+    	   }
+           
+     }
+     return $content;
 }
 
-function block_questionreport_get_words($surveyid) {
+function block_questionreport_get_words($surveyid, $stdate, $nddate) {
     global $DB;
     
     $words = '';
     $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
     foreach ($customfields as $field) {
     	   $questionid = $field->id;
-         $resultlist = $DB->get_records('questionnaire_response_text', array('question_id' => $questionid));
-         foreach($resultlist as $result) {
-            $cr = $result->response;
-    	      $display = strip_tags($cr);
-    	      $words = $words.' '.$display;
-        }
+    	   $words .= block_questionreport_get_essay_results($questionid, $stdate, $nddate, 0);
     }
-    echo $words;
     
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }    	  
 function calculate_word_popularity($string, $min_word_char = 2, $exclude_words = array()) {
-	// source http://www.bitrepository.com/word-popularity-script.html
-   $string = strip_tags($string);
-   $initial_words_array  =  str_word_count($string, 1);
-   $total_words = sizeof($initial_words_array);
-   $new_string = $string;
-   foreach($exclude_words as $filter_word) {
-       $new_string = preg_replace("/\b".$filter_word."\b/i", "", $new_string); // strip excluded words
+   $words = explode(' ', $string);
+	$result = array_combine($words, array_fill(0, count($words), 0));
+   foreach($words as $word) {
+       $result[$word]++;
    }
-   $words_array = str_word_count($new_string, 1);
-   $words_array = array_filter($words_array, create_function('$var', 'return (strlen($var) >= '.$min_word_char.');'));
-   $popularity = array();
-   $unique_words_array = array_unique($words_array);
-
-   foreach($unique_words_array as $key => $word) {
-	    preg_match_all('/\b'.$word.'\b/i', $string, $out);
-	    $count = count($out[0]);
-	    $percent = number_format((($count * 100) / $total_words), 2); 
-
-	    $popularity[$key]['word'] = $word;
-	    $popularity[$key]['count'] = $count;
-	    $popularity[$key]['percent'] = $percent.'%';
-	 }
-    function cmp($a, $b) {
-       return ($a['count'] > $b['count']) ? +1 : -1;
-    }
-
-    usort($popularity, "cmp");
-
-return $popularity;
+   $ret = array();   
+   foreach($result as $word => $count) {
+    	 $stl = strlen($word);
+    	 if ($stl > $min_word_char) {
+           $ret[] = $word;      	 
+    	 }
+   }
+   return $ret;
+   //   echo "There are $count instances of $word.\n";
 }

@@ -212,7 +212,7 @@ for ($x = 0; $x <= 1; $x++) {
 	  $pnum = $stp + $x;
      $content .= html_writer::start_tag('tr');
      $content .= html_writer::start_tag('td');
-     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid));
+     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
      $content .= $qcontent;
      $content .= html_writer::end_tag('td');
      $content .= html_writer::start_tag('td');
@@ -236,6 +236,38 @@ $content .= html_writer::start_tag('td');
 $content .= '<b>All Courses</b>';
 $content .= html_writer::end_tag('td');
 $content .= html_writer::end_tag('tr');
+$qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+$content .= html_writer::start_tag('td').$qcontent.'</td></tr>';
+
+
+//$extra = $DB->get_field('questionnaire_question', 'extradata', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+foreach ($choices as $choice) {
+	 $content .= html_writer::start_tag('tr');
+    $content .= html_writer::start_tag('td');
+    $content .= $choice->content;
+ 	 $content .= html_writer::end_tag('tr');
+    $content .= html_writer::end_tag('td');
+
+    $content .= html_writer::start_tag('td');
+    $content .= 99;
+ 	 $content .= html_writer::end_tag('td');
+
+    $content .= html_writer::start_tag('td');
+    $content .= 100;
+ 	 $content .= html_writer::end_tag('td');
+    $content .= html_writer::end_tag('tr');
+}
+$content .= html_writer::end_tag('table');
+
+//echo $qid;
+//$line1 = json_decode($extra, true);
+//echo var_dump($line1);
+//echo $qcontent;
+//exit();
+
+/*
 for ($x = 3; $x <= 5; $x++) {
      $content .= html_writer::start_tag('tr');
      $content .= html_writer::start_tag('td');
@@ -249,20 +281,8 @@ for ($x = 3; $x <= 5; $x++) {
      $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
      $content .= html_writer::end_tag('td');
      $content .= html_writer::end_tag('tr');
-}    
-    $content .= html_writer::end_tag('table');
-    $content .= 'Text response word cloud';
-    $content .= '<table>';
-    $content .= '<tr><td><b>Word</b></td></td><td><b>Count</b></td></tr>';
-      $content .= html_writer::start_tag('tr');
-        $content .= html_writer::start_tag('td');
-        $content .= '<b>lemon</b>';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::start_tag('td');
-        $content .= '22';
-        $content .= html_writer::end_tag('td');
-        $content .= html_writer::end_tag('tr');
-      $content .= html_writer::end_tag('table');
+} 
+*/   
 $questionlist = block_questionreport_get_essay($surveyid);
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
@@ -274,10 +294,12 @@ echo html_writer::label(get_string('questionlist', $plugin), false, array('class
 echo html_writer::select($questionlist,"question",$questionid, false);
 echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
 echo '</form>';
-
-
-$content .= block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner);
-$content .= block_questionreport_get_words($surveyid);
+if ($questionid > 0 ){
+    $essayresults = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+    echo $essayresults;
+}
+$wordcount = block_questionreport_get_words($surveyid, $start_date, $end_date);
+// wordcount is an array.
 // Assembled data for lead facilitator table.
 $data = new stdClass();
 // Values.
