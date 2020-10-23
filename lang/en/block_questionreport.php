@@ -85,12 +85,18 @@ $string['contentq_desc'] = 'He/She/They facilitated the content clearly.';
 $string['commq_desc'] = 'He/She/They effectively built a community of learners.';
 
 // Report view.
+$string['filters'] = 'Filters';
 $string['this_course'] = 'This Course';
 $string['all_courses'] = 'All Courses';
 $string['number_responses'] = 'Number of survey responses';
 $string['by_question'] = 'Text responses by question';
+$string['by_question_instr'] = 'To see anonymous responses to survey questions, select a question below.';
+$string['tables_heading'] = 'Survey Data and Historical Responses';
+$string['table_header_facilitator'] = 'Facilitation Summary (% Agree and Strongly Agree)';
+$string['table_header_session'] = 'Session Summary (% Agree and Strongly Agree)';
 
 // Word Cloud template.
+$string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
 $string['getthequestion'] = 'Display question results';

@@ -263,7 +263,7 @@ $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />
 $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
 $content .= html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
 $content .= html_writer::select($questionlist,"question",$questionid, false);
-$content .= '<input class="btn btn-primary" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+$content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
 $content .= '</form>';
 
 // Return rendered quote list.

@@ -117,6 +117,7 @@
 .custom-quotes .quote {
   position: relative;
   width: 80%;
+  margin: 2rem 0;
 }
 
 .custom-quotes .text {
@@ -167,3 +168,19 @@ table tr th:first-child {
   width: 70%;
 }
 /* End report tables */
+
+
+.path-blocks-questionreport h2 {
+  margin: 1rem 0;
+}
+.path-blocks-questionreport h3 {
+  margin: 0.7rem 0;
+}
+.path-blocks-questionreport table,
+.path-blocks-questionreport #word_cloud {
+  margin-bottom: 2rem;
+}
+
+.path-blocks-questionreport #word_cloud {
+  border: 1px solid #ddd;
+}
