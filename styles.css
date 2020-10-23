@@ -136,3 +136,32 @@
 
 
 /* End custom quotes */
+
+
+/* Report tables */
+td.center, 
+th.center {
+  text-align: center;
+}
+
+form label {
+  display: block;
+  margin: 1rem 0 0.5rem 0;
+}
+
+form label.inline {
+  display: inline-block;
+}
+
+form .date-input-group label:nth-of-type(2) {
+  display: inline-block;
+  margin: 0 0.6rem;
+}
+
+form .btn-submit {
+  display: block;
+  margin: 1rem 0;
+}
+
+
+/* End report tables */
