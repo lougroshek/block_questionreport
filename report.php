@@ -213,7 +213,7 @@ $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' =>
 foreach ($choices as $choice) {
     $obj = new stdClass;
     $obj->question = $choice->content;
-    $obj->course = 75; 
+    $obj->course = 75; // TODO: Derek: Pass the actual choice values for course and all here.
     $obj->all = 78; 
     array_push($data->session, $obj);
 }
