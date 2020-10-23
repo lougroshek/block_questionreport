@@ -287,21 +287,21 @@ for ($x = 3; $x <= 5; $x++) {
      $content .= html_writer::end_tag('tr');
 } 
 */   
-$questionlist = block_questionreport_get_essay($surveyid);
-echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($questionlist,"question",$questionid, false);
-echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
-echo '</form>';
-if ($questionid > 0 ){
-    $essayresults = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
-    echo $essayresults;
-}
+// $questionlist = block_questionreport_get_essay($surveyid);
+// echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+// echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+// echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+// echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+// echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+// echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+// echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
+// echo html_writer::select($questionlist,"question",$questionid, false);
+// echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+// echo '</form>';
+// if ($questionid > 0 ){
+//     $essayresults = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+//     echo $essayresults;
+// }
 
 // Assembled data for lead facilitator table.
 $data = new stdClass();
@@ -316,15 +316,12 @@ $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', 
 
 // Assemble data for word cloud.
 $word_cloud = new stdClass();
+// wordcount is an array.
 // Array should be in the list form stipulated here: 
 // https://github.com/timdream/wordcloud2.js/
 // [ [ "word", size], ["word", size], ... ]
 $wordcount = block_questionreport_get_words($surveyid, $start_date, $end_date);
-echo '<br />$wordcount<br />';
-print_r($wordcount);
-// wordcount is an array.
-// $wordcount = block_questionreport_get_words($surveyid);
-$default_font_size = 8;
+$default_font_size = 1; // Adjust for more words.
 $words = [];
 foreach ($wordcount as $wd) {
     $word = [];
@@ -340,24 +337,24 @@ $content .= '</script>';
 // Return rendered word cloud.
 $content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
 
-// Generate list of questions for select.
-$questionlist = block_questionreport_get_essay($surveyid);
-// Form to all for selection of question.
-$content .=  "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-$content .=  "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-$content .=  "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-$content .=  "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-$content .=  "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-$content .=  "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-$content .=  html_writer::label(get_string('by_question_instr', $plugin), false, array('class' => 'accesshide'));
-$content .=  html_writer::select($questionlist,"question",$questionid, false);
-$content .=  '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthequestion', $plugin).'" />';
-$content .=  '</form>';
-
 // Build data object for text question quotes.
 $quote_data = new stdClass();
 // Array of text responses to render.
-$quote_data->quotes = block_questionreport_get_essay_results($questionid, $cid, $tagid, $start_date, $end_date, $partner);
+if ($questionid > 0 ){
+    $quote_data->quotes = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+}
+
+$questionlist = block_questionreport_get_essay($surveyid);
+$content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+$content .= "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+$content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+$content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+$content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+$content .= html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
+$content .= html_writer::select($questionlist,"question",$questionid, false);
+$content .= '<input class="btn btn-primary" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+$content .= '</form>';
 
 // Return rendered quote list.
 $content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);

@@ -455,7 +455,7 @@ function block_questionreport_get_essay($surveyid) {
     return $essaylist;
 }
 
-function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $limit ) {
+function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $limit) {
     global $DB, $COURSE;
     // If limit = 0 return all essay results. Otherwise return the limit.
     $sqlessay  = "SELECT qt.response, qt.id ";
@@ -481,48 +481,75 @@ function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $
          $arrayid[] = $result->id;
      }
      shuffle($arrayid);
-     $content = '';
-     $join = ' ';
-     if ($limit > 0 ) {
-         $join = '<br>';
-     }
+     // $content = '';
+     // 
+     // $join = ' ';
+     // if ($limit > 0 ) {
+     //     $join = '<br>';
+     // }
+     $return = [];
      $cnt = 0;
      foreach($arrayid as $resid) {
          $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
-     	   $display = strip_tags($cr);    	   
-    	   $content = $content.$join.$display;
+     	   // $display = strip_tags($cr);    	   
+    	   // $content = $content.$join.$display;
+    	   $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
     	   $cnt = $cnt + 1;
     	   if ($limit > 0 and $limit > $cnt) {
              break;    	   
     	   }
            
      }
-     return $content;
+     // return $content;
+     return $return;
 }
 
 function block_questionreport_get_words($surveyid, $stdate, $nddate) {
     global $DB;
     
-    $words = '';
+    $words = [];
     $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
     foreach ($customfields as $field) {
     	   $questionid = $field->id;
-    	   $words .= block_questionreport_get_essay_results($questionid, $stdate, $nddate, 0);
+    	   array_push($words, block_questionreport_get_essay_results($questionid, $stdate, $nddate, 0));
     }
     
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }
 
-function calculate_word_popularity($string, $min_word_char = 2, $exclude_words = array()) {
-   $words = explode(' ', $string);
+function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_words = array()) {
+   $words = [];
+   
+   foreach ($word_arrs as $w) {
+       foreach($w as $val) {
+           $wrds = explode(' ', $val);
+           foreach($wrds as $z) {
+               array_push($words, $z);
+           }
+       }
+   }
+   
+   
+    // explode(' ', $string);
+   
+   
+   
+   echo '<br />$words<br />';
+   print_r($words);
+   
+   
 	$result = array_combine($words, array_fill(0, count($words), 0));
 
    foreach($words as $word) {
        $result[$word]++;
    }
+   
+   echo '<br />$result<br />';
+   print_r($result);
+   
+   
    $ret = array();   
-
    $total_words = 0;
    foreach($result as $word => $count) {
 	 $stl = strlen($word);
@@ -534,6 +561,9 @@ function calculate_word_popularity($string, $min_word_char = 2, $exclude_words =
          array_push($ret, $wd);
 	 }
    }
+   
+   echo '<br />$ret<br />';
+   print_r($ret);
 
    $return = [];
    foreach($ret as $word) {
