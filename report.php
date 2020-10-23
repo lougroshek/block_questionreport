@@ -231,7 +231,7 @@ $word_cloud = new stdClass();
 // https://github.com/timdream/wordcloud2.js/
 // [ [ "word", size], ["word", size], ... ]
 $wordcount = block_questionreport_get_words($surveyid, $start_date, $end_date);
-$default_font_size = 1; // Adjust for more words.
+$default_font_size = 20; // Adjust for more words.
 $words = [];
 foreach ($wordcount as $wd) {
     $word = [];
