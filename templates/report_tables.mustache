@@ -18,10 +18,10 @@
           {{# str }} number_responses, block_questionreport {{/ str }}
         </th>
         <td class="center">
-          {{values.this_course}}
+          {{responses.this_course}}
         </td>
         <td class="center">
-          {{values.all_courses}}
+          {{responses.all_courses}}
         </td>
       </tr>
     </tbody>
@@ -39,28 +39,19 @@
       </th>
     </thead>
     <tbody>
-      <tr>
-        <th>
-          {{# str }} contentq_desc, block_questionreport {{/ str }}
-        </th>
-        <td class="center">
-          {{values.fac_content_course}}%
-        </td>
-        <td class="center">
-          {{values.fac_content_all}}%
-        </td>
-      </tr>
-      <tr>
-        <th>
-          {{# str }} commq_desc, block_questionreport {{/ str }}
-        </th>
-        <td class="center">
-          {{values.fac_comm_course}}%
-        </td>
-        <td class="center">
-          {{values.fac_comm_all}}%
-        </td>
-      </tr>
+      {{#facilitator}}
+        <tr>
+          <th>
+            {{question}}
+          </th>
+          <td class="center">
+            {{course}}%
+          </td>
+          <td class="center">
+            {{all}}%
+          </td>
+        </tr>
+      {{/facilitator}}
     </tbody>
   </table>
   <h3>{{# str }} table_header_session, block_questionreport {{/ str }}</h3>
@@ -76,10 +67,10 @@
       </th>
     </thead>
     <tbody>
-      {{#values.course_ratings}}
+      {{#session}}
         <tr>
           <th>
-            {{text}}
+            {{question}}
           </th>
           <td class="center">
             {{course}}%
@@ -88,7 +79,7 @@
             {{all}}%
           </td>
         </tr>
-      {{/values.course_ratings}}
+      {{/session}}
     </tbody>
   </table>
 </div>

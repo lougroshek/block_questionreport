@@ -172,42 +172,17 @@ foreach($surveys as $survey) {
            $totresp = $respsql->crid + $totresp;
        }
 }
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('surveyresp',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.$totrespcourse.'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.$totresp.'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
-$content .= html_writer::end_tag('table');
-$content .= '<br>';
 
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>Facilitation Summary (% Agree & Strongly Agree)</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
+// Assembled data for lead facilitator table.
+$data = new stdClass();
+// Response data.
+$data->responses = new stdClass();
+$data->responses->this_course = $totrespcourse;
+$data->responses->all_courses = $totresp;
+
+// Facilitator data container.
+$data->facilitator = [];
+
 $params = array();
 $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
 $records = $DB->get_record_sql($sql, $params);
@@ -215,101 +190,36 @@ $stp = $records->mp;
 
 for ($x = 0; $x <= 1; $x++) {
 	  $pnum = $stp + $x;
-     $content .= html_writer::start_tag('tr');
-     $content .= html_writer::start_tag('td');
+     // Question
      $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
-     $content .= $qcontent;
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($pnum, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::end_tag('tr');
+     // Course
+     $course = block_questionreport_get_question_results($pnum, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
+     $all = block_questionreport_get_question_results($pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+     // Build object from data and assign it to the $data object passed to the template.
+     $obj = new stdClass();
+     $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
+     $obj->course = $course;
+     $obj->all = $all;
+     array_push($data->facilitator, $obj);
 }
-$content .= html_writer::end_tag('table');
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>Session (% Agree & Strongly Agree)<b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>This course</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>All Courses</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
+
+// Container for session survey questions passed to template.
+$data->session = [];
+
 $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-$content .= html_writer::start_tag('td').$qcontent.'</td></tr>';
-
-
-//$extra = $DB->get_field('questionnaire_question', 'extradata', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+
 foreach ($choices as $choice) {
-	 $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= $choice->content;
-    $content .= html_writer::end_tag('td');
-// get results from mdl_questionnaire_response_rank - question id choice id - rank value
-    $content .= html_writer::start_tag('td');
-    $content .= 99;
- 	 $content .= html_writer::end_tag('td');
-
-    $content .= html_writer::start_tag('td');
-    $content .= 100;
- 	 $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
+    $obj = new stdClass;
+    $obj->question = $choice->content;
+    $obj->course = 75; 
+    $obj->all = 78; 
+    array_push($data->session, $obj);
 }
-$content .= html_writer::end_tag('table');
 
-//echo $qid;
-//$line1 = json_decode($extra, true);
-//echo var_dump($line1);
-//echo $qcontent;
-//exit();
-
-/*
-for ($x = 3; $x <= 5; $x++) {
-     $content .= html_writer::start_tag('tr');
-     $content .= html_writer::start_tag('td');
-     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $x, 'surveyid' => $surveyid));
-     $content .= $qcontent;
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::end_tag('tr');
-} 
-*/   
-// $questionlist = block_questionreport_get_essay($surveyid);
-// echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-// echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-// echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-// echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-// echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-// echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-// echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-// echo html_writer::select($questionlist,"question",$questionid, false);
-// echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
-// echo '</form>';
-// if ($questionid > 0 ){
-//     $essayresults = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
-//     echo $essayresults;
-// }
-
-// Assembled data for lead facilitator table.
-$data = new stdClass();
-// Values.
-$data->values = new stdClass();
-$data->values->this_course = $totrespcourse;
-$data->values->all_courses = $totresp;
-
+// echo '<br />data<br />';
+// print_r($data);
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);

@@ -163,5 +163,7 @@ form .btn-submit {
   margin: 1rem 0;
 }
 
-
+table tr th:first-child {
+  width: 70%;
+}
 /* End report tables */

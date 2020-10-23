@@ -530,14 +530,8 @@ function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_word
        }
    }
    
-   
-    // explode(' ', $string);
-   
-   
-   
-   echo '<br />$words<br />';
-   print_r($words);
-   
+   // echo '<br />$words<br />';
+   // print_r($words);
    
 	$result = array_combine($words, array_fill(0, count($words), 0));
 
@@ -545,9 +539,8 @@ function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_word
        $result[$word]++;
    }
    
-   echo '<br />$result<br />';
-   print_r($result);
-   
+   // echo '<br />$result<br />';
+   // print_r($result);
    
    $ret = array();   
    $total_words = 0;
@@ -562,16 +555,16 @@ function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_word
 	 }
    }
    
-   echo '<br />$ret<br />';
-   print_r($ret);
+   // echo '<br />$ret<br />';
+   // print_r($ret);
 
    $return = [];
    foreach($ret as $word) {
        $word->percent = round($word->count/$total_words * 100, 2);
        array_push($return, $word);
    }
-   echo '<br />$return<br />';
-   print_r($return);
+   // echo '<br />$return<br />';
+   // print_r($return);
    return $return;
    //   echo "There are $count instances of $word.\n";
 }
