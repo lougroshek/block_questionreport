@@ -512,20 +512,36 @@ function block_questionreport_get_words($surveyid, $stdate, $nddate) {
     
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
-}    	  
+}
+
 function calculate_word_popularity($string, $min_word_char = 2, $exclude_words = array()) {
    $words = explode(' ', $string);
 	$result = array_combine($words, array_fill(0, count($words), 0));
+
    foreach($words as $word) {
        $result[$word]++;
    }
    $ret = array();   
+
+   $total_words = 0;
    foreach($result as $word => $count) {
-    	 $stl = strlen($word);
-    	 if ($stl > $min_word_char) {
-           $ret[] = $word;      	 
-    	 }
+	 $stl = strlen($word);
+     $wd = new stdClass();
+	 if ($stl > $min_word_char) {
+         $total_words = $total_words + $count;
+         $wd->word = str_replace("&nbsp;", '', $word);
+         $wd->count = $count;
+         array_push($ret, $wd);
+	 }
    }
-   return $ret;
+
+   $return = [];
+   foreach($ret as $word) {
+       $word->percent = round($word->count/$total_words * 100, 2);
+       array_push($return, $word);
+   }
+   echo '<br />$return<br />';
+   print_r($return);
+   return $return;
    //   echo "There are $count instances of $word.\n";
 }
