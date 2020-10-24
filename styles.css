@@ -117,6 +117,7 @@
 .custom-quotes .quote {
   position: relative;
   width: 80%;
+  margin: 2rem 0;
 }
 
 .custom-quotes .text {
@@ -136,3 +137,56 @@
 
 
 /* End custom quotes */
+
+
+/* Report tables */
+td.center, 
+th.center {
+  text-align: center;
+}
+
+form label {
+  display: block;
+  margin: 1rem 0 0.5rem 0;
+}
+
+form label.inline {
+  display: inline-block;
+}
+
+form .date-input-group label:nth-of-type(2) {
+  display: inline-block;
+  margin: 0 0.6rem;
+}
+
+form .btn-submit {
+  display: block;
+  margin: 1rem 0;
+}
+
+table tr th:first-child {
+  width: 70%;
+}
+/* End report tables */
+
+
+.path-blocks-questionreport h2 {
+  margin: 1rem 0;
+}
+.path-blocks-questionreport h3 {
+  margin: 0.7rem 0;
+}
+.path-blocks-questionreport table,
+.path-blocks-questionreport #word_cloud {
+  margin-bottom: 2rem;
+}
+
+.path-blocks-questionreport #word_cloud {
+  border: 1px solid #ddd;
+}
+
+.path-blocks-questionreport main {
+  /* Fixup for scroll inside scroll issue */
+  height: 100%;
+  overflow-y: hidden;
+}

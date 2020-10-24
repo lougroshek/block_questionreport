@@ -46,6 +46,9 @@ global $COURSE;
 echo $OUTPUT->header();
 // Build up the filters
 $courselist = block_questionreport_get_courses();
+echo html_writer::start_tag('h2');
+echo get_string('filters', $plugin);
+echo html_writer::end_tag('h2');
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 
@@ -56,13 +59,15 @@ $partnerlist = block_questionreport_get_partners_list();
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
-$datelist = block_questionreport_get_courses();
+// Date select.
+echo html_writer::start_tag('div', array('class' => 'date-input-group'));
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
-echo html_writer::label(get_string('to'), false, array('class' => 'accesshide'));
+echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
-echo '<input type="submit" value="'.get_string('getthesurveys', $plugin).'" />';
+echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
+echo html_writer::end_tag('div');
  
 $content = '';
 // Get teachers separated by roles.
@@ -167,42 +172,17 @@ foreach($surveys as $survey) {
            $totresp = $respsql->crid + $totresp;
        }
 }
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('surveyresp',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.$totrespcourse.'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.$totresp.'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
-$content .= html_writer::end_tag('table');
-$content .= '<br>';
 
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>Facilitation Summary (% Agree & Strongly Agree)</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('thiscourse',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>'.get_string('allcourses',$plugin).'</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
+// Assembled data for lead facilitator table.
+$data = new stdClass();
+// Response data.
+$data->responses = new stdClass();
+$data->responses->this_course = $totrespcourse;
+$data->responses->all_courses = $totresp;
+
+// Facilitator data container.
+$data->facilitator = [];
+
 $params = array();
 $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
 $records = $DB->get_record_sql($sql, $params);
@@ -210,119 +190,55 @@ $stp = $records->mp;
 
 for ($x = 0; $x <= 1; $x++) {
 	  $pnum = $stp + $x;
-     $content .= html_writer::start_tag('tr');
-     $content .= html_writer::start_tag('td');
+     // Question
      $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
-     $content .= $qcontent;
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($pnum, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::end_tag('tr');
+     // Course
+     $course = block_questionreport_get_question_results($pnum, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
+     $all = block_questionreport_get_question_results($pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+     // Build object from data and assign it to the $data object passed to the template.
+     $obj = new stdClass();
+     $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
+     $obj->course = $course;
+     $obj->all = $all;
+     array_push($data->facilitator, $obj);
 }
-$content .= html_writer::end_tag('table');
-$content .= html_writer::start_tag('table');
-$content .= html_writer::start_tag('tr');
-$content .= html_writer::start_tag('td');
-$content .= '<b>Session (% Agree & Strongly Agree)<b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>This course</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::start_tag('td');
-$content .= '<b>All Courses</b>';
-$content .= html_writer::end_tag('td');
-$content .= html_writer::end_tag('tr');
+
+// Container for session survey questions passed to template.
+$data->session = [];
+
 $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-$content .= html_writer::start_tag('td').$qcontent.'</td></tr>';
-
-
-//$extra = $DB->get_field('questionnaire_question', 'extradata', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+
 foreach ($choices as $choice) {
-	 $content .= html_writer::start_tag('tr');
-    $content .= html_writer::start_tag('td');
-    $content .= $choice->content;
-    $content .= html_writer::end_tag('td');
-// get results from mdl_questionnaire_response_rank - question id choice id - rank value
-    $content .= html_writer::start_tag('td');
-    $content .= 99;
- 	 $content .= html_writer::end_tag('td');
-
-    $content .= html_writer::start_tag('td');
-    $content .= 100;
- 	 $content .= html_writer::end_tag('td');
-    $content .= html_writer::end_tag('tr');
+    $obj = new stdClass;
+    $obj->question = $choice->content;
+    $obj->course = 75; // TODO: Derek: Pass the actual choice values for course and all here.
+    $obj->all = 78; 
+    array_push($data->session, $obj);
 }
-$content .= html_writer::end_tag('table');
 
-//echo $qid;
-//$line1 = json_decode($extra, true);
-//echo var_dump($line1);
-//echo $qcontent;
-//exit();
-
-/*
-for ($x = 3; $x <= 5; $x++) {
-     $content .= html_writer::start_tag('tr');
-     $content .= html_writer::start_tag('td');
-     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $x, 'surveyid' => $surveyid));
-     $content .= $qcontent;
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::start_tag('td');
-     $content .= block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $content .= html_writer::end_tag('td');
-     $content .= html_writer::end_tag('tr');
-} 
-*/   
-$questionlist = block_questionreport_get_essay($surveyid);
-echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-echo "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-echo "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-echo "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($questionlist,"question",$questionid, false);
-echo '<input type="submit" value="'.get_string('getthequestion', $plugin).'" />';
-echo '</form>';
-if ($questionid > 0 ){
-    $essayresults = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
-    echo $essayresults;
-}
-$wordcount = block_questionreport_get_words($surveyid, $start_date, $end_date);
-// wordcount is an array.
-// Assembled data for lead facilitator table.
-$data = new stdClass();
-// Values.
-$data->values = new stdClass();
-$data->values->this_course = $totrespcourse;
-$data->values->all_courses = $totresp;
-
+// echo '<br />data<br />';
+// print_r($data);
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
 
 // Assemble data for word cloud.
 $word_cloud = new stdClass();
+// wordcount is an array.
 // Array should be in the list form stipulated here: 
 // https://github.com/timdream/wordcloud2.js/
 // [ [ "word", size], ["word", size], ... ]
-$words = Array(
-        Array('lorem', 54), 
-        Array('ipsum', 36),
-        Array('dolor', 22),
-        Array('sit', 18),
-        Array('amet', 18),
-        Array('consectetur', 8),
-    );
+$wordcount = block_questionreport_get_words($surveyid, $start_date, $end_date);
+$default_font_size = 20; // Adjust for more words.
+$words = [];
+foreach ($wordcount as $wd) {
+    $word = [];
+    array_push($word, $wd->word);
+    array_push($word, $wd->percent * $default_font_size);
+    array_push($words, $word);
+}
 
 // Print wordCloud array to the page.
 $content .= '<script>';
@@ -331,18 +247,25 @@ $content .= '</script>';
 // Return rendered word cloud.
 $content .= $OUTPUT->render_from_template('block_questionreport/word_cloud', $word_cloud);
 
-$content .= '<h2>'.get_string('by_question',$plugin).'</h2>';
-$content .= '[[dropdown element]]';
 // Build data object for text question quotes.
 $quote_data = new stdClass();
-// The text of the question to display:
-$quote_data->question = "What could have improved your experience in this course?";
 // Array of text responses to render.
-$quote_data->quotes = Array(
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et.",
-    "Nunc faucibus finibus lorem, sed varius libero mollis sit amet. Curabitur a diam tortor. Phasellus et lobortis nunc. Etiam mollis quam ac felis blandit, vehicula molestie turpis rhoncus. Donec dapibus tortor vitae mauris consectetur, interdum rhoncus orci molestie. Etiam efficitur neque ante, at tristique arcu lacinia non. Maecenas ultrices finibus ante, vitae scelerisque dui tempor et."
-);
+if ($questionid > 0 ){
+    $quote_data->quotes = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+}
+
+$questionlist = block_questionreport_get_essay($surveyid);
+$content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+$content .= "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+$content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+$content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+$content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+$content .= html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
+$content .= html_writer::select($questionlist,"question",$questionid, false);
+$content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
+$content .= '</form>';
+
 // Return rendered quote list.
 $content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);
 
