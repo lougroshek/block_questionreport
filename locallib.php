@@ -46,15 +46,15 @@ function block_questionreport_check_has_choices($choiceid) {
 function block_questionreport_is_teacher() {
     global $USER, $COURSE;
     $roles = get_config('block_questionreport', 'roles');
-    $teacherroles = explode(',', $roles);
+    $teacherroles = explode(',', $roles);    
     $valid = false;
     if (!is_siteadmin($USER)) {
         $courseid = $COURSE->id;
         $context = context_course::instance($courseid);
         $userroles = get_user_roles($context, $USER->id, true);
         foreach ($userroles as $role) {
-            if (in_array($role->roleid, $teacherroles)) {
-                // echo 'Its in the array';
+            $rid = $role->id;      
+            if (in_array($rid, $teacherroles)) {
                 $valid = true;
             }
         }
@@ -253,8 +253,9 @@ function block_questionreport_get_courses() {
 	    if (is_siteadmin() ) {
            $valid = true;	    
 	    } else {
-    	    $context = get_context_instance(CONTEXT_COURSE,$survey->id);
-	       if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
+          $context = context_course::instance($coursecert->id);
+           
+	       if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
               $valid = true;	       
 	       }    
 	    }
@@ -304,7 +305,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
 	 // stdate start date for the surveys (0 if not used)
 	 // nddate end date for the surveys (0 if not used)
 	 // partner partner - blank if not used.
-    global $DB;
+    global $DB, $USER;
     $plugin = 'block_questionreport';
     $retval = 0;
     $partnersql = '';
@@ -376,10 +377,10 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
            if (is_siteadmin() ) {
                $valid = true;	    
 	        } else {
-    	         $context = get_context_instance(CONTEXT_COURSE,$survey->id);
-	            if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
+               $context = context_course::instance($survey->course);
+               if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
                    $valid = true;	       
-	            }    
+	            }    	            
 	        }	
            $sid = $survey->instance;
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
@@ -481,18 +482,10 @@ function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $
          $arrayid[] = $result->id;
      }
      shuffle($arrayid);
-     // $content = '';
-     // 
-     // $join = ' ';
-     // if ($limit > 0 ) {
-     //     $join = '<br>';
-     // }
      $return = [];
      $cnt = 0;
      foreach($arrayid as $resid) {
          $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
-     	   // $display = strip_tags($cr);    	   
-    	   // $content = $content.$join.$display;
     	   $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
     	   $cnt = $cnt + 1;
     	   if ($limit > 0 and $limit > $cnt) {
@@ -500,7 +493,6 @@ function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $
     	   }
            
      }
-     // return $content;
      return $return;
 }
 

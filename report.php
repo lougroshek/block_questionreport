@@ -159,10 +159,10 @@ foreach($surveys as $survey) {
 	    if (is_siteadmin() ) {
            $valid = true;	    
 	    } else {
-    	    $context = get_context_instance(CONTEXT_COURSE,$survey->id);
-	       if (has_capability('moodle/legacy:editingteacher', $context, $USER->id, false)) {
-              $valid = true;	       
-	       }    
+           $context = context_course::instance($survey->course);
+           if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
+               $valid = true;	       
+	        }    
 	    }
 	    if ($valid) {
            $sid = $survey->instance;
