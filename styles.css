@@ -184,3 +184,9 @@ table tr th:first-child {
 .path-blocks-questionreport #word_cloud {
   border: 1px solid #ddd;
 }
+
+.path-blocks-questionreport main {
+  /* Fixup for scroll inside scroll issue */
+  height: 100%;
+  overflow-y: hidden;
+}
