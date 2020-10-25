@@ -209,17 +209,18 @@ $data->session = [];
 $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-
+$choicecnt = 0;
 foreach ($choices as $choice) {
     $obj = new stdClass;
     $obj->question = $choice->content;
-    $obj->course = 75; // TODO: Derek: Pass the actual choice values for course and all here.
-    $obj->all = 78; 
+    $choiceid = $choice->id;
+    $choicecnt = $choicecnt + 1;
+    $course = block_questionreport_get_question_results_rank($qid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
+    $all = block_questionreport_get_question_results_rank($qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+    $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
+    $obj->all = $all; 
     array_push($data->session, $obj);
 }
-
-// echo '<br />data<br />';
-// print_r($data);
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
@@ -266,6 +267,24 @@ $content .= html_writer::select($questionlist,"question",$questionid, false);
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
 $content .= '</form>';
 
+// Lou this is for How likely are you to reccomend this course.
+/*
+$qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '9', 'surveyid' => $surveyid, 'type_id' => '8'));
+$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '9', 'surveyid' => $surveyid, 'type_id' => '8'));
+$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+$choicecnt = 0;
+foreach ($choices as $choice) {
+    $obj = new stdClass;
+    $obj->question = $choice->content;
+    $choiceid = $choice->id;
+    $choicecnt = $choicecnt + 1;
+    $course = block_questionreport_get_question_results_percent($qid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
+    $all = block_questionreport_get_question_results_percent($qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+    $obj->course = $course;
+    $obj->all = $all; 
+    array_push($data->session, $obj);
+}
+*/
 // Return rendered quote list.
 $content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);
 
