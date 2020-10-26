@@ -637,7 +637,7 @@ function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $
          $arrayid[] = $result->id;
      }
      $return = [];
-     if (!empty($arrayid) {
+     if (!empty($arrayid)) {
          shuffle($arrayid);
          $cnt = 0;
          foreach($arrayid as $resid) {
@@ -873,4 +873,3 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
     return $retval;  
 
 }
-
