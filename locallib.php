@@ -350,7 +350,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
         	      if ($nddate > 0) {
                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                    $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                   $ndt = strtotime($end_date);
+                   $ndt = strtotime($nddate);
                    $paramsql['nddate'] = $ndt;        	  
         	      }
         	      $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
@@ -505,7 +505,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	      if ($nddate > 0) {
                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                    $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                   $ndt = strtotime($end_date);
+                   $ndt = strtotime($nddate);
                    $paramsql['nddate'] = $ndt;        	  
         	      }
         	      $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
@@ -631,22 +631,23 @@ function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $
         $paramsql['nddate'] = $ndt;        	  
      }
      $sql = $sqlessay .' '.$fromessaysql. ' '.$whereessaysql;
-     $essayid = array();     
+     $arrayid = array();     
      $resultlist = $DB->get_records_sql($sql, $paramsql);
      foreach($resultlist as $result) {
          $arrayid[] = $result->id;
      }
-     shuffle($arrayid);
      $return = [];
-     $cnt = 0;
-     foreach($arrayid as $resid) {
-         $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
-    	   $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
-    	   $cnt = $cnt + 1;
-    	   if ($limit > 0 and $limit > $cnt) {
-             break;    	   
-    	   }
-           
+     if (!empty($arrayid) {
+         shuffle($arrayid);
+         $cnt = 0;
+         foreach($arrayid as $resid) {
+            $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
+    	      $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
+    	      $cnt = $cnt + 1;
+    	      if ($limit > 0 and $limit > $cnt) {
+                break;    	   
+    	      }
+        }   
      }
      return $return;
 }
