@@ -156,7 +156,10 @@ function block_questionreport_get_evaluations() {
     $commq->stat = null;
     $stp = $stp + 1;    
     $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-    if ($cnt2 == 0) {
+    $novalues = get_string('none', $plugin);
+    $novalues = trim($novalues);
+    $cnt2 = trim($cnt2);
+    if ($cnt2 != $novalues) {
    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
@@ -279,6 +282,8 @@ function block_questionreport_get_partners() {
  
     $customfields = $DB->get_records_sql($sql, array('type' => 'select'));
     foreach ($customfields as $field) {
+    	  $fid = $field->id;
+    	  $fid = $fid + 1;
         $courselist[$field->id] = $field->name;
     }
     return $courselist;
@@ -293,6 +298,7 @@ function block_questionreport_get_partners_list() {
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
     $x = json_decode($content);
     $opts = $x->options;
+    $options = array();
     $options = preg_split("/\s*\n\s*/", $opts);
     return $options;
 
@@ -314,6 +320,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
         $partnerid = get_config($plugin, 'partnerfield');
+        $comparevalue = $comparevalue + 1;
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }
     if ($surveyid > 0) {
@@ -467,6 +474,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
         $partnerid = get_config($plugin, 'partnerfield');
+        $comparevalue = $comparevalue + 1;
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }
     if ($surveyid > 0) {
@@ -732,6 +740,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
     $partnersql = '';
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
+    	  $comparevalue = $comparevalue + 1;
         $partnerid = get_config($plugin, 'partnerfield');
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }

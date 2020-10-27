@@ -56,6 +56,7 @@ echo html_writer::label(get_string('coursefilter', $plugin), false, array('class
 echo html_writer::select($courselist,"cid",$cid, false);
 
 $partnerlist = block_questionreport_get_partners_list();
+
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
@@ -138,6 +139,7 @@ $totrespcourse = $resp->crid;
 $partnersql = '';
 if ($partner > '') {
     $comparevalue = $DB->sql_compare_text($partner);
+    $comparevalue = $comparevalue + 1;
     $partnerid = get_config($plugin, 'partnerfield');
     $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
 }
