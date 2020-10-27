@@ -67,9 +67,9 @@ To access results from previously courses, select <strong>Access Data</strong>.
 </p>';
 $string['reportheader'] = 'Questionnaire Report Data';
 $string['chartsheader'] = 'Questionnaire Report Charts';
-$string['coursefilter'] = 'Filter by Course';
+$string['coursefilter'] = 'Filter by Course (applies to This Course column)';
 $string['datefilter'] = 'Filter by Date Range';
-$string['partnerfilter'] = 'Filter by Partner Site';
+$string['partnerfilter'] = 'Filter by Partner Site (applies to All Courses column)';
 $string['all'] = 'All';
 $string['numberofsurvey'] = 'Number of survey responses';
 $string['tagvalue'] = 'Tag value used to end of course survey questionnaires';
