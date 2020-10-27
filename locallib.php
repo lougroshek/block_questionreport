@@ -309,7 +309,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
 	 // partner partner - blank if not used.
     global $DB, $USER;
     $plugin = 'block_questionreport';
-    $retval = 0;
+    $retval = get_string('none', $plugin);
     $partnersql = '';
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
@@ -357,7 +357,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2);
+                   $retval = round($percent, 2)."(%)";
                }  
            }    
     } else  {
@@ -443,7 +443,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2);
+            $retval = round($percent, 2)."(%)";
 
         }
 }
@@ -462,7 +462,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
 	 // partner partner - blank if not used.
     global $DB, $USER;
     $plugin = 'block_questionreport';
-    $retval = 0;
+    $retval = get_string('none', $plugin);
     $partnersql = '';
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
@@ -512,7 +512,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2);
+                   $retval = round($percent, 2)."(%)";
                }  
            }    
     } else  {
@@ -588,7 +588,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2);
+            $retval = round($percent, 2)."(%)";
 
         }
 }
@@ -728,7 +728,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
 	 // partner partner - blank if not used.
     global $DB, $USER;
     $plugin = 'block_questionreport';
-    $retval = 0;
+    $retval = get_string('none', $plugin);
     $partnersql = '';
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
@@ -777,7 +777,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
         	      $totgood = $trsql->sr;
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2);
+                   $retval = round($percent, 2)."(%)";
                }  
            }    
     } else  {
@@ -865,7 +865,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2);
+            $retval = round($percent, 2)."(%)";
 
         }
 }

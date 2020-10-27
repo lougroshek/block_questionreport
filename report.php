@@ -117,7 +117,20 @@ $displayedteachers = array();
 $sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
              WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
 
-$resp = $DB->get_record_sql($sqlresp);
+$paramscourse = array();
+if ($start_date > 0) {
+    $std = strtotime($start_date);
+    $sqlresp = $sqlresp . " AND submitted >= :std";
+    $paramscourse['std'] = $std;
+}
+
+if ($end_date > 0) {
+    $endtd = strtotime($end_date);
+    $sqlresp = $sqlresp. " AND submitted <= :endtd";
+    $paramscourse['endtd'] = $endtd;
+}
+
+$resp = $DB->get_record_sql($sqlresp, $paramscourse);
 
 $totrespcourse = $resp->crid;
 
