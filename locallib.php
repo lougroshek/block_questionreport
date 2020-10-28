@@ -151,34 +151,35 @@ function block_questionreport_get_evaluations() {
     }
     
     if ($has_responses_contentq) {
-    // Object for question 2 text and value.
-    $commq = new stdClass();
-    $commq->desc = get_string('commq_desc', $plugin);
-    $commq->stat = null;
-    $stp = $stp + 1;    
-    $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-    if ($cnt2 == '-') {
-   	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
-        $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
-        if ($totres > 0) {
-           $commq->stat = 0;
-        } else { 
-           $has_responses_commq = false;
+        // Object for question 2 text and value.
+        $commq = new stdClass();
+        $commq->desc = get_string('commq_desc', $plugin);
+        $commq->stat = null;
+        $stp = $stp + 1;    
+        $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
+        if ($cnt2 == '-') {
+   	      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
+            $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
+            if ($totres > 0) {
+                $commq->stat = 0;
+            } else { 
+                $has_responses_commq = false;
+            }
+        } else {
+            $commq->stat = $cnt2;  
         }
-    } else {
-        $commq->stat = $cnt2;  
-    }
-    }
-    // echo '<p>$commq</p>';
+        // echo '<p>$commq</p>';
     // print_r($commq);
- 
+    }
     // Insert data into object if content responses exist.
     if (!!$has_responses_contentq) {
         $data->contentq = $contentq;
     }
     // Insert data into object if community responses exist.
     if (!!$has_responses_commq) {
-        $data->commq = $commq;
+    	  if (!empty($commq)) {
+            $data->commq = $commq;
+        }
     }
     // If no response data, add no response string to data.
     if (!$has_responses_contentq && !$has_responses_contentq) {
@@ -297,9 +298,9 @@ function block_questionreport_get_partners_list() {
     $courselist[0] = get_string('all', $plugin);
     $fieldid = get_config($plugin, 'partnerfield');
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
-    $x = json_decode($content);
+    $options = array();   
+    $x = json_decode($content);       
     $opts = $x->options;
-    $options = array();
     $options = preg_split("/\s*\n\s*/", $opts);
     return $options;
 
@@ -452,11 +453,15 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
                 
             } 
         }
-        if ($gttotres > 0) {
-            $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2)."(%)";
+        if ($gtres > 0) {
+            if ($gttotres > 0) {
+                $percent = ($gttotres / $gtres) * 100;
+                $retval = round($percent, 2)."(%)";
+            } else {
+               $retval = "0(%)";                    
+            }
         } else {
-            $retval = "0(%)";        
+            $retval = get_string('none', $plugin);        
         }
 }
     
@@ -601,11 +606,15 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
               }  
            }
         }
-        if ($gttotres > 0) {
-            $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2)."(%)";
+        if ($gtres > 0) {
+            if ($gttotres > 0) {
+                $percent = ($gttotres / $gtres) * 100;
+                $retval = round($percent, 2)."(%)";
+            } else {
+                $retval = "0(%)";                    
+            }
         } else {
-            $retval = "0(%)";                    
+            $retval = get_string('none', $plugin);        
         }
 }
     
