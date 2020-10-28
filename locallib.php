@@ -156,10 +156,11 @@ function block_questionreport_get_evaluations() {
     $commq->stat = null;
     $stp = $stp + 1;    
     $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-    $novalues = get_string('none', $plugin);
-    $novalues = trim($novalues);
+    // $novalues = get_string('none', $plugin);
+    // $novalues = trim($novalues);
     $cnt2 = trim($cnt2);
-    if ($cnt2 != $novalues) {
+    // if ($cnt2 != $novalues) {
+    if ($cnt2 == 0) {
    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
@@ -170,6 +171,9 @@ function block_questionreport_get_evaluations() {
     } else {
         $commq->stat = $cnt2;  
     }
+    
+    // echo '<p>$commq</p>';
+    // print_r($commq);
  
     // Insert data into object if content responses exist.
     if (!!$has_responses_contentq) {
