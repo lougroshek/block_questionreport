@@ -138,8 +138,8 @@ function block_questionreport_get_evaluations() {
     $records = $DB->get_record_sql($sql, $params);
     $stp = $records->mp;
     $cnt = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-    if ($cnt == 0) {
-    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid));
+    if ($cnt == '-') {
+    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
             $contentq->stat = 0;
@@ -150,17 +150,14 @@ function block_questionreport_get_evaluations() {
        $contentq->stat = $cnt;
     }
     
+    if ($has_responses_contentq) {
     // Object for question 2 text and value.
     $commq = new stdClass();
     $commq->desc = get_string('commq_desc', $plugin);
     $commq->stat = null;
     $stp = $stp + 1;    
     $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
-    // $novalues = get_string('none', $plugin);
-    // $novalues = trim($novalues);
-    $cnt2 = trim($cnt2);
-    // if ($cnt2 != $novalues) {
-    if ($cnt2 == 0) {
+    if ($cnt2 == '-') {
    	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         if ($totres > 0) {
@@ -171,7 +168,7 @@ function block_questionreport_get_evaluations() {
     } else {
         $commq->stat = $cnt2;  
     }
-    
+    }
     // echo '<p>$commq</p>';
     // print_r($commq);
  
@@ -369,7 +366,9 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
                    $retval = round($percent, 2)."(%)";
-               }  
+               } else {
+                   $retval = "0(%)"; 
+               } 
            }    
     } else  {
     	   // Get all the courses;
@@ -449,13 +448,15 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
           	    $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     $gttotres = $gttotres + $totgood;        
-                }  
-           }
+                }               
+                
+            } 
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
             $retval = round($percent, 2)."(%)";
-
+        } else {
+            $retval = "0(%)";        
         }
 }
     
@@ -502,7 +503,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         	  }
            $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
            
-           $totres = $DB->count_records_sql($totgoodsql, $paramsql);        
+           $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            if ($totres > 0) {
         	      $totgoodsql  = "SELECT count(rankvalue) ";
         	      $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
@@ -525,7 +526,9 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
                    $retval = round($percent, 2)."(%)";
-               }  
+               } else { 
+                   $retval = "0(%)";
+               } 
            }    
     } else  {
     	   // Get all the courses;
@@ -601,7 +604,8 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
             $retval = round($percent, 2)."(%)";
-
+        } else {
+            $retval = "0(%)";                    
         }
 }
     
