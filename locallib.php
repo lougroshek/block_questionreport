@@ -563,9 +563,14 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                    $valid = true;
 	        } 
 	   }
+	   $valid = true;
+	    
            $sid = $survey->instance;
+      echo ' looking at sid '.$sid;
+           
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
+echo 'skipping '.$survey->course;
               $totres = 0;
            } else {
            	echo 'processing course '.$survey->course;
