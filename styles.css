@@ -183,6 +183,7 @@ table tr th:first-child {
 
 .path-blocks-questionreport #word_cloud {
   border: 1px solid #ddd;
+  overflow: hidden;
 }
 
 .path-blocks-questionreport main {
