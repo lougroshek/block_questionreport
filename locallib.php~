@@ -549,16 +549,17 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
          $surveys = $DB->get_records_sql($sqlcourses);
          $surveycnt = 0;
          $totsurvey = 0;
+         var_dump($survey);
          foreach($surveys as $survey) {
            // Check to see if the user has rights.
            $valid = false;
            if (is_siteadmin() ) {
                $valid = true;
-               echo 'site admin';
+               echo '<br> site admin';
 	        } else {
                $context = context_course::instance($survey->course);
                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-               	echo ' valid 2 ';
+               	echo '<br> valid 2 ';
                    $valid = true;
 	        } 
 	   }

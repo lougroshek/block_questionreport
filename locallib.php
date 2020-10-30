@@ -549,6 +549,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
          $surveys = $DB->get_records_sql($sqlcourses);
          $surveycnt = 0;
          $totsurvey = 0;
+         var_dump($surveys);
          foreach($surveys as $survey) {
            // Check to see if the user has rights.
            $valid = false;
