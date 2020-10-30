@@ -554,17 +554,20 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
            $valid = false;
            if (is_siteadmin() ) {
                $valid = true;
+               echo '<br> site admin';
 	        } else {
                $context = context_course::instance($survey->course);
                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
+               	echo '<br> valid 2 ';
                    $valid = true;
-	        }
+	        } 
 	   }
            $sid = $survey->instance;
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
               $totres = 0;
            } else {
+           	echo 'processing course '.$survey->course;
               $surveycnt = $surveycnt + 1;
               $totresql  = "SELECT count(rankvalue) ";
               $fromressql = " FROM {questionnaire_response_rank} mr ";
