@@ -209,7 +209,7 @@ for ($x = 0; $x <= 1; $x++) {
      $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
      // Course
      $course = block_questionreport_get_question_results($pnum, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-     $all = block_questionreport_get_question_results($pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+     $all = block_questionreport_get_question_results($x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
      // Build object from data and assign it to the $data object passed to the template.
      $obj = new stdClass();
      $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));

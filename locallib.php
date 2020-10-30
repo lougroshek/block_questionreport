@@ -545,35 +545,34 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                          WHERE m.module = ".$moduleid. "
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
-    echo '<br> sqlcourses '.$sqlcourses;                       
          $surveys = $DB->get_records_sql($sqlcourses);
          $surveycnt = 0;
          $totsurvey = 0;
-         var_dump($surveys);
          foreach($surveys as $survey) {
            // Check to see if the user has rights.
            $valid = false;
            if (is_siteadmin() ) {
                $valid = true;
-               echo '<br> site admin';
-	        } else {
+          } else {
                $context = context_course::instance($survey->course);
                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-               	echo '<br> valid 2 ';
                    $valid = true;
 	        } 
 	   }
+      $sid = $survey->instance;
 	   $valid = true;
-	    
-           $sid = $survey->instance;
-      echo ' looking at sid '.$sid;
+	   $params = array();
+	   $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$sid .' and type_id = 11 order by position desc';
+      $records = $DB->get_record_sql($sql, $params);
+      $stp = $records->mp;
+      if ($position == 1) {
+      	 $stp = $stp + 1;
+      }	 
            
-           $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
+      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
-echo 'skipping '.$survey->course;
               $totres = 0;
            } else {
-           	echo 'processing course '.$survey->course;
               $surveycnt = $surveycnt + 1;
               $totresql  = "SELECT count(rankvalue) ";
               $fromressql = " FROM {questionnaire_response_rank} mr ";
@@ -616,14 +615,14 @@ echo 'skipping '.$survey->course;
            $totgood = $DB->count_records_sql($totsql, $paramsql);
            if ($totgood > 0) {
                 $totsurvey = (($totgood / $totres) * 100) + $totsurvey;
-                echo '<br> totgood '.$totgood. ' tot res '.$totres. ' tot survey '.$totsurvey;
+    //            echo '<br> totgood '.$totgood. ' tot res '.$totres. ' tot survey '.$totsurvey;
                 $totres = 0;
                 $totgood = 0;
            }
          }
 
         }
-        echo '<br> survey cnt '.$surveycnt;
+  //      echo '<br> survey cnt '.$surveycnt;
         if ($surveycnt > 0) {
             if ($totsurvey > 0) {
               //  $percent = ($gttotres / $gtres) * 100;
