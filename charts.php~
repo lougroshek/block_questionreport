@@ -137,7 +137,7 @@ $graph .= '
             });
         });
         </script>
-        <div id="chart_div" style="width:100%" height:"500"></div>';
+        <div id="chart_div" style="width:100%'; height:"500"></div>';
 
 echo $graph;
 echo $OUTPUT->header();

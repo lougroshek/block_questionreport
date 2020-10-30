@@ -102,7 +102,7 @@ function block_questionreport_get_evaluations() {
         $data->role = 'admin';
         $charts = new stdClass();
         $charts->text = get_string('charts', $plugin);
-        $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php?action=view&cid='.$COURSE->id;
+        $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php?action=view&cid='.$COURSE->id';
         $data->buttons->charts = $charts;
     } 
     if (!!$is_teacher) {

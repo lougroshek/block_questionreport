@@ -101,3 +101,8 @@ $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
 $string['getthequestion'] = 'Display question results';
 $string['none'] = '-';
+
+// Charts
+$string['surveyfilter'] = 'Select a survey';
+$string['getthesurvey'] = 'Get the surveys';
+$string['selectchart'] = 'Select a chart';
