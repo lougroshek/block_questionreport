@@ -607,7 +607,6 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
            $totgood = $DB->count_records_sql($totsql, $paramsql);
            if ($totgood > 0) {
                 $totsurvey = (($totgood / $totres) * 100) + $totsurvey;
-                echo '<br> totgood '.$totgood. ' tot res '.$totres. ' tot survey '.$totsurvey;
                 $totres = 0;
                 $totgood = 0;
            }
