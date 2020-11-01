@@ -67,7 +67,7 @@ if ($ADMIN->fulltree) {
     $setting->plugin = 'block_questionreport';
     $settings->add($setting);
     
-    $setting = new admin_setting_configselect('portfoliofield',
+    $setting = new admin_setting_configselect('partnerfield',
          get_string('portfoliofield', 'block_questionreport'), get_string('portfoliofieldhelp', 'block_questionreport'), 0, $customcoursefields);
     $setting->plugin = 'block_questionreport';
     $settings->add($setting); 
