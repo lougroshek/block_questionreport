@@ -17,8 +17,7 @@
 /**
  * Block "questionreport" - Local library
  *
- * @package    block_people
- * @copyright  2017 Kathrin Osswald, Ulm University <kathrin.osswald@uni-ulm.de>
+ * @package    block_questionreport
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -135,8 +134,8 @@ function block_questionreport_get_evaluations() {
     $params = array();
     // Get the first instructor question - type 11.
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
-    $records = $DB->get_record_sql($sql, $params);
-    $stp = $records->mp;
+//    $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
+    $stp = $DB->get_field('questionnaire_question', 'position', array('surveyid' => $surveyid, 'type_id' => '11', 'name' => 'facilitator_rate_content')); 
     $cnt = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == '-') {
         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
@@ -155,7 +154,8 @@ function block_questionreport_get_evaluations() {
         $commq = new stdClass();
         $commq->desc = get_string('commq_desc', $plugin);
         $commq->stat = null;
-        $stp = $stp + 1;
+        $stp = $DB->get_field('questionnaire_question', 'position', array('surveyid' => $surveyid, 'type_id' => '11',
+                              'name' => 'facilitator_rate_community')); 
         $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
         if ($cnt2 == '-') {
    	    $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
@@ -394,7 +394,10 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
 	            }    	            
 	        }	
            $sid = $survey->instance;
-           $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $sid, 'type_id' => '8'));
+           $qid = $DB->get_field('questionnaire_question', 'id', array('name' => 'course_ratings', 'surveyid' => $sid,
+                                 'type_id' => '8'));
+
+           //$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $sid, 'type_id' => '8'));
            if (empty($qid) or !$valid) {
               $totres = 0;           
            } else { 
@@ -562,18 +565,25 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
       $sid = $survey->instance;
 	   $valid = true;
 	   $params = array();
-	   $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$sid .' and type_id = 11 order by position desc';
-      $records = $DB->get_record_sql($sql, $params);
-      $stp = $records->mp;
-      if ($position == 1) {
-      	 $stp = $stp + 1;
-      }	 
-           
-      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $sid, 'type_id' => 11));
+	   if ($position == 0) {
+	       $questionid = $DB->get_field('questionnaire_question', 'id', array('surveyid' => $sid, 'type_id' => '11',
+                              'name' => 'facilitator_rate_content')); 
+      } else {
+         $questionid = $DB->get_field('questionnaire_question', 'id', array('surveyid' => $sid, 'type_id' => '11',
+                               'name' => 'facilitator_rate_community')); 
+      }
+	  // $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$sid .' and type_id = 11 order by position desc';
+     // $records = $DB->get_record_sql($sql, $params);
+     // $stp = $records->mp;
+     // if ($position == 1) {
+    //  	 $stp = $stp + 1;
+    //  }	 
+//  echo 'question id '.$questionid;
+//  exit();         
+//      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
               $totres = 0;
            } else {
-              $surveycnt = $surveycnt + 1;
               $totresql  = "SELECT count(rankvalue) ";
               $fromressql = " FROM {questionnaire_response_rank} mr ";
               $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -594,6 +604,8 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
               $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            }
            if($totres > 0) {
+              $surveycnt = $surveycnt + 1;
+
             	  $gtres = $gtres + $totres;
           	  $totgoodsql  = "SELECT count(rankvalue) ";
          	  $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
@@ -622,7 +634,6 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
          }
 
         }
-  //      echo '<br> survey cnt '.$surveycnt;
         if ($surveycnt > 0) {
             if ($totsurvey > 0) {
               //  $percent = ($gttotres / $gtres) * 100;
@@ -704,7 +715,6 @@ function block_questionreport_get_words($surveyid, $stdate, $nddate) {
     	   $questionid = $field->id;
     	   array_push($words, block_questionreport_get_essay_results($questionid, $stdate, $nddate, 0));
     }
-    
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }

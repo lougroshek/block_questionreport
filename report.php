@@ -199,12 +199,21 @@ $data->responses->all_courses = $totresp;
 $data->facilitator = [];
 
 $params = array();
-$sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
-$records = $DB->get_record_sql($sql, $params);
-$stp = $records->mp;
+$stp = $DB->get_field('questionnaire_question', 'position', array('surveyid' => $surveyid, 'type_id' => '11', 'name' => 'facilitator_rate_content')); 
+
+//$sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
+//$records = $DB->get_record_sql($sql, $params);
+//$stp = $records->mp;
 
 for ($x = 0; $x <= 1; $x++) {
-	  $pnum = $stp + $x;
+     if ($x == 0) {
+         $pnum = $DB->get_field('questionnaire_question', 'position', array('surveyid' => $surveyid, 'type_id' => '11',
+                               'name' => 'facilitator_rate_content')); 
+     } else {
+         $pnum = $DB->get_field('questionnaire_question', 'position', array('surveyid' => $surveyid, 'type_id' => '11',
+                               'name' => 'facilitator_rate_community')); 
+     }
+//	  $pnum = $stp + $x;
      // Question
      $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
      // Course
@@ -221,8 +230,11 @@ for ($x = 0; $x <= 1; $x++) {
 // Container for session survey questions passed to template.
 $data->session = [];
 
-$qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+//$qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+//$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+$qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'course_ratings', 'surveyid' => $surveyid, 'type_id' => '8'));
+$qid = $DB->get_field('questionnaire_question', 'id', array('name' => 'course_ratings', 'surveyid' => $surveyid, 'type_id' => '8'));
+
 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
 $choicecnt = 0;
 foreach ($choices as $choice) {
