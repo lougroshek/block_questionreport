@@ -366,7 +366,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2)."(%)";
+                   $retval = round($percent, 0)."(%)";
                } else {
                    $retval = "0(%)"; 
                } 
@@ -459,7 +459,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
-                $retval = round($percent, 2)."(%)";
+                $retval = round($percent, 0)."(%)";
             } else {
                $retval = "0(%)";                    
             }
