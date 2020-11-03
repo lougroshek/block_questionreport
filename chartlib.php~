@@ -114,11 +114,8 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
     foreach($results as $result) {
     	 $courseid = $result->courseid;
     	 echo '<br> Date '.date('Y-m-d', $result->submitted);
-       $cr = $result->response;
-       $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));   
-
        echo ' course '.$DB->get_field('course', 'fullname', array('id' => $courseid));
-       echo ' response '.$cr;    
+           
     }
     return $content;
 }
