@@ -122,3 +122,32 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
     }
     return $content;
 }
+
+function block_questionreport_setchart($chartid, $start_date, $end_date, $cid, $sid, $questionid, $teacher) {
+    // Return a chart object;
+    // surveytype is the type of survey.
+	 // cid is the current course, if its 0 then its all courses;
+	 // tagid  is the tagid finding for the matching surveys
+	 // stdate start date for the surveys (0 if not used)
+	 // nddate end date for the surveys (0 if not used)
+	 // partner partner - blank if not used.
+	 // portfolio portfolio - blank if not used.
+	 // teacher - teacher - blank if not used.
+	 // questionid - specific question getting results for 
+
+    global $DB;
+    $chart = new core\chart_bar();    
+    switch($chartid) {
+    	case "Bar1": 
+    	  $series1 = new \core\chart_series('Series 1 (Bar)', [1000, 1170, 660, 1030]);
+        $series2 = new \core\chart_series('Series 2 (Line)', [400, 460, 1120, 540]);
+        $series2->set_type(\core\chart_series::TYPE_LINE); // Set the series type to line chart.
+        $chart->add_series($series2);
+        $chart->add_series($series1);
+        $chart->set_labels(['2004', '2005', '2006', '2007']);
+      break;
+      case "Bar2":
+      break;
+   }
+   return $chart;         
+}

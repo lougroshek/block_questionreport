@@ -32,16 +32,22 @@ $PAGE->set_cacheable(true);
 $PAGE->navbar->add($header, new moodle_url('/blocks/questionreport/charts.php'));
 $cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
 $sid          = optional_param('sid', 1, PARAM_INT);// Survey Tagid.
-
 $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
+$portfolio    = optional_param('portfolio', 0, PARAM_INT);
+$teacher      = optional_param('teacher', 0, PARAM_INT); //Teacher id.
+$chart        = optional_param('chart', '0', PARAM_RAW); //Chart id.
 
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
+require_once($CFG->dirroot.'/blocks/questionreport/chartlib.php');
+
 require_login($cid);
+echo $OUTPUT->header();
+
 global $COURSE;
 $courselist = block_questionreport_get_courses();
 $surveylist = array("1" => "End of Course Survey", "2" => "Diagnostic Survey");
@@ -86,6 +92,11 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
+$teacherlist = block_questionreport_get_teachers_list();
+
+echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
+echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
+
 echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
 $questionlist = block_questionreport_get_essay($surveyid);
 echo html_writer::select($questionlist,"question",$questionid, false);
@@ -100,45 +111,9 @@ echo '<input type="radio" id="chart" name="chart" value="Line1"/>Line Chart of P
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
 echo html_writer::end_tag('div');
-
-$graph = '
-        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-        <script type="text/javascript">
-        google.load("visualization", "1", {packages:["corechart"]});
-        google.setOnLoadCallback(drawChart);
-        function drawChart() {
-            var data = new google.visualization.DataTable();
-            data.addColumn("string", "Day");';
-
-$graph .= 'data.addColumn("number", "visitors")';
-$graph .= 'data.addColumn("number", "Uniquevisitors")';
-
-$days = array('7','12','14','16','22', '100', '12', '17');
-$visits1 = array('10', '1', '22', '7', '9', '11','16');
-$type1 = 'area';
-$type2 = 'area';
-
-$daysnb = 6;
-
-$graph .= 'data.addRows([ ';
-$a = 0;
-for ($i = $daysnb; $i > -1; $i--) {
-     $graph .= '["' . $days[$a] . '","' . $visits1[$a] . '"],';
-     $a++;
-}
-$graph .= ' ]);';
-$graph .= '
-            var chart = new google.visualization.AreaChart(document.getElementById("chart_div"));
-            chart.draw(data, options);
-        }
-        $(document).ready(function(){
-            $(window).resize(function(){
-                drawChart();
-            });
-        });
-        </script>
-        <div id="chart_div" style="width:100%" height:"500"></div>';
-
-echo $graph;
-echo $OUTPUT->header();
+$chart = 'Bar1';
+if ($chart <> '0') {
+    $genchart = block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid, $teacher);
+    echo $OUTPUT->render($genchart);
+}   
 echo $OUTPUT->footer();
