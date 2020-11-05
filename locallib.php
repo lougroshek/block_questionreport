@@ -100,10 +100,16 @@ function block_questionreport_get_evaluations() {
     if (!!$is_admin) {
         // echo 'user is admin';
         $data->role = 'admin';
+        // Build charts object.
         $charts = new stdClass();
         $charts->text = get_string('charts', $plugin);
         $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php?action=view&cid='.$COURSE->id;
         $data->buttons->charts = $charts;
+        // Build admin reports button object.
+        $adminreports = new stdClass();
+        $adminreports->text = get_string('adminreports', $plugin);
+        $adminreports->href = $CFG->wwwroot.'/blocks/questionreport/adminreport.php?action=view&cid='.$COURSE->id;
+        $data->buttons->adminreports = $adminreports;
     } 
     if (!!$is_teacher) {
         $data->role = 'teacher';

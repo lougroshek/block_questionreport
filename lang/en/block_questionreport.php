@@ -57,7 +57,8 @@ $string['thiscourse'] = 'This Course';
 $string['allcourses'] = 'All Courses';
 $string['session'] = 'Session (% Agree & Strongly Agree)'; 
 $string['surveyresp'] = 'Number of survey responses';
-$string['reports'] = 'Access Data';
+$string['reports'] = 'Access Survey Reports';
+$string['adminreports'] = 'Access Admin Reports';
 $string['charts'] = 'Access Charts';
 $string['nocoursevals'] = '<p>
 No course evaluations have been completed for this course.
@@ -110,4 +111,3 @@ $string['portfoliofield'] = 'Custom course menu field used for Portfolios';
 $string['portfoliofieldhelp'] = 'Pick the custom course field used to store Portfolio';
 $string['portfoliofilter'] = 'Filter by Portfolio';
 $string['teacherfilter'] = 'Filter by Facilitator';
-
