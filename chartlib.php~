@@ -85,14 +85,32 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
 
     global $DB;
     $content = '';
-    if ($questionid == 0) {
+    if ($questionid == '0') {
         return $content;
         exit();    
     }
+    $choiceid = 0;
+    $nq = strpos($questionid, 'xx-');
+    if ($nq) {
+        $choiceid = substr($questionid, 4);
+        $questionid = $DB->get_field('questionnaire_quest_choice', 'question_id', array('id' => $choiceid));
+        $content = $DB->get_field('questionnaire_quest_choice', 'content', array('id' => $choiceid));
+        $qq = $questionid;
+        echo 'qq '.$qq;
+    }
+    $plugin = 'block_questionreport';
+    $na = get_string('none', $plugin);
+    
+    $fieldid = get_config($plugin, 'partnerfield');
+    $partnerid = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
+   
+    $portfieldid = get_config($plugin, 'portfoliofield');
+    $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
+
     // Get the name of the question.
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
 
-    $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qt.response, qr.submitted, qs.courseid 
+    $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qt.response, qr.submitted, qs.courseid, qq.content 
                    FROM {questionnaire_question} qq
                    JOIN {questionnaire_response_text} qt on qt.question_id = qq.id
                    JOIN {questionnaire_response} qr on qr.id = qt.response_id
@@ -110,20 +128,55 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $ndt = strtotime($nddate);
         $paramsql['nddate'] = $ndt;        	  
     }
+
+    if ($cid > 0) {
+        $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
+        $paramsql['courseid'] = $cid;
+    }
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     foreach($results as $result) {
-    	 $courseid = $result->courseid;
+    	 $valid = true;
+    	 $courseid = $result->courseid;    	 
+    	 $ps = $DB->get_field('customfield_data','intvalue', array('instanceid' => $courseid, 'fieldid' => $fieldid));    	     	
+       if ($ps) {    
+           $options = array();
+           $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
+           $x = json_decode($partnercontent);
+           $opts = $x->options;
+           $options = preg_split("/\s*\n\s*/", $opts);
+           $partnerdisplay = $options[$ps];
+       } else {
+           $partnerdisplay = $na;       
+       }
+       $pf = $DB->get_field('customfield_data','intvalue', array('instanceid' => $courseid, 'fieldid' => $portfieldid));   	     	
+       if ($pf) {    
+           $options = array();
+           $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
+           $x = json_decode($partnercontent);
+           $opts = $x->options;
+           $options = preg_split("/\s*\n\s*/", $opts);
+           $portdisplay = $options[$pf];
+       } else {
+           $portdisplay = $na;       
+       }       
     	 echo '<br> Date '.date('Y-m-d', $result->submitted);
-       $cr = $result->response;
+       echo '<br> partner  '.$partnerdisplay;
+       echo '<br> portfolio  '.$portdisplay;                      
+       echo '<br> course '.$DB->get_field('course', 'fullname', array('id' => $courseid));
+       if ($choiceid == 0) {
+           $content = $result->content;
+       }
+       $display = strip_tags($content);
+       $display = trim($display);
+       echo '<br> question '.$display;
+       $cr = $result->response;  
        $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));   
-
-       echo ' course '.$DB->get_field('course', 'fullname', array('id' => $courseid));
-       echo ' response '.$cr;    
+       echo '<br> response '.$cr;
     }
     return $content;
 }
 
-function block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid, $teacher) {
+function block_questionreport_setchart($chartid, $start_date, $end_date, $cid, $sid, $questionid, $teacher) {
     // Return a chart object;
     // surveytype is the type of survey.
 	 // cid is the current course, if its 0 then its all courses;
@@ -137,7 +190,7 @@ function block_questionreport_setchart($chart, $start_date, $end_date, $cid, $si
 
     global $DB;
     $chart = new core\chart_bar();    
-    switch($chart) {
+    switch($chartid) {
     	case "Bar1": 
     	  $series1 = new \core\chart_series('Series 1 (Bar)', [1000, 1170, 660, 1030]);
         $series2 = new \core\chart_series('Series 2 (Line)', [400, 460, 1120, 540]);
@@ -150,4 +203,31 @@ function block_questionreport_setchart($chart, $start_date, $end_date, $cid, $si
       break;
    }
    return $chart;         
+}
+function block_questionreport_get_all_questions($surveyid) {
+    global $DB, $COURSE;  
+    $plugin = 'block_questionreport';
+    $essaylist = array();
+    $essaylist[0] = get_string('none', $plugin);
+    $customfields = $DB->get_records('questionnaire_question', array('surveyid' => $surveyid, 'deleted'=> 'n'));
+    foreach ($customfields as $field) {
+        $fid = $field->id;
+    	  $content = $field->content;
+    	  $display = strip_tags($content);
+    	  $display = trim($display);
+        if ($field->type_id == '8') {
+            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $fid));
+            $choicecnt = 0;
+            foreach ($choices as $choice) {
+               $fid = 'xxx-'.$choice->id;	
+               $display = $choice->content;
+               $display = strip_tags($display);
+               $display = trim($display);
+               $essaylist[$fid] = $display;
+            }
+        } else {
+           $essaylist[$field->id] = $display;        
+        }
+    }
+    return $essaylist;
 }

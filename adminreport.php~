@@ -98,7 +98,7 @@ if ($cid == 0){
 echo html_writer::start_tag('h2');
 echo get_string('filters', $plugin);
 echo html_writer::end_tag('h2');
-echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
 echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($surveylist,"sid",$sid, false);
@@ -128,7 +128,7 @@ $teacherlist = block_questionreport_get_teachers_list();
 echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
-$questionlist = block_questionreport_get_essay($surveyid);
+$questionlist = block_questionreport_get_all_questions($surveyid);
 
 echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($questionlist,"question",$questionid, false);

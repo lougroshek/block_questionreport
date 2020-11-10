@@ -25,7 +25,7 @@ $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
-$questionid   = optional_param('question', 0, PARAM_INT);
+$questionid   = optional_param('question', '0', PARAM_RAW);
 $portfolio    = optional_param('portfolio', 0, PARAM_INT);
 $sid          = optional_param('sid', 1, PARAM_INT); // Survey id.
 $teacher      = optional_param('teacher', 0, PARAM_INT); //Teacher id.
@@ -128,7 +128,7 @@ $teacherlist = block_questionreport_get_teachers_list();
 echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
-$questionlist = block_questionreport_get_essay($surveyid);
+$questionlist = block_questionreport_get_all_questions($surveyid);
 
 echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($questionlist,"question",$questionid, false);

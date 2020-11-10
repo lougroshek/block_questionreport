@@ -39,7 +39,7 @@ $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
 $portfolio    = optional_param('portfolio', 0, PARAM_INT);
 $teacher      = optional_param('teacher', 0, PARAM_INT); //Teacher id.
-$chart        = optional_param('chart', '0', PARAM_RAW); //Chart id.
+$chart        = optional_param('chart','Bar1', PARAM_RAW); //Chart id.
 
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
@@ -103,7 +103,7 @@ echo html_writer::select($questionlist,"question",$questionid, false);
 echo html_writer::start_tag('h2');
 echo get_string('selectchart', $plugin);
 echo html_writer::end_tag('h2');
-echo '<input type="radio" id="chart" name="chart" value="Bar1"/>Bar Chart of Portfolios<br>';
+echo '<input type="radio" id="chart" name="chart" value="Bar1" checked />Bar Chart of Portfolios<br>';
 echo '<input type="radio" id="chart" name="chart" value="Bar2"/>Bar Chart of Partner Sites<br>';
 echo '<input type="radio" id="chart" name="chart" value="Bar3"/>Bar Chart of Courses<br>';
 echo '<input type="radio" id="chart" name="chart" value="Bar4"/>Bar Chart of Facilitators<br>';
