@@ -103,15 +103,32 @@ echo html_writer::select($questionlist,"question",$questionid, false);
 echo html_writer::start_tag('h2');
 echo get_string('selectchart', $plugin);
 echo html_writer::end_tag('h2');
-echo '<input type="radio" id="chart" name="chart" value="Bar1" checked />Bar Chart of Portfolios<br>';
-echo '<input type="radio" id="chart" name="chart" value="Bar2"/>Bar Chart of Partner Sites<br>';
-echo '<input type="radio" id="chart" name="chart" value="Bar3"/>Bar Chart of Courses<br>';
-echo '<input type="radio" id="chart" name="chart" value="Bar4"/>Bar Chart of Facilitators<br>';
-echo '<input type="radio" id="chart" name="chart" value="Line1"/>Line Chart of Portfolios';
+$checked1 =  '';
+$checked2 =  '';
+$checked3 =  '';
+$checked4 =  '';
+
+if ($chart == 'Bar1') {
+    $checked1 = 'checked';
+}
+if ($chart == 'Bar2') {
+    $checked2 = 'checked';
+}
+
+if ($chart == 'Bar3') {
+    $checked3 = 'checked';
+}
+
+if ($chart == 'Bar4') {
+    $checked4 = 'checked';
+}
+echo '<input type="radio" id="chart" name="chart" value="Bar1" '.$checked1. ' />Bar Chart of Portfolios<br>';
+echo '<input type="radio" id="chart" name="chart" value="Bar2" '.$checked2. ' />Bar Chart of Partner Sites<br>';
+echo '<input type="radio" id="chart" name="chart" value="Bar3" '.$checked3. '/>Bar Chart of Courses<br>';
+echo '<input type="radio" id="chart" name="chart" value="Bar4" '.$checked4. '/>Bar Chart of Facilitators<br>';
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
 echo html_writer::end_tag('div');
-$chart = 'Bar1';
 if ($chart <> '0') {
     $genchart = block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid, $teacher);
     echo $OUTPUT->render($genchart);

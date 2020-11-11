@@ -111,3 +111,4 @@ $string['portfoliofield'] = 'Custom course menu field used for Portfolios';
 $string['portfoliofieldhelp'] = 'Pick the custom course field used to store Portfolio';
 $string['portfoliofilter'] = 'Filter by Portfolio';
 $string['teacherfilter'] = 'Filter by Facilitator';
+$string['generatecsv'] = 'Download CSV File';

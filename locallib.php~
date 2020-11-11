@@ -301,8 +301,9 @@ function block_questionreport_get_partners_list() {
     global $DB;     
     $plugin = 'block_questionreport';
     $courselist = array();
-    $courselist[0] = get_string('all', $plugin);
     $fieldid = get_config($plugin, 'partnerfield');
+
+    $courselist[0] = get_string('all', $plugin);
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
     $options = array();   
     $x = json_decode($content);       

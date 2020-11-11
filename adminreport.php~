@@ -95,6 +95,11 @@ if ($cid == 0){
      }
     $surveyid = $surveys->instance;
 }
+if ($action == 'csv') {
+   $content = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
+
+} else {
+
 echo html_writer::start_tag('h2');
 echo get_string('filters', $plugin);
 echo html_writer::end_tag('h2');
@@ -138,7 +143,24 @@ echo '</form>';
 echo html_writer::end_tag('div');
  
 $content = '';
-$content = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid); 
+$content = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
 
-echo $content;  
+
+//echo $content;  
+if ($questionid > '0') {
+ 	 $content .= "<form class=\"questionreportform2\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
+    $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+    $content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+    $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+    $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+    $content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
+    $content .= "<input type=\"hidden\" name=\"portfolio\" value=\"$portfolio\" />\n";
+    $content .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
+    $content .= "<input type=\"hidden\" name=\"action\" value=\"csv\" />\n";    
+    $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";    
+    $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('generatecsv', $plugin).'" />';
+    $content .= '</form>';
+    echo $content;
+}
+}
 echo $OUTPUT->footer();
