@@ -261,16 +261,26 @@ function block_questionreport_setchart($chartid, $start_date, $end_date, $cid, $
         $chart->set_labels(['2004', '2005', '2006', '2007']);
       break;
       case "Bar2":
-      $pl = block_questionreport_get_partners_list();
-      echo 'pl '.$pl;
-   
-        $series1 = new \core\chart_series('Series 1 (Bar)', [1000, 1170, 660, 1030]);
-        $series2 = new \core\chart_series('Series 2 (Line)', [400, 460, 1120, 540]);
+        $partners = block_questionreport_get_partners_list();
+        $cnt = 0;
+        foreach($partners as $partner) {
+           $cnt = $cnt + 1;
+           if ($cnt == 1) {
+               $pl = "'".$partner."'";
+           } else {
+               $pl = $pl.",'".$partner."'";
+           }         
+        }
+        $pl = '['.$pl.']';
+      
+        $series1 = new \core\chart_series('Series 1 (Bar)', [1000, 660, 1030]);
+        $series2 = new \core\chart_series('Series 2 (Line)', [400, 1120, 540]);
         $series2->set_type(\core\chart_series::TYPE_LINE); // Set the series type to line chart.
         $chart->add_series($series2);
         $chart->add_series($series1);
+        $chart->set_labels($partners);
         
-        $chart->set_labels([$pl]);
+        //$chart->set_labels($partners);
           
       break;
    }
