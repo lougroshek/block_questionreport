@@ -112,3 +112,14 @@ $string['portfoliofieldhelp'] = 'Pick the custom course field used to store Port
 $string['portfoliofilter'] = 'Filter by Portfolio';
 $string['teacherfilter'] = 'Filter by Facilitator';
 $string['generatecsv'] = 'Download CSV File';
+$string['data_preview'] = 'Data Preview';
+
+// Admin report table
+$string['h_date'] = 'Date';
+$string['h_portfolio'] = 'Portfolio';
+$string['h_partner'] = 'Partner Site';
+$string['h_course'] = 'Course';
+$string['h_course_id'] = 'Course ID';
+$string['h_facilitator'] = 'Facilitator(s)';
+$string['h_question'] = 'Question';
+$string['h_response'] = 'Response';

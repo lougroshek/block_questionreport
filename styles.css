@@ -167,6 +167,13 @@ form .btn-submit {
 table tr th:first-child {
   width: 70%;
 }
+
+table.table-adminreport tr th:first-child {
+  width: auto;
+}
+table.table-adminreport tr th {
+  min-width: 100px;
+}
 /* End report tables */
 
 

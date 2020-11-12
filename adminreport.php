@@ -98,69 +98,73 @@ if ($action == 'csv') {
    $content = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
 
 } else {
-echo $OUTPUT->header();
+    echo $OUTPUT->header();
 
-echo html_writer::start_tag('h2');
-echo get_string('filters', $plugin);
-echo html_writer::end_tag('h2');
-echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
-echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
-echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($surveylist,"sid",$sid, false);
+    echo html_writer::start_tag('h2');
+    echo get_string('filters', $plugin);
+    echo html_writer::end_tag('h2');
+    echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
+    echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+    echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($surveylist,"sid",$sid, false);
 
-echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($courselist,"cid",$cid, false);
+    echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($courselist,"cid",$cid, false);
 
-$partnerlist = block_questionreport_get_partners_list();
+    $partnerlist = block_questionreport_get_partners_list();
 
-echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
+    echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
-$portfoliolist = block_questionreport_get_portfolio_list();
+    $portfoliolist = block_questionreport_get_portfolio_list();
 
-echo html_writer::label(get_string('portfoliofilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($portfoliolist, "portfolio", $portfolio, get_string("all", $plugin));
+    echo html_writer::label(get_string('portfoliofilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($portfoliolist, "portfolio", $portfolio, get_string("all", $plugin));
 
-// Date select.
-echo html_writer::start_tag('div', array('class' => 'date-input-group'));
-echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
-echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
-echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
-echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
+    // Date select.
+    echo html_writer::start_tag('div', array('class' => 'date-input-group'));
+    echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
+    echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
+    echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
+    echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
 
-$teacherlist = block_questionreport_get_teachers_list();
+    $teacherlist = block_questionreport_get_teachers_list();
 
-echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
+    echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
-$questionlist = block_questionreport_get_all_questions($surveyid);
+    $questionlist = block_questionreport_get_all_questions($surveyid);
 
-echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($questionlist,"question",$questionid, false);
+    echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($questionlist,"question",$questionid, false);
 
-echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
-echo '</form>';
-echo html_writer::end_tag('div');
- 
-$content = '';
-$content = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
+    echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
+    echo '</form>';
+    echo html_writer::end_tag('div');
 
+    // Assemble the object to pass to the mustache template.
+    $rows = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action);
+    $data = new StdClass();
+    $data->rows = $rows;
 
-//echo $content;  
-if ($questionid > '0') {
- 	 $content .= "<form class=\"questionreportform2\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
-    $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-    $content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-    $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-    $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-    $content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
-    $content .= "<input type=\"hidden\" name=\"portfolio\" value=\"$portfolio\" />\n";
-    $content .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
-    $content .= "<input type=\"hidden\" name=\"action\" value=\"csv\" />\n";    
-    $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";    
-    $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('generatecsv', $plugin).'" />';
-    $content .= '</form>';
-    echo $content;
-}
+    $content = '';
+    // Write template output to content.
+    $content .= $OUTPUT->render_from_template('block_questionreport/admin_table', $data);
+    // Write download button to content.
+    if ($questionid > '0') {
+     	 $content .= "<form class=\"questionreportform2\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
+        $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+        $content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+        $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+        $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+        $content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
+        $content .= "<input type=\"hidden\" name=\"portfolio\" value=\"$portfolio\" />\n";
+        $content .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
+        $content .= "<input type=\"hidden\" name=\"action\" value=\"csv\" />\n";    
+        $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";    
+        $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('generatecsv', $plugin).'" />';
+        $content .= '</form>';
+        echo $content;
+    }
 }
 echo $OUTPUT->footer();

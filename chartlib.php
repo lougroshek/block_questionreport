@@ -154,7 +154,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $rowheaders = array('date','partner', 'portfolio','teacher', 'course', 'question', 'response');    
     }
     $output = array();
-    $content = '';
+    $content = [];
     $var = array();
     foreach($results as $result) {
     	 $valid = true;
@@ -203,15 +203,19 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
            $quest = trim($quest);
 
        	  if ($display) { 
-       	      $content .= '<br> Date '.date('Y-m-d', $result->submitted);
-               $content .= '<br> partner  '.$partnerdisplay;
-               $content .= '<br> portfolio  '.$portdisplay;                      
-               $content .= '<br> course '.$DB->get_field('course', 'fullname', array('id' => $courseid));
-               $content .= '<br> question '.$quest;
-               $cr = $result->response;  
-               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));   
-               $content .= '<br> response '.$cr;
-               $content .= '<br> teachers '.$tlist;
+               $row = new stdClass();
+               $row->date = date('Y-m-d', $result->submitted);
+               $row->partner = $partnerdisplay;
+               $row->portfolio = $portdisplay;
+               $row->course_id = $courseid;
+               $row->course = $DB->get_field('course', 'fullname', array('id' => $courseid));
+               $row->question = $quest;
+               $cr = $result->response;
+               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr))); 
+               $row->response = $cr;
+               $row->teachers = $tlist;
+               array_push($content, $row);
+
                $displaycnt = $displaycnt + 1;
                if ($displaycnt > $maxdisplay) { 
                    break;
