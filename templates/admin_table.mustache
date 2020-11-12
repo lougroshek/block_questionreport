@@ -1,0 +1,62 @@
+<h3>
+  {{# str }} data_preview, block_questionreport {{/ str }}
+</h3>
+<table class="table-adminreport table table-responsive-md table-striped table-bordered" width="100%">
+  <thead>
+    <th class="center">
+      {{# str }} h_date, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_portfolio, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_partner, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_course, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_course_id, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_facilitator, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_question, block_questionreport {{/ str }}
+    </th>
+    <th class="center">
+      {{# str }} h_response, block_questionreport {{/ str }}
+    </th>
+  </thead>
+  <tbody>
+    {{#rows}}
+      <tr>
+        <td class="center">
+          {{date}}
+        </td>
+        <td class="center">
+          {{portfolio}}
+        </td>
+        <td class="center">
+          {{partner}}
+        </td>
+        <td class="center">
+          {{course}}
+        </td>
+        <td class="center">
+          {{course_id}}
+        </td>
+        <td class="center">
+          {{teachers}}
+        </td>
+        <td class="center">
+          {{question}}
+        </td>
+        <td class="center">
+          {{response}}
+        </td>
+      </tr>
+    {{/rows}}
+  </tbody>
+</table>
+</div>
