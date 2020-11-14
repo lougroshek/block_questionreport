@@ -140,7 +140,7 @@ if ($action == 'csv') {
 
     echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
     echo '</form>';
-    echo html_writer::end_tag('div');
+    // echo html_writer::end_tag('div');
 
     // Assemble the object to pass to the mustache template.
     $rows = block_questionreport_get_adminreport($sid, $cid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action);
