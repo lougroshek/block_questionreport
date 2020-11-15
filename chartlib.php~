@@ -367,11 +367,6 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
            echo 'totgoodsql '.$totgoodsql;
            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
-           $ranksql = "SELECT sum(rankvalue) rv ";
-           $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-           $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-           echo 'totres '.$totres . ' rank sql '.$ranksql->rv;
-           exit();
         }
                    $pcnt = $pcnt + 1; 
 

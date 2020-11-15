@@ -28,7 +28,7 @@ $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', '0', PARAM_RAW);
 $portfolio    = optional_param('portfolio', '', PARAM_RAW);
 $sid          = optional_param('sid', 1, PARAM_INT); // Survey id.
-$teacher      = optional_param('teacher', '', PARAM_RAW); //Teacher id.
+$teacher      = optional_param('teacher', 0, PARAM_INT); //Teacher id.
 
 $plugin = 'block_questionreport';
 $PAGE->set_pagelayout('standard');

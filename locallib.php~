@@ -654,7 +654,7 @@ function block_questionreport_get_chartquestions($surveyid) {
     	$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $fid));
       $choicecnt = 0;
       foreach ($choices as $choice) {
-          $fid = $choice->id;	
+          $fid = 'xxx-'.$choice->id;	
           $display = $choice->content;
           $display = strip_tags($display);
           $display = trim($display);

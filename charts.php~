@@ -126,7 +126,7 @@ echo '<input type="radio" id="chart" name="chart" value="Bar1" '.$checked1. ' />
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
 echo html_writer::end_tag('div');
-if ($questionid <> '0') {
+if ($chart <> '0') {
     $genchart = block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid, $teacher);
     echo $OUTPUT->render($genchart);
 }   
