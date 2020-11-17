@@ -319,13 +319,15 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            break;                                      
        }
     }
-   
+    $chart = new core\chart_bar();   
     $partnerlist = block_questionreport_get_partners_list();
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
     $pcnt = 0;
-    foreach ($partnerlist as $partnerid) {
-        $comparevalue = $DB->sql_compare_text($partnerid);
+    $labelarray = array();
+    foreach ($partnerlist as $partnername) {
+        $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
+        $partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
         $sqlcourses = "SELECT m.course, m.id, m.instance
@@ -335,7 +337,6 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
-        echo $sqlcourses;
         foreach ($surveys as $survey) {
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8'));
@@ -365,161 +366,24 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                $paramsql['nddate'] = $ndt;        	  
         	  }
            $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
-           echo 'totgoodsql '.$totgoodsql;
            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
-           $ranksql = "SELECT sum(rankvalue) rv ";
-           $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-           $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-           echo 'totres '.$totres . ' rank sql '.$ranksql->rv;
-           exit();
+           if ($totres > 0) {
+               $ranksql = "SELECT sum(rankvalue) rv ";
+               $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
+               $ranksql = $DB->get_record_sql($totranksql, $paramsql);
+               $val = $ranksql->rv / $totres;
+               $val = round($val, 2);
+               $valarray[] = $val;
+               $labelarray[] = $partnername;
+           }    
         }
-                   $pcnt = $pcnt + 1; 
-
+        $pcnt = $pcnt + 1; 
     }
-    exit();
-    // Get the name of the question.
-    $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
-    $sqladmin = "SELECT rankvalue response, qq.id, qq.surveyid, qs.courseid, qr.submitted
-                   FROM {questionnaire_response_rank} mr
-                   JOIN {questionnaire_question} qq on qq.id = mr.question_id
-                   JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
-                   JOIN {questionnaire_response} qr on qr.id = mr.response_id
-                 WHERE mr.question_id = :questionid
-                   AND choice_id = :choiceid";
-    $paramsql = array ('questionid' => $qid, 'choiceid' => $choiceid);
-    echo $sqladmin;
-    var_dump($paramsql);
-    exit();                    
-    if ($stdate > 0) {
-        $sqladmin = $sqladmin . ' AND qr.submitted >= :stdate';
-        $std = strtotime($stdate);
-        $paramsql['stdate'] = $std;        	  
-    }
-    if ($nddate > 0) {
-        $sqladmin = $sqladmin . ' AND qr2.submitted <= :nddate';
-        $ndt = strtotime($nddate);
-        $paramsql['nddate'] = $ndt;        	  
-    }
-
-    if ($cid > 0) {
-        $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
-        $paramsql['courseid'] = $cid;
-    }
-    $results = $DB->get_records_sql($sqladmin, $paramsql);
-    $output = array();
-    $content = [];
-    $var = array();
-    foreach($results as $result) {
-    	 $valid = true;
-    	 $courseid = $result->courseid;    	 
-    	 $ps = $DB->get_field('customfield_data','intvalue', array('instanceid' => $courseid, 'fieldid' => $fieldid));    	     	
-       if ($ps) {    
-           $options = array();
-           $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
-           $x = json_decode($partnercontent);
-           $opts = $x->options;
-           $options = preg_split("/\s*\n\s*/", $opts);
-           $partnerdisplay = $options[$ps];
-       } else {
-           $partnerdisplay = $na;       
-       }
-       $pl = strlen(trim($partner));
-       if ($pl > 0) {
-           $partnercheck = $partner + 1;
-           if ($partnercheck == $ps) {
-               $valid = true;           
-           } else {
-               $valid = false;           
-           }
-       }    
-       $pf = $DB->get_field('customfield_data','intvalue', array('instanceid' => $courseid, 'fieldid' => $portfieldid));   	     	
-       if ($pf) {    
-           $options = array();
-           $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
-           $x = json_decode($partnercontent);
-           $opts = $x->options;
-           $options = preg_split("/\s*\n\s*/", $opts);
-           $portdisplay = $options[$pf];
-       } else {
-           $portdisplay = $na;       
-       }
-       $pflen = strlen(trim($portfolio));
-       if ($valid and $pflen > 0) {
-           $portcheck = $portfolio + 1;
-           if ($pf == $portcheck) {                          
-           } else {
-              $valid = false;           
-           }
-       }
-       $ltea = strlen(trim($teacher));
-       $teachercheck = false;
-       if ($ltea > 0) {
-           $teachercheck = true;
-           $validteacher = false;       
-       }
-       // Course context.
-       $context = context_course::instance($courseid);
-       $contextid = $context->id;
-       $sqlteacher = "SELECT u.firstname, u.lastname, u.id 
-                       FROM {user} u 
-                       JOIN {role_assignments} ra on ra.userid = u.id
-                        AND ra.contextid = :context 
-                        AND roleid in (".$roles.")";
-       $paramteacher = array ('context' => $contextid);
-       $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
-       $tlist = '';
-       foreach($teacherlist as $te) {
-            $tlist = $tlist .$te->firstname .' - '. $te->lastname;
-            // Check for the valid teacher .
-            if ($teachercheck) {
-               if ($te->id == $teacher) {
-                   $validteacher = true;               
-               }            
-            }
-       }
-       if ($valid and $teachercheck) {
-           if ($validteacher ) {           
-           } else {
-               $valid = false;           
-           } 
-       }
-       if ($valid) {
-           if ($choiceid == 0) {
-               $quest = $result->content;
-           }
-           $quest = strip_tags($quest);
-           $quest = trim($quest);
-
-       	  if ($display) { 
-               $row = new stdClass();
-               $row->date = date('Y-m-d', $result->submitted);
-               $row->partner = $partnerdisplay;
-               $row->portfolio = $portdisplay;
-               $row->course_id = $courseid;
-               $row->course = $DB->get_field('course', 'fullname', array('id' => $courseid));
-               $row->question = $quest;
-               $cr = $result->response;
-               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr))); 
-               $row->response = $cr;
-               $row->teachers = $tlist;
-               array_push($content, $row);
-
-               $displaycnt = $displaycnt + 1;
-               if ($displaycnt > $maxdisplay) { 
-                   break;
-               }
-           } else {
-           	   $sub = date('Y-m-d', $result->submitted);
-           	   $cfname = $DB->get_field('course', 'fullname', array('id' => $courseid));
-               $cr = $result->response;  
-               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
-               $displaycnt = $displaycnt + 1;                             
-               $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr);
-           }
-       }    
-    }
-    
-
+    $series1 = new \core\chart_series('Series 1 (Bar)', $valarray);
+    $chart->add_series($series1);
+    $chart->set_labels($labelarray);
+    return $chart;
+/*
     $chart = new core\chart_bar();
     switch($chartid) {
     	case "Bar1": 
@@ -554,7 +418,8 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
           
       break;
    }
-   return $chart;         
+   return $chart;
+   */         
 }
 function block_questionreport_get_all_questions($surveyid) {
     global $DB, $COURSE;  
