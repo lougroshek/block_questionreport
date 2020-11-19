@@ -648,7 +648,7 @@ function block_questionreport_get_chartquestions($surveyid) {
     $plugin = 'block_questionreport';
     $essaylist = array();
     $essaylist[0] = get_string('none', $plugin);
-    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '8', 'surveyid' => $surveyid));
+    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '8', 'surveyid' => $surveyid, 'deleted' => 'n'));
     foreach ($customfields as $field) {
     	$fid = $field->id;
     	$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $fid));

@@ -339,6 +339,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach ($surveys as $survey) {
            $sid = $survey->instance;
+           echo 'qname '.$qname. 'id '.$sid;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
            $cnt = 0;              
