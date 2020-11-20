@@ -67,7 +67,7 @@ No course evaluations have been completed for this course.
 To access results from previously courses, select <strong>Access Data</strong>.
 </p>';
 $string['reportheader'] = 'Questionnaire Report Data';
-$string['chartsheader'] = 'Questionnaire Report Charts';
+$string['chartsheader'] = 'Survey Reports Block Charts';
 $string['coursefilter'] = 'Filter by Course (applies to This Course column)';
 $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site (applies to All Courses column)';
@@ -123,3 +123,8 @@ $string['h_course_id'] = 'Course ID';
 $string['h_facilitator'] = 'Facilitator(s)';
 $string['h_question'] = 'Question';
 $string['h_response'] = 'Response';
+
+//Chart report
+$string['chartquestion'] = 'Select a question';
+$string['getthechart'] = 'Generate the chart';
+$string['nochart'] = 'No chart can be generated ';

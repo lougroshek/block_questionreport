@@ -82,7 +82,9 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
-echo html_writer::label(get_string('selectchart', $plugin), false, array('class' => 'accesshide'));
+echo html_writer::start_tag('h4');
+echo get_string('selectchart', $plugin);
+echo html_writer::end_tag('h4');
 $checked1 =  '';
 $checked2 =  '';
 $checked3 =  '';

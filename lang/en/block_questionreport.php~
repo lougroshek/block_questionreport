@@ -67,7 +67,7 @@ No course evaluations have been completed for this course.
 To access results from previously courses, select <strong>Access Data</strong>.
 </p>';
 $string['reportheader'] = 'Questionnaire Report Data';
-$string['chartsheader'] = 'Questionnaire Report Charts';
+$string['chartsheader'] = 'Survey Reports Block Charts';
 $string['coursefilter'] = 'Filter by Course (applies to This Course column)';
 $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site (applies to All Courses column)';
@@ -112,3 +112,18 @@ $string['portfoliofieldhelp'] = 'Pick the custom course field used to store Port
 $string['portfoliofilter'] = 'Filter by Portfolio';
 $string['teacherfilter'] = 'Filter by Facilitator';
 $string['generatecsv'] = 'Download CSV File';
+$string['data_preview'] = 'Data Preview';
+
+// Admin report table
+$string['h_date'] = 'Date';
+$string['h_portfolio'] = 'Portfolio';
+$string['h_partner'] = 'Partner Site';
+$string['h_course'] = 'Course';
+$string['h_course_id'] = 'Course ID';
+$string['h_facilitator'] = 'Facilitator(s)';
+$string['h_question'] = 'Question';
+$string['h_response'] = 'Response';
+
+//Chart report
+$string['chartquestion'] = 'Select a question';
+$string['getthechart'] = 'Generate the chart';

@@ -381,6 +381,8 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         }
         $pcnt = $pcnt + 1; 
     }
+    echo 'sv '.$svcnt;
+    exit();
     if ($svcnt == 0 ) {
     	 return '0';
     } else {
