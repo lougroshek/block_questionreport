@@ -331,7 +331,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
-//        echo '<br> partnersql '.$partnersql;                
+       // echo '<br> partnersql '.$partnersql;                
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
@@ -339,8 +339,10 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
+        $totsurveys = 0;
+        $totvalue = 0;        
         foreach ($surveys as $survey) {
-  //      	echo ' <br> in survey partnername '.$partnername;
+        //	echo ' <br> in survey partnername '.$partnername;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
@@ -375,11 +377,20 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-               $val = $ranksql->rv / $totres;
-               $val = round($val, 2);
-               $valarray[] = $val;
-               $labelarray[] = $partnername;
+               $totvalue = $ranksql->rv + $totvalue;
+               $totsurveys = $totsurveys + $totres;                             
+          //     $val = $ranksql->rv / $totres;
+          //     $val = round($val, 2);
+          //     $valarray[] = $val;
+          //     echo '<br> adding in partner '.$partnername;
+        //       $labelarray[] = $partnername;
            }    
+        }
+        if ($totsurveys > 0) {
+            $labelarray[] = $partnername;
+            $val = $totvalue / $totsurveys;
+            $val = round($val, 2);
+            $valarray[] = $val; 
         }
         $pcnt = $pcnt + 1; 
     }
