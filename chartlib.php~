@@ -325,7 +325,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
     $pcnt = 0;
     $labelarray = array();
-    var_dump($partnername);
+    var_dump($partnerlist);
     foreach ($partnerlist as $partnername) {
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');

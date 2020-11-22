@@ -307,6 +307,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     $na = get_string('none', $plugin);
     
     $fieldid = get_config($plugin, 'partnerfield');
+    echo 'partner field '.$fieldid;
     $partnerid = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
    
     $portfieldid = get_config($plugin, 'portfoliofield');
@@ -329,7 +330,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     foreach ($partnerlist as $partnername) {
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
-        $partnerid  = $partnerid + 1;
+        //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
         $sqlcourses = "SELECT m.course, m.id, m.instance
