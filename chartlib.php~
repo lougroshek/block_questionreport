@@ -377,7 +377,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-               echo ' partner '.$partnername ' rank '.$ranksql->rv . ' tot res '.$totres;
+               echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
                
                $totvalue = $ranksql->rv + $totvalue;
                $totsurveys = $totsurveys + $totres;                             
