@@ -116,17 +116,20 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
                        JOIN {questionnaire_response_text} qt on qt.question_id = qq.id
                        JOIN {questionnaire_response} qr on qr.id = qt.response_id
                        JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
-                      WHERE qq.name = :qname";
+                      WHERE qq.name = :qname and qr.complete = 'y'";
           $paramsql = array('qname' => $qname);
     } else {
-          $sqladmin = "SELECT rankvalue response, qq.id, qq.surveyid, qs.courseid, qr.submitted
+          $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qs.courseid, qr.submitted
                          FROM {questionnaire_response_rank} mr
                          JOIN {questionnaire_question} qq on qq.id = mr.question_id
                          JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
                          JOIN {questionnaire_response} qr on qr.id = mr.response_id
                         WHERE mr.question_id = :questionid
+                          AND qr.complete = 'y'
                           AND choice_id = :choiceid";
-          $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid);                    
+          $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid); 
+ //         var_dump($paramsql);
+ //         exit();                   
     }
     if ($stdate > 0) {
         $sqladmin = $sqladmin . ' AND qr.submitted >= :stdate';
@@ -357,7 +360,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
            $fromressql .= "JOIN {questionnaire_response} qr ON qr.id = mr.response_id AND qr.complete ='y'";
-        	  $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
+        	  $whereressql = "WHERE qr.complete = 'y' AND mr.question_id = ".$qid ." AND choice_id = ".$chid;
            $paramsql = array();
         	  if ($stdate > 0) {
               // $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';

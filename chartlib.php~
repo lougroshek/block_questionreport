@@ -116,17 +116,20 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
                        JOIN {questionnaire_response_text} qt on qt.question_id = qq.id
                        JOIN {questionnaire_response} qr on qr.id = qt.response_id
                        JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
-                      WHERE qq.name = :qname";
+                      WHERE qq.name = :qname and qr.complete = 'y'";
           $paramsql = array('qname' => $qname);
     } else {
-          $sqladmin = "SELECT rankvalue response, qq.id, qq.surveyid, qs.courseid, qr.submitted
+          $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qs.courseid, qr.submitted
                          FROM {questionnaire_response_rank} mr
                          JOIN {questionnaire_question} qq on qq.id = mr.question_id
                          JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
                          JOIN {questionnaire_response} qr on qr.id = mr.response_id
                         WHERE mr.question_id = :questionid
+                          AND qr.complete = 'y'
                           AND choice_id = :choiceid";
-          $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid);                    
+          $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid); 
+ //         var_dump($paramsql);
+ //         exit();                   
     }
     if ($stdate > 0) {
         $sqladmin = $sqladmin . ' AND qr.submitted >= :stdate';
@@ -143,6 +146,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         $paramsql['courseid'] = $cid;
     }
+echo $sqladmin;
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -342,7 +346,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         $totsurveys = 0;
         $totvalue = 0;        
         foreach ($surveys as $survey) {
-        	echo ' <br> in survey partnername '.$partnername.' survey '.$survey->instance . ' course '.$survey->course;
+       // 	echo ' <br> in survey partnername '.$partnername.' survey '.$survey->instance . ' course '.$survey->course;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
