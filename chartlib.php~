@@ -331,7 +331,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
-        echo '<br> partnersql '.$partnersql;                
+       // echo '<br> partnersql '.$partnersql;                
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          

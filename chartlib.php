@@ -342,7 +342,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         $totsurveys = 0;
         $totvalue = 0;        
         foreach ($surveys as $survey) {
-        //	echo ' <br> in survey partnername '.$partnername;
+        	echo ' <br> in survey partnername '.$partnername;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
@@ -387,6 +387,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            }    
         }
         if ($totsurveys > 0) {
+        	echo '<br> add in '.$partnername;
             $labelarray[] = $partnername;
             $val = $totvalue / $totsurveys;
             $val = round($val, 2);
