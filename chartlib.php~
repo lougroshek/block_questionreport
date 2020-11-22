@@ -338,7 +338,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
-echo $paramsql;
+echo $sqlcourses;
         foreach ($surveys as $survey) {
            $sid = $survey->instance;
            echo ' sid '.$sid;

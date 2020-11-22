@@ -326,6 +326,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     $pcnt = 0;
     $labelarray = array();
     foreach ($partnerlist as $partnername) {
+    	echo ' partnername '.$partnername;
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
         //$partnerid  = $partnerid + 1;
@@ -338,10 +339,9 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
-echo $sqlcourses;
         foreach ($surveys as $survey) {
+        	echo ' <br> in survey partnername '.$partnername;
            $sid = $survey->instance;
-           echo ' sid '.$sid;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
            $cnt = 0;              
