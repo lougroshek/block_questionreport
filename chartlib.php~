@@ -356,17 +356,18 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            }
            $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
+           $fromressql .= "JOIN {questionnaire_response} qr ON qr.id = mr.response_id AND qr.complete ='y'";
         	  $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
            $paramsql = array();
         	  if ($stdate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
                $std = strtotime($stdate);
                $paramsql['stdate'] = $std;        	  
         	   }
         	  if ($nddate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-               $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
+              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+               $whereressql = $whereressql . ' AND qr.submitted <= :nddate';
                $ndt = strtotime($nddate);
                $paramsql['nddate'] = $ndt;        	  
         	  }
@@ -376,10 +377,10 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            	   $svcnt = $svcnt + 1;
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-               echo 'totranksql '.$totranksql;
+             //  echo 'totranksql '.$totranksql;
                
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-               echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
+              // echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
                
                $totvalue = $ranksql->rv + $totvalue;
                $totsurveys = $totsurveys + $totres;                             

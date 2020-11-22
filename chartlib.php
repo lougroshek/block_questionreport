@@ -377,10 +377,10 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            	   $svcnt = $svcnt + 1;
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-               echo 'totranksql '.$totranksql;
+             //  echo 'totranksql '.$totranksql;
                
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-               echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
+              // echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
                
                $totvalue = $ranksql->rv + $totvalue;
                $totsurveys = $totsurveys + $totres;                             
@@ -392,7 +392,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            }    
         }
         if ($totsurveys > 0) {
-        	echo '<br> add in '.$partnername;
+        //	echo '<br> add in '.$partnername;
             $labelarray[] = $partnername;
             
             $val = $totvalue / $totsurveys;
