@@ -323,15 +323,15 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     $chart = new core\chart_bar();   
     $partnerlist = block_questionreport_get_partners_list();
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
-    $pcnt = 0;
+    $pcnt = 1;
     $labelarray = array();
     foreach ($partnerlist as $partnername) {
-    	echo ' partnername '.$partnername;
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
         //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
+//        echo '<br> partnersql '.$partnersql;                
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
@@ -340,7 +340,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
                            AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach ($surveys as $survey) {
-        	echo ' <br> in survey partnername '.$partnername;
+  //      	echo ' <br> in survey partnername '.$partnername;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
