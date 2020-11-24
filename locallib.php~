@@ -146,8 +146,13 @@ function block_questionreport_get_evaluations() {
     $cnt = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == '-') {
     	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
-        $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
-        if ($totres > 0) {
+    	  $totresql = "SELECT count(*) crnt 
+    	                 FROM {questionnaire_response_rank} mr
+    	                 JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+    	                  AND mr.question_id = ".$questionid; 
+       // $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
+        $totres = $DB->get_records_sql($totsql);
+        if ($totres->crnct > 0) {
             $contentq->stat = 0;
         } else {
             $has_responses_contentq = false;
@@ -165,8 +170,14 @@ function block_questionreport_get_evaluations() {
         $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
         if ($cnt2 == '-') {
    	      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
-            $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
-            if ($totres > 0) {
+            $totresql = "SELECT count(*) crnt 
+    	                 FROM {questionnaire_response_rank} mr
+    	                 JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+    	                  AND mr.question_id = ".$questionid; 
+                 
+           //  $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
+            $totres = $DB->get_records_sql($totsql);
+            if ($totres->crnct > 0) {
                 $commq->stat = 0;
             } else { 
                 $has_responses_commq = false;
@@ -274,6 +285,14 @@ function block_questionreport_get_courses() {
 	    if ($valid) {
            $courselist[$coursecert->id] = $coursecert->fullname;
        }
+    }
+    // Get the non moodle courses;
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_course')) {
+        $altcourses = $DB->get_records('local_teaching_course');
+        foreach($altcourse as $alt) {
+           $courselist[$alt->id] = $alt->coursename;        
+        }    
     }
     return $courselist;
 }

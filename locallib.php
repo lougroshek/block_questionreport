@@ -286,6 +286,14 @@ function block_questionreport_get_courses() {
            $courselist[$coursecert->id] = $coursecert->fullname;
        }
     }
+    // Get the non moodle courses;
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_course')) {
+        $altcourses = $DB->get_records('local_teaching_course');
+        foreach($altcourses as $alt) {
+           $courselist[$alt->id] = $alt->coursename;        
+        }    
+    }
     return $courselist;
 }
 

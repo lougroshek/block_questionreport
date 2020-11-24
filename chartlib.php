@@ -34,6 +34,13 @@ function block_questionreport_get_portfolio_list() {
     $x = json_decode($content);
     $opts = $x->options;
     $options = preg_split("/\s*\n\s*/", $opts);
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_port')) {
+        $altcourses = $DB->get_records('local_teaching_port');
+        foreach($altcourses as $alt) {
+           $options[$alt->id] = $alt->portname;        
+        }    
+    }
     return $options;
 
 }
@@ -51,6 +58,13 @@ function block_questionreport_get_teachers_list() {
     $teacherfields = $DB->get_records_sql($teachersql);
     foreach ($teacherfields as $field) {
         $teacherlist[$field->usersid] = $field->firstname. " ". $field->lastname;
+    }
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_teacher')) {
+        $altcourses = $DB->get_records('local_teaching_teacher');
+        foreach($altcourses as $alt) {
+           $teacherlist[$alt->id] = $alt->teachername;        
+        }    
     }
     return $teacherlist;
 }
@@ -331,10 +345,8 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     foreach ($partnerlist as $partnername) {
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
-        //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
-       // echo '<br> partnersql '.$partnersql;                
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
@@ -345,7 +357,6 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         $totsurveys = 0;
         $totvalue = 0;        
         foreach ($surveys as $survey) {
-       // 	echo ' <br> in survey partnername '.$partnername.' survey '.$survey->instance . ' course '.$survey->course;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
@@ -363,13 +374,11 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         	  $whereressql = "WHERE qr.complete = 'y' AND mr.question_id = ".$qid ." AND choice_id = ".$chid;
            $paramsql = array();
         	  if ($stdate > 0) {
-              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
                $std = strtotime($stdate);
                $paramsql['stdate'] = $std;        	  
-        	   }
+        	  }
         	  if ($nddate > 0) {
-              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted <= :nddate';
                $ndt = strtotime($nddate);
                $paramsql['nddate'] = $ndt;        	  
@@ -380,30 +389,24 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            	   $svcnt = $svcnt + 1;
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-             //  echo 'totranksql '.$totranksql;
-               
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-              // echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
-               
                $totvalue = $ranksql->rv + $totvalue;
-               $totsurveys = $totsurveys + $totres;                             
-          //     $val = $ranksql->rv / $totres;
-          //     $val = round($val, 2);
-          //     $valarray[] = $val;
-          //     echo '<br> adding in partner '.$partnername;
-        //       $labelarray[] = $partnername;
            }    
         }
         if ($totsurveys > 0) {
-        //	echo '<br> add in '.$partnername;
             $labelarray[] = $partnername;
-            
             $val = $totvalue / $totsurveys;
             $val = round($val, 2);
             $valarray[] = $val; 
         }
         $pcnt = $pcnt + 1; 
     }
+    // check non moodle courses 
+      // Get the non moodle courses;
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_course')) {
+    }    
+  
     if ($svcnt == 0 ) {
     	 return '0';
     } else {

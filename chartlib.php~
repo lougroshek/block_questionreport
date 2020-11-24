@@ -34,6 +34,13 @@ function block_questionreport_get_portfolio_list() {
     $x = json_decode($content);
     $opts = $x->options;
     $options = preg_split("/\s*\n\s*/", $opts);
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_port')) {
+        $altcourses = $DB->get_records('local_teaching_port');
+        foreach($altcourses as $alt) {
+           $options[$alt->id] = $alt->portname;        
+        }    
+    }
     return $options;
 
 }
@@ -51,6 +58,13 @@ function block_questionreport_get_teachers_list() {
     $teacherfields = $DB->get_records_sql($teachersql);
     foreach ($teacherfields as $field) {
         $teacherlist[$field->usersid] = $field->firstname. " ". $field->lastname;
+    }
+    $dbman = $DB->get_manager();
+    if ($dbman->table_exists('local_teaching_teacher')) {
+        $altcourses = $DB->get_records('local_teaching_teacher');
+        foreach($altcourses as $alt) {
+           $teacherlist[$alt->id] = $alt->teachername;        
+        }    
     }
     return $teacherlist;
 }
@@ -146,7 +160,6 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         $paramsql['courseid'] = $cid;
     }
-echo $sqladmin;
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -361,7 +374,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            $totresql  = "SELECT count(rankvalue) ";
            $fromressql = " FROM {questionnaire_response_rank} mr ";
            $fromressql .= "JOIN {questionnaire_response} qr ON qr.id = mr.response_id AND qr.complete ='y'";
-        	  $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
+        	  $whereressql = "WHERE qr.complete = 'y' AND mr.question_id = ".$qid ." AND choice_id = ".$chid;
            $paramsql = array();
         	  if ($stdate > 0) {
               // $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
