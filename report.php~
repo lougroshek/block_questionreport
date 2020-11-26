@@ -199,13 +199,13 @@ $whereext = "WHERE 1 = 1";
 $paramsext = array();
 if ($start_date > 0) {
     $std = strtotime($start_date);
-    $whereext = $whereext . " AND coursedate >= :std";
+    $whereext = $whereext . " AND submitted >= :std";
     $paramsext['std'] = $std;
 }
 
 if ($end_date > 0) {
     $endtd = strtotime($end_date);
-    $whereext = $whereext . " AND coursedate <= :endtd";
+    $whereext = $whereext . " AND submitted <= :endtd";
     $paramsext['endtd'] = $endtd;
 }
 $sqlext = $sqlext .' '.$whereext;

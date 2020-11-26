@@ -75,6 +75,7 @@ function block_questionreport_get_evaluations() {
     global $DB, $CFG, $COURSE, $PAGE, $OUTPUT; 
     $plugin = 'block_questionreport';
     
+    $ctype = "M";
     // The object we will pass to mustache.
     $data = new stdClass();
     
@@ -94,7 +95,8 @@ function block_questionreport_get_evaluations() {
     // Build reports button object.
     $reports = new stdClass();
     $reports->text = get_string('reports', $plugin);
-    $reports->href = $CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$COURSE->id;
+    $cid = "M-".$COURSE->id;
+    $reports->href = $CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$cid;
     $data->buttons->reports = $reports;
     // Conditionally add charts button object.
     if (!!$is_admin) {
@@ -103,12 +105,12 @@ function block_questionreport_get_evaluations() {
         // Build charts object.
         $charts = new stdClass();
         $charts->text = get_string('charts', $plugin);
-        $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php?action=view&cid='.$COURSE->id;
+        $charts->href = $CFG->wwwroot.'/blocks/questionreport/charts.php?action=view&cid='.$cid;
         $data->buttons->charts = $charts;
         // Build admin reports button object.
         $adminreports = new stdClass();
         $adminreports->text = get_string('adminreports', $plugin);
-        $adminreports->href = $CFG->wwwroot.'/blocks/questionreport/adminreport.php?action=view&cid='.$COURSE->id;
+        $adminreports->href = $CFG->wwwroot.'/blocks/questionreport/adminreport.php?action=view&cid='.$cid;
         $data->buttons->adminreports = $adminreports;
     } 
     if (!!$is_teacher) {
@@ -143,7 +145,7 @@ function block_questionreport_get_evaluations() {
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     $records = $DB->get_record_sql($sql, $params);
     $stp = $records->mp;
-    $cnt = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
+    $cnt = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == '-') {
     	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
     	  $totresql = "SELECT count(*) crnt 
@@ -167,7 +169,7 @@ function block_questionreport_get_evaluations() {
         $commq->desc = get_string('commq_desc', $plugin);
         $commq->stat = null;
         $stp = $stp + 1;    
-        $cnt2 = block_questionreport_get_question_results($stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
+        $cnt2 = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
         if ($cnt2 == '-') {
    	      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
             $totresql = "SELECT count(*) crnt 
@@ -283,7 +285,9 @@ function block_questionreport_get_courses() {
 	       }    
 	    }
 	    if ($valid) {
-           $courselist[$coursecert->id] = $coursecert->fullname;
+	    	  $cid = "M-".$coursecert->id;
+	    	  $cname = "M-".$coursecert->fullname;
+           $courselist[$cid] = $cname;
        }
     }
     // Get the non moodle courses;
@@ -291,7 +295,9 @@ function block_questionreport_get_courses() {
     if ($dbman->table_exists('local_teaching_course')) {
         $altcourses = $DB->get_records('local_teaching_course');
         foreach($altcourses as $alt) {
-           $courselist[$alt->id] = $alt->coursename;        
+        	  $cid = "A-".$alt->id;
+        	  $cname = "A-".$alt->coursename;
+           $courselist[$cid] = $cname;        
         }    
     }
     return $courselist;
@@ -331,7 +337,7 @@ function block_questionreport_get_partners_list() {
     return $options;
 
 }
-function block_questionreport_get_question_results_rank($questionid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner) {
+function block_questionreport_get_question_results_rank($ctype, $questionid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner) {
 	 // Return the percentage of questions answered with a rank 4, 5;
 	 // questionid  question #
 	 // choice id is the choice id for a specific survey. For all courses then which choice option.
@@ -424,6 +430,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
            if (empty($qid) or !$valid) {
               $totres = 0;           
            } else { 
+
               $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
               $cnt = 0;              
               foreach ($choices as $choice) {          
@@ -477,8 +484,77 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
                     $gttotres = $gttotres + $totgood;        
                 }               
                 
+            }
+         }
+echo 'zzzz ';
+exit();
+            $sqlext = "SELECT COUNT(ts.courseid) cdtot
+                       FROM {local_teaching_survey} ts";
+            $whereext = "WHERE 1 = 1";
+            $paramsext = array();
+            if ($stdate > 0) {
+                $std = strtotime($stdate);
+                $whereext = $whereext . " AND coursedate >= :std";
+                $paramsext['std'] = $std;
+            }
+
+            if ($nddate > 0) {
+                $endtd = strtotime($nddate);
+                $whereext = $whereext . " AND coursedate <= :endtd";
+                $paramsext['endtd'] = $endtd;
+            }
+            $sqlext = $sqlext .' '.$whereext;
+            $respext = $DB->get_record_sql($sqlext, $paramsext);
+
+            $gtres = $gtres + $respext->cdtot;
+            if ($respext->cdtot > 0) {
+                $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                           FROM {local_teaching_survey} ts";
+                switch ($cnt) {
+                	 case "1":
+                     $whereext = "where satisfied >=4";
+                     break;
+                   case "2": 
+                     $whereext = "where topics >=4";
+                     break;
+                   case "3" :
+                     $whereext = "where online >=4";
+                     break;
+                  case "4" :
+                     $whereext = "where zoom >=4";
+                     break;
+                  case "5" :    
+                     $whereext = "where community >=4";
+                     break;
+                  case "6" :
+                     $whereext = "where covid >=4";
+                     break;
+                  case "7" :
+                     $whereext = "where navigate >=4";
+                     break;
+                  case "8" :
+                     $whereext = "where learning >=4";
+                     break;
+
+                }                        
+                if ($stdate > 0) {
+                    $std = strtotime($stdate);
+                    $whereext = $whereext . " AND coursedate >= :std";
+                    $paramsext['std'] = $std;
+                }
+
+                if ($nddate > 0) {
+                    $endtd = strtotime($nddate);
+                    $whereext = $whereext . " AND coursedate <= :endtd";
+                    $paramsext['endtd'] = $endtd;
+                }
+                $sqlext = $sqlext .' '.$whereext;
+                echo '<br> '.$sqlext;
+                $respext = $DB->get_record_sql($sqlext, $paramsext);
+                $tot2 = $respext->cdgood;
+                $gttotres = $gttotres + $tot2;
             } 
-        }
+ 
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
@@ -494,7 +570,7 @@ function block_questionreport_get_question_results_rank($questionid, $choiceid, 
     return $retval;  
 
 }
-function block_questionreport_get_question_results($position, $cid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner) {
+function block_questionreport_get_question_results($ctype, $position, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner) {
 	 // Return the percentage of questions answered with a rank 4, 5;
 	 // position is the question #
 	 // cid is the current course, if its 0 then its all courses;
@@ -503,6 +579,7 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
 	 // stdate start date for the surveys (0 if not used)
 	 // nddate end date for the surveys (0 if not used)
 	 // partner partner - blank if not used.
+	 
     global $DB, $USER;
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
@@ -533,7 +610,6 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
                $paramsql['nddate'] = $ndt;        	  
         	  }
            $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
-           
            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            if ($totres > 0) {
         	      $totgoodsql  = "SELECT count(rankvalue) ";
@@ -587,7 +663,9 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
               $totres = 0;           
-           } else {           
+           } else { 
+              $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));                     
+//echo '<br> qname '.$qname;
               $totresql  = "SELECT count(rankvalue) ";
               $fromressql = " FROM {questionnaire_response_rank} mr ";
         	     $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -632,6 +710,52 @@ function block_questionreport_get_question_results($position, $cid, $surveyid, $
               }  
            }
         }
+        // Add in the non moodle courses.
+        $sqlext = "SELECT COUNT(ts.courseid) cdtot
+                   FROM {local_teaching_survey} ts";
+        $whereext = "WHERE 1 = 1";
+        $paramsext = array();
+        if ($stdate > 0) {
+            $std = strtotime($stdate);
+            $whereext = $whereext . " AND coursedate >= :std";
+            $paramsext['std'] = $std;
+        }
+
+        if ($nddate > 0) {
+            $endtd = strtotime($nddate);
+            $whereext = $whereext . " AND coursedate <= :endtd";
+            $paramsext['endtd'] = $endtd;
+        }
+        $sqlext = $sqlext .' '.$whereext;
+        $respext = $DB->get_record_sql($sqlext, $paramsext);
+
+        $gtres = $gtres + $respext->cdtot;
+        if ($respext->cdtot > 0) {
+            if ($qname == 'facilitator_rate_content') {
+                $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                           FROM {local_teaching_survey} ts";
+                $whereext =" where (content1 >=4 or content2 >=4)";
+            } else {
+                $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                           FROM {local_teaching_survey} ts";
+                $whereext =" where (community1 >=4 or community2 >=4)";
+            }
+            if ($stdate > 0) {
+                $std = strtotime($stdate);
+                $whereext = $whereext . " AND coursedate >= :std";
+                $paramsext['std'] = $std;
+            }
+
+            if ($nddate > 0) {
+                $endtd = strtotime($nddate);
+                $whereext = $whereext . " AND coursedate <= :endtd";
+                $paramsext['endtd'] = $endtd;
+            }
+            $sqlext = $sqlext .' '.$whereext;
+            $respext = $DB->get_record_sql($sqlext, $paramsext);
+            $tot2 = $respext->cdgood;
+            $gttotres = $gttotres + $tot2;
+        } 
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
