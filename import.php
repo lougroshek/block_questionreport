@@ -34,10 +34,12 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             $rec->practice = $data[13];
             // check the teacher
             $tname = trim($data[14]);
-            echo 'teacher name '.$tname;
+//            echo 'teacher name '.$tname;
             $tlen = strlen($tname);
             $teacherid = 0;
-            
+//echo ' covid '.$data[10];
+//echo ' nav '.$data[11];
+//exit();            
             if ($tlen > 4) {
 //echo 'looking '; 
                 if ($DB->record_exists('local_teaching_teacher', array ('teachername'=> $tname))) {

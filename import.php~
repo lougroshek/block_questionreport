@@ -37,17 +37,19 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             echo 'teacher name '.$tname;
             $tlen = strlen($tname);
             $teacherid = 0;
-            
+echo ' covid '.$data[10];
+echo ' nav '.$data[11];
+exit();            
             if ($tlen > 4) {
-echo 'looking '; 
+//echo 'looking '; 
                 if ($DB->record_exists('local_teaching_teacher', array ('teachername'=> $tname))) {
                     $teacherid = $DB->get_field('local_teaching_teacher', 'id', array ('teachername'=> $tname));
-                    echo ' found '.$teacherid;            
+ //                   echo ' found '.$teacherid;            
                 } else {
                     $trec = new stdClass();
                     $trec->teachername = $tname;
                     $teacherid = $DB->insert_record('local_teaching_teacher', $trec);
-                    echo ' doing insert ';
+   //                 echo ' doing insert ';
                 }            
             }
 
@@ -116,7 +118,7 @@ echo 'looking ';
               $DB->set_field('local_teaching_survey', 'teacher1id', $teacherid, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'teacher2id', $teacher2id, array('uidsurvey' => $lastrecord));
 
-exit();
+//exit();
       }
   }
 echo 'done';
