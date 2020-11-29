@@ -358,7 +358,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }
     if ($surveyid > 0) {
-    	  if ($ctype == 'M')
+    	  if ($ctype == 'M') {
             $totresql  = "SELECT count(rankvalue) ";
             $fromressql = " FROM {questionnaire_response_rank} mr ";
             $whereressql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid;
@@ -404,10 +404,75 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     $retval = "0(%)"; 
                 } 
              }
-           } else {
-                // Non moodle course work goes here. 
-            }              
-           }      
+          } else {
+              $sqlext = "SELECT COUNT(ts.courseid) cdtot
+                         FROM {local_teaching_survey} ts";
+              $whereext = "WHERE 1 = 1";
+              $paramsext = array();
+              if ($stdate > 0) {
+                  $std = strtotime($stdate);
+                  $whereext = $whereext . " AND coursedate >= :std";
+                  $paramsext['std'] = $std;
+              }
+
+              if ($nddate > 0) {
+                  $endtd = strtotime($nddate);
+                  $whereext = $whereext . " AND coursedate <= :endtd";
+                  $paramsext['endtd'] = $endtd;
+              }
+              $sqlext = $sqlext .' '.$whereext;
+              $respext = $DB->get_record_sql($sqlext, $paramsext);
+  
+              $totres = $respext->cdtot;
+              if ($totres > 0) {
+                  $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                             FROM {local_teaching_survey} ts";
+                  switch ($cid) {
+                	  case "1":
+                       $whereext = "where satisfied >=4";
+                       break;
+                    case "2": 
+                       $whereext = "where topics >=4";
+                       break;
+                    case "3" :
+                       $whereext = "where online >=4";
+                       break;
+                    case "4" :
+                       $whereext = "where zoom >=4";
+                       break;
+                    case "5" :    
+                       $whereext = "where community >=4";
+                       break;
+                    case "6" :
+                       $whereext = "where covid >=4";
+                       break;
+                    case "7" :
+                       $whereext = "where practice >=4";
+                       break;
+                  }                        
+                  if ($stdate > 0) {
+                      $std = strtotime($stdate);
+                      $whereext = $whereext . " AND coursedate >= :std";
+                      $paramsext['std'] = $std;
+                  }
+                  if ($nddate > 0) {
+                      $endtd = strtotime($nddate);
+                      $whereext = $whereext . " AND coursedate <= :endtd";
+                      $paramsext['endtd'] = $endtd;
+                  }
+                  $sqlext = $sqlext .' '.$whereext;
+                  $respext = $DB->get_record_sql($sqlext, $paramsext);
+                  $totgood = $respext->cdgood;
+                  if ($totgood > 0) {
+                      $percent = ($totgood / $totres) * 100;
+                      $retval = round($percent, 2)."(%)";
+                  } else {
+                      $retval = "0(%)"; 
+                  }
+            } 
+           
+          }              
+                 
     } else  {
     	   // Get all the courses;
     	   $gtres = 0;
@@ -785,15 +850,28 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 
         $gtres = $gtres + $respext->cdtot;
         if ($respext->cdtot > 0) {
-            if ($qname == 'facilitator_rate_content') {
-                $sqlext = "SELECT COUNT(ts.courseid) cdgood
-                           FROM {local_teaching_survey} ts";
-                $whereext =" where (content1 >=4 or content2 >=4)";
-            } else {
-                $sqlext = "SELECT COUNT(ts.courseid) cdgood
-                           FROM {local_teaching_survey} ts";
-                $whereext =" where (community1 >=4 or community2 >=4)";
-            }
+            if ($ctype == 'M') {
+                if ($qname == 'facilitator_rate_content') {
+                    $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                              FROM {local_teaching_survey} ts";
+                    $whereext =" where (content1 >=4 or content2 >=4)";
+                } else {
+                    $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                               FROM {local_teaching_survey} ts";
+                   $whereext =" where (community1 >=4 or community2 >=4)";
+                } 
+             } else {
+                if ($position == '0') {
+                    $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                              FROM {local_teaching_survey} ts";
+                    $whereext =" where (content1 >=4 or content2 >=4)";
+                } else {
+                    $sqlext = "SELECT COUNT(ts.courseid) cdgood
+                               FROM {local_teaching_survey} ts";
+                   $whereext =" where (community1 >=4 or community2 >=4)";
+                } 
+             
+             }
             if ($stdate > 0) {
                 $std = strtotime($stdate);
                 $whereext = $whereext . " AND coursedate >= :std";
@@ -825,18 +903,29 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
     return $retval;  
 
 }
-function block_questionreport_get_essay($surveyid) {
+function block_questionreport_get_essay($ctype, $surveyid) {
     global $DB, $COURSE;  
     $plugin = 'block_questionreport';
     $essaylist = array();
     $essaylist[0] = get_string('none', $plugin);
-    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
-    foreach ($customfields as $field) {
-    	  $content = $field->content;
-    	  $display = strip_tags($content);
-    	  $display = trim($display);
-        $essaylist[$field->id] = $display;
-    }
+    if ($ctype == "M") {
+       $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+       foreach ($customfields as $field) {
+    	     $content = $field->content;
+    	     $display = strip_tags($content);
+    	     $display = trim($display);
+           $essaylist[$field->id] = $display;
+       }
+    } else {
+       $essaylist[1] = 'What is the learning from this course that you are most excited about trying out?';
+       $essaylist[2] = 'How, if in any way, this course helped you prepare for school opening after COVID-19?';
+       $essaylist[3] = 'Overall, what went well in this course?';
+       $essaylist[4] = 'Which activities best supported your learning in this course?';
+       $essaylist[5] = 'What could have improved your experience in this course?';
+       $essaylist[6] = 'Why did you choose this rating?';
+       $essaylist[7] = 'Do you have additional comments about  this course?';
+          
+    }   
     return $essaylist;
 }
 
@@ -869,56 +958,104 @@ function block_questionreport_get_chartquestions($surveyid) {
   */  
     return $essaylist;
 }
-function block_questionreport_get_essay_results($questionid, $stdate, $nddate, $limit) {
+function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid) {
     global $DB, $COURSE;
-    // If limit = 0 return all essay results. Otherwise return the limit.
-    $sqlessay  = "SELECT qt.response, qt.id ";
-    $fromessaysql = " FROM {questionnaire_response_text} qt ";
-    $whereessaysql = "WHERE qt.question_id = ".$questionid;
-    $paramsql = array();
-    if ($stdate > 0) {
-        $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr on qr.id = qt.response_id';
-        $whereessaysql = $whereessaysql . ' AND qr.submitted >= :stdate';
-        $std = strtotime($stdate);
-        $paramsql['stdate'] = $std;        	  
+    if ($ctype == 'M') {    
+        // If limit = 0 return all essay results. Otherwise return the limit.
+        $sqlessay  = "SELECT qt.response, qt.id ";
+        $fromessaysql = " FROM {questionnaire_response_text} qt ";
+        $whereessaysql = "WHERE qt.question_id = ".$questionid;
+        $paramsql = array();
+        if ($stdate > 0) {
+            $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr on qr.id = qt.response_id';
+            $whereessaysql = $whereessaysql . ' AND qr.submitted >= :stdate';
+            $std = strtotime($stdate);
+            $paramsql['stdate'] = $std;        	  
+        }
+        if ($nddate > 0) {
+            $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr2 on qr2.id = qt.response_id';
+            $whereessaysql = $whereessaysql . ' AND qr2.submitted <= :nddate';
+            $ndt = strtotime($nddate);
+            $paramsql['nddate'] = $ndt;        	  
+        }
+        $sql = $sqlessay .' '.$fromessaysql. ' '.$whereessaysql;
+        $arrayid = array();     
+        $resultlist = $DB->get_records_sql($sql, $paramsql);
+        foreach($resultlist as $result) {
+            $arrayid[] = $result->id;
+        }
+        $return = [];
+        if (!empty($arrayid)) {
+            shuffle($arrayid);
+            $cnt = 0;
+            foreach($arrayid as $resid) {
+                $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
+    	          $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
+    	          $cnt = $cnt + 1;
+    	          if ($limit > 0 and $limit > $cnt) {
+                    break;    	   
+    	          }
+           }   
+         }
+     } else {
+        switch($questionid) {
+        	 case "1":
+        	 break;
+     	    case "2":
+     	      $sql = "SELECT uidsurvey, navigate response ";
+        	   break;
+       	 case "3":
+       	   $sql = "SELECT uidsurvey, overall response ";
+        	   break;      
+        	 case "4":
+        	   $sql = "SELECT uidsurvey, improved response ";
+        	   break;      
+        	 case "5":
+        	   $sql = " SELECT uidsurvey, reccomend response ";
+        	   break;      
+        	 case "6":
+        	   $sql = " SELECT uidsurvey, choose response ";       	   
+        	   break;      
+        	 case "7":
+        	   $sql = " SELECT uidsurvey, comment response ";
+        	   break;      
+        	 case "8":
+        	 break;           
+     }   
+     $return = [];       
+     $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
+     $paramsql = array();
+     if ($stdate > 0) {
+         $sql = $sql ." AND coursedate >= :stdate";
+         $paramsql['stdate'] = $std;        	  
      }
      if ($nddate > 0) {
-        $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr2 on qr2.id = qt.response_id';
-        $whereessaysql = $whereessaysql . ' AND qr2.submitted <= :nddate';
-        $ndt = strtotime($nddate);
-        $paramsql['nddate'] = $ndt;        	  
+         $sql = $sql. " AND coursedate <= :nddate";
+         $ndt = strtotime($nddate);
+         $paramsql['nddate'] = $ndt;        	  
      }
-     $sql = $sqlessay .' '.$fromessaysql. ' '.$whereessaysql;
-     $arrayid = array();     
+     echo $sql;
      $resultlist = $DB->get_records_sql($sql, $paramsql);
-     foreach($resultlist as $result) {
-         $arrayid[] = $result->id;
-     }
-     $return = [];
-     if (!empty($arrayid)) {
-         shuffle($arrayid);
-         $cnt = 0;
-         foreach($arrayid as $resid) {
-            $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
+     if (!empty($resultlist)) {
+        $cnt = 0;
+        foreach($resultlist as $resid) {
+            $cr = $resid->response;
     	      $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
     	      $cnt = $cnt + 1;
     	      if ($limit > 0 and $limit > $cnt) {
-                break;    	   
+                 break;    	   
     	      }
         }   
      }
-     return $return;
+  }             
+  return $return;
 }
 
-function block_questionreport_get_words($surveyid, $questionid, $stdate, $nddate) {
+function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate) {
     global $DB;
     
     $words = [];
-//    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
-//    foreach ($customfields as $field) {
-  //  	   $questionid = $field->id;
-    	   array_push($words, block_questionreport_get_essay_results($questionid, $stdate, $nddate, 0));
-   // }
+    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid));
     
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;

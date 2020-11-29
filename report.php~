@@ -320,9 +320,9 @@ if ($ctype == 'M') {
          $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
          // Build object from data and assign it to the $data object passed to the template.
          if ($x == 0) {
-             $qcontent = "S/he facilitated the content clearly.";
+             $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
          } else {
-         	 $qcontent = "S/he effectively built a community of learners."; 
+         	 $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. "; 
          }
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
@@ -334,26 +334,61 @@ if ($ctype == 'M') {
 }
 // Container for session survey questions passed to template.
 $data->session = [];
-
-$qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-$qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-$choicecnt = 0;
-foreach ($choices as $choice) {
-    $obj = new stdClass;
-    $obj->question = $choice->content;
-    $choiceid = $choice->id;
-    $choicecnt = $choicecnt + 1;
-    $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-    $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-    $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-    $obj->all = $all; 
-    array_push($data->session, $obj);
+if ($ctype == 'M') {
+    $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+    $choicecnt = 0;
+    foreach ($choices as $choice) {
+        $obj = new stdClass;
+        $obj->question = $choice->content;
+        $choiceid = $choice->id;
+        $choicecnt = $choicecnt + 1;
+        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
+        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+        $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
+        $obj->all = $all; 
+        array_push($data->session, $obj);
+    }
+} else {
+   for ($x=1; $x< 8; $x++) { 
+        $obj = new stdClass;
+        switch ($x) {
+       	 case "1":
+             $quest = "I am satisfied with the overall quality of this course.";
+             break;
+          case "2":
+             $quest = "The topics for this course were relevant for my role. "; 
+             break;
+          case "3" :
+             $quest = "The independent online work activities were well-designed to help me meet the learning targets. ";
+             break;
+          case "4" :
+             $quest = "The Zoom meeting activities were well-designed to help me meet the learning targets.";
+             break;
+          case "5" :
+             $quest = "I felt a sense of community with the other participants in this course even though we were meeting virtually. ";
+             break;
+          case "6" :
+             $quest = "This course helped me navigate remote and/or hybrid learning during COVID-19. ";
+             break;
+          case "7" :
+             $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
+             break; 
+          }
+          $obj->question = $quest;
+          $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
+          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+          $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
+          $obj->all = $all; 
+          array_push($data->session, $obj);
+                        
+    }
+                
 }
-
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
-$questionlist = block_questionreport_get_essay($surveyid);
+$questionlist = block_questionreport_get_essay($ctype, $surveyid);
 $content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 $content .= "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
@@ -374,7 +409,10 @@ $word_cloud = new stdClass();
 // [ [ "word", size], ["word", size], ... ]
 
 if ($questionid > 0 ) {
-    $wordcount = block_questionreport_get_words($surveyid, $questionid, $start_date, $end_date);
+	 if ($ctype <> 'M') {
+        $surveyid = $courseid;	 
+	 }
+    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date);
     $default_font_size = 20; // Adjust for more words.
     $words = [];
     foreach ($wordcount as $wd) {
@@ -395,7 +433,7 @@ if ($questionid > 0 ) {
 $quote_data = new stdClass();
 // Array of text responses to render.
 if ($questionid > 0 ){
-    $quote_data->quotes = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid);
 }
 /*
 

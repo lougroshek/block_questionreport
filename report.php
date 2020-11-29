@@ -386,9 +386,13 @@ if ($ctype == 'M') {
     }
                 
 }
+if ($ctype <> 'M') {
+    $surveyid = $courseid;	 
+}
+
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
-$questionlist = block_questionreport_get_essay($surveyid);
+$questionlist = block_questionreport_get_essay($ctype, $surveyid);
 $content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 $content .= "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
@@ -409,7 +413,10 @@ $word_cloud = new stdClass();
 // [ [ "word", size], ["word", size], ... ]
 
 if ($questionid > 0 ) {
-    $wordcount = block_questionreport_get_words($surveyid, $questionid, $start_date, $end_date);
+	 if ($ctype <> 'M') {
+        $surveyid = $courseid;	 
+	 }
+    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date);
     $default_font_size = 20; // Adjust for more words.
     $words = [];
     foreach ($wordcount as $wd) {
@@ -430,7 +437,7 @@ if ($questionid > 0 ) {
 $quote_data = new stdClass();
 // Array of text responses to render.
 if ($questionid > 0 ){
-    $quote_data->quotes = block_questionreport_get_essay_results($questionid, $start_date, $end_date, 0);
+    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid);
 }
 /*
 
