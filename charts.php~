@@ -41,8 +41,13 @@ $chart        = optional_param('chart','Bar1', PARAM_RAW); //Chart id.
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 require_once($CFG->dirroot.'/blocks/questionreport/chartlib.php');
+$ctype = substr($cid, 0, 1);
+$courseid = substr($cid, 2);
+if ($ctype == "M") {
+    require_login($courseid);
+    global $COURSE;
+}
 
-require_login($cid);
 echo $OUTPUT->header();
 
 global $COURSE;
@@ -56,7 +61,7 @@ $sqlcourse = "SELECT m.course, m.id, m.instance
                JOIN {tag_instance} ti on ti.itemid = m.id
               WHERE m.module = ".$moduleid. "
                AND ti.tagid = ".$tagid . "
-               AND m.course = ".$cid . "
+               AND m.course = ".$courseid . "
                AND m.deletioninprogress = 0";
 
 $surveys = $DB->get_record_sql($sqlcourse);
@@ -82,9 +87,7 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
-echo html_writer::start_tag('h4');
-echo get_string('selectchart', $plugin);
-echo html_writer::end_tag('h4');
+echo html_writer::label(get_string('selectchart', $plugin), false, array('class' => 'accesshide'));
 $checked1 =  '';
 $checked2 =  '';
 $checked3 =  '';
@@ -109,7 +112,7 @@ echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_strin
 echo '</form>';
 echo html_writer::end_tag('div');
 if ($questionid <> '0') {
-    $genchart = block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid);
+    $genchart = block_questionreport_setchart($ctype, $chart, $start_date, $end_date, $courseid, $sid, $questionid);
     if ($genchart == '0') {
         echo get_string('nochart', $plugin);    
     } else {

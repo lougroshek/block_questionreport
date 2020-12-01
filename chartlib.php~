@@ -84,7 +84,7 @@ function block_questionreport_get_allessay() {
     return $essaylist;
 }
 
-function block_questionreport_get_adminreport($surveytype, $cid, $partner, $portfolio, 
+function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partner, $portfolio, 
                                               $stdate, $nddate, $teacher, $questionid, $action) {
     // Return the adminreport
     // surveytype is the type of survey.
@@ -156,6 +156,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $paramsql['nddate'] = $ndt;        	  
     }
 
+    
     if ($cid > 0) {
         $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         $paramsql['courseid'] = $cid;
@@ -291,7 +292,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
     return $content;
 }
 
-function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $questionid) {
+function block_questionreport_setchart($ctype, $chartid, $stdate, $nddate, $cid, $sid, $questionid) {
     // Return a chart object;
     // surveytype is the type of survey.
 	 // cid is the current course, if its 0 then its all courses;
@@ -345,10 +346,8 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
     foreach ($partnerlist as $partnername) {
         $comparevalue = $DB->sql_compare_text($partnername);
         $partnerid = get_config($plugin, 'partnerfield');
-        //$partnerid  = $partnerid + 1;
         $partnersql = "JOIN {customfield_data} cd ON cd.instanceid = m.course 
                         AND cd.fieldid = ".$partnerid ." AND cd.value = ".$pcnt;
-       // echo '<br> partnersql '.$partnersql;                
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
@@ -359,7 +358,6 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         $totsurveys = 0;
         $totvalue = 0;        
         foreach ($surveys as $survey) {
-       // 	echo ' <br> in survey partnername '.$partnername.' survey '.$survey->instance . ' course '.$survey->course;
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid, 'type_id' => '8', 'deleted' => 'n'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
@@ -377,13 +375,11 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         	  $whereressql = "WHERE qr.complete = 'y' AND mr.question_id = ".$qid ." AND choice_id = ".$chid;
            $paramsql = array();
         	  if ($stdate > 0) {
-              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
                $std = strtotime($stdate);
                $paramsql['stdate'] = $std;        	  
-        	   }
+        	  }
         	  if ($nddate > 0) {
-              // $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                $whereressql = $whereressql . ' AND qr.submitted <= :nddate';
                $ndt = strtotime($nddate);
                $paramsql['nddate'] = $ndt;        	  
@@ -394,30 +390,79 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
            	   $svcnt = $svcnt + 1;
                $ranksql = "SELECT sum(rankvalue) rv ";
                $totranksql = $ranksql .' '. $fromressql. ' '. $whereressql;
-             //  echo 'totranksql '.$totranksql;
-               
                $ranksql = $DB->get_record_sql($totranksql, $paramsql);
-              // echo ' partner '.$partnername. ' rank '.$ranksql->rv . ' tot res '.$totres;
-               
                $totvalue = $ranksql->rv + $totvalue;
-               $totsurveys = $totsurveys + $totres;                             
-          //     $val = $ranksql->rv / $totres;
-          //     $val = round($val, 2);
-          //     $valarray[] = $val;
-          //     echo '<br> adding in partner '.$partnername;
-        //       $labelarray[] = $partnername;
            }    
         }
         if ($totsurveys > 0) {
-        //	echo '<br> add in '.$partnername;
             $labelarray[] = $partnername;
-            
             $val = $totvalue / $totsurveys;
             $val = round($val, 2);
             $valarray[] = $val; 
         }
         $pcnt = $pcnt + 1; 
     }
+    // Get the non moodle examples
+    $sql = "SELECT distinct(district) district 
+             FROM {local_teaching_survey} order by district";
+    $districts = $DB->get_records_sql($sql);
+
+    foreach($districts as $district) {
+        $partner = $district->district;
+        $params = array();
+        $whereext = " FROM {local_teaching_survey} ts 
+                   WHERE district = '".$partner."'";
+        $sqlext = "SELECT count(uidsurvey) cdgood ".$whereext;
+        $whereressql = " ";
+    	  if ($stdate > 0) {
+            $whereressql = $whereressql . ' AND coursedate >= :stdate';
+            $std = strtotime($stdate);
+            $params['stdate'] = $std;        	  
+        }
+     	  if ($nddate > 0) {
+            $whereressql = $whereressql . ' AND coursedate <= :nddate';
+            $ndt = strtotime($nddate);
+            $params['nddate'] = $ndt;        	  
+        }
+        $sqlext = $sqlext .$whereressql;    
+        $base = $DB->get_record_sql($sqlext, $params);
+        $basetot = $base->cdgood;
+        
+        if ($basetot > 0) {
+            switch ($choicecnt) {
+              case "1":
+                 $s = "SELECT sum(satisfied) rv";
+                 break;
+              case "2": 
+                 $s = "SELECT sum(topics) rv";
+                 break;
+              case "3" :
+                 $s = "SELECT sum(online) rv";
+                 break;
+               case "4" :
+                 $s = "SELECT sum(zoom) rv ";
+                 break;
+              case "5" :    
+                 $s = "SELECT sum(community) rv";
+                 break;
+              case "6" :
+                 $s = "SELECT sum(covid) rv ";
+                 break;
+              case "7" :
+                 $s = "SELECT sum(practice) rv";
+                 break;
+            }
+            $sqltot = $s. " ".$whereext. ' '.$whereressql;
+            $totrec = $DB->get_record_sql($sqltot, $params);
+            $totgood = $totrec->rv;
+       
+            $labelarray[] = $partner;
+            $val = $totgood / $basetot;
+            $val = round($val, 2);
+            $valarray[] = $val;
+            $svcnt = $svcnt + 1;                                 
+         }
+    }                 
     if ($svcnt == 0 ) {
     	 return '0';
     } else {
@@ -426,6 +471,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
        $chart->set_labels($labelarray);
        return $chart;
     }
+    
 /*
     $chart = new core\chart_bar();
     switch($chartid) {

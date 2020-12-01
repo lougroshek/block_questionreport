@@ -30,7 +30,7 @@ $PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add($header, new moodle_url('/blocks/questionreport/charts.php'));
-$cid          = optional_param('cid', 0, PARAM_INT);// Course ID.
+$cid          = optional_param('cid', 0, PARAM_RAW);// Course ID.
 $sid          = optional_param('sid', 1, PARAM_INT);// Survey Tagid.
 $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
@@ -41,8 +41,13 @@ $chart        = optional_param('chart','Bar1', PARAM_RAW); //Chart id.
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 require_once($CFG->dirroot.'/blocks/questionreport/chartlib.php');
+$ctype = substr($cid, 0, 1);
+$courseid = substr($cid, 2);
+if ($ctype == "M") {
+    require_login($courseid);
+    global $COURSE;
+}
 
-require_login($cid);
 echo $OUTPUT->header();
 
 global $COURSE;
@@ -56,7 +61,7 @@ $sqlcourse = "SELECT m.course, m.id, m.instance
                JOIN {tag_instance} ti on ti.itemid = m.id
               WHERE m.module = ".$moduleid. "
                AND ti.tagid = ".$tagid . "
-               AND m.course = ".$cid . "
+               AND m.course = ".$courseid . "
                AND m.deletioninprogress = 0";
 
 $surveys = $DB->get_record_sql($sqlcourse);
@@ -107,7 +112,7 @@ echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_strin
 echo '</form>';
 echo html_writer::end_tag('div');
 if ($questionid <> '0') {
-    $genchart = block_questionreport_setchart($chart, $start_date, $end_date, $cid, $sid, $questionid);
+    $genchart = block_questionreport_setchart($ctype, $chart, $start_date, $end_date, $courseid, $sid, $questionid);
     if ($genchart == '0') {
         echo get_string('nochart', $plugin);    
     } else {

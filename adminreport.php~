@@ -82,6 +82,8 @@ if ($courseid == 0){
         echo $OUTPUT->footer();
         exit();        
     }
+//    var_dump($surveys);
+//    exit();
     $surveyid = $surveys->instance;
 } else {
     $sqlcourse = "SELECT m.course, m.id, m.instance

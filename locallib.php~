@@ -1026,6 +1026,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
      $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
      $paramsql = array();
      if ($stdate > 0) {
+         $std = strtotime($stdate);
          $sql = $sql ." AND coursedate >= :stdate";
          $paramsql['stdate'] = $std;        	  
      }

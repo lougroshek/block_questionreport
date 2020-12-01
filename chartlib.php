@@ -84,7 +84,7 @@ function block_questionreport_get_allessay() {
     return $essaylist;
 }
 
-function block_questionreport_get_adminreport($surveytype, $cid, $partner, $portfolio, 
+function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partner, $portfolio, 
                                               $stdate, $nddate, $teacher, $questionid, $action) {
     // Return the adminreport
     // surveytype is the type of survey.
@@ -142,8 +142,6 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
                           AND qr.complete = 'y'
                           AND choice_id = :choiceid";
           $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid); 
- //         var_dump($paramsql);
- //         exit();                   
     }
     if ($stdate > 0) {
         $sqladmin = $sqladmin . ' AND qr.submitted >= :stdate';
@@ -156,6 +154,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
         $paramsql['nddate'] = $ndt;        	  
     }
 
+    
     if ($cid > 0) {
         $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         $paramsql['courseid'] = $cid;
@@ -282,7 +281,71 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
            }
        }    
     }
-    
+    // Non Moodle courses
+        switch($questionid) {
+        	 case "1":
+        	 break;
+     	    case "2":
+     	      $sql = "SELECT uidsurvey, coursedate, uidcourse, navigate response ";
+        	   break;
+       	 case "3":
+       	   $sql = "SELECT uidsurvey, coursedate, uidcourse, overall response ";
+        	   break;      
+        	 case "4":
+        	   $sql = "SELECT uidsurvey, coursedate, uidcourse, improved response ";
+        	   break;      
+        	 case "5":
+        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, reccomend response ";
+        	   break;      
+        	 case "6":
+        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, choose response ";       	   
+        	   break;      
+        	 case "7":
+        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, comment response ";
+        	   break;      
+        	 case "8":
+        	 break;           
+     }   
+     $return = [];       
+     $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
+     $paramsql = array();
+     if ($stdate > 0) {
+         $std = strtotime($stdate);
+         $sql = $sql ." AND coursedate >= :stdate";
+         $paramsql['stdate'] = $std;        	  
+     }
+     if ($nddate > 0) {
+         $sql = $sql. " AND coursedate <= :nddate";
+         $ndt = strtotime($nddate);
+         $paramsql['nddate'] = $ndt;        	  
+     }
+     $resultlist = $DB->get_records_sql($sql, $paramsql);
+     if (!empty($resultlist)) {
+        $cnt = 0;
+        foreach($resultlist as $result) {        
+           $row = new stdClass();
+           $row->date = date('Y-m-d', $result->coursedate);
+               $row->partner = $partnerdisplay;
+               $row->portfolio = $portdisplay;
+               $row->course_id = $courseid;
+               $row->course = $DB->get_field('course', 'fullname', array('id' => $courseid));
+               $row->question = $quest;
+               $cr = $result->response;
+               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr))); 
+               $row->response = $cr;
+               $row->teachers = $tlist;
+               array_push($content, $row);
+
+               $displaycnt = $displaycnt + 1;
+               if ($displaycnt > $maxdisplay) { 
+                   break;
+               }
+          }     
+        }   
+     }
+
+//     echo $sql;
+       
     if ($action == "csv") {   
         $name = 'Results';
         \core\dataformat::download_data($name, 'csv', $rowheaders, $output);
@@ -291,7 +354,7 @@ function block_questionreport_get_adminreport($surveytype, $cid, $partner, $port
     return $content;
 }
 
-function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $questionid) {
+function block_questionreport_setchart($ctype, $chartid, $stdate, $nddate, $cid, $sid, $questionid) {
     // Return a chart object;
     // surveytype is the type of survey.
 	 // cid is the current course, if its 0 then its all courses;
@@ -401,12 +464,67 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
         }
         $pcnt = $pcnt + 1; 
     }
-    // check non moodle courses 
-      // Get the non moodle courses;
-    $dbman = $DB->get_manager();
-    if ($dbman->table_exists('local_teaching_course')) {
-    }    
-  
+    // Get the non moodle examples
+    $sql = "SELECT distinct(district) district 
+             FROM {local_teaching_survey} order by district";
+    $districts = $DB->get_records_sql($sql);
+
+    foreach($districts as $district) {
+        $partner = $district->district;
+        $params = array();
+        $whereext = " FROM {local_teaching_survey} ts 
+                   WHERE district = '".$partner."'";
+        $sqlext = "SELECT count(uidsurvey) cdgood ".$whereext;
+        $whereressql = " ";
+    	  if ($stdate > 0) {
+            $whereressql = $whereressql . ' AND coursedate >= :stdate';
+            $std = strtotime($stdate);
+            $params['stdate'] = $std;        	  
+        }
+     	  if ($nddate > 0) {
+            $whereressql = $whereressql . ' AND coursedate <= :nddate';
+            $ndt = strtotime($nddate);
+            $params['nddate'] = $ndt;        	  
+        }
+        $sqlext = $sqlext .$whereressql;    
+        $base = $DB->get_record_sql($sqlext, $params);
+        $basetot = $base->cdgood;
+        
+        if ($basetot > 0) {
+            switch ($choicecnt) {
+              case "1":
+                 $s = "SELECT sum(satisfied) rv";
+                 break;
+              case "2": 
+                 $s = "SELECT sum(topics) rv";
+                 break;
+              case "3" :
+                 $s = "SELECT sum(online) rv";
+                 break;
+               case "4" :
+                 $s = "SELECT sum(zoom) rv ";
+                 break;
+              case "5" :    
+                 $s = "SELECT sum(community) rv";
+                 break;
+              case "6" :
+                 $s = "SELECT sum(covid) rv ";
+                 break;
+              case "7" :
+                 $s = "SELECT sum(practice) rv";
+                 break;
+            }
+            $sqltot = $s. " ".$whereext. ' '.$whereressql;
+            $totrec = $DB->get_record_sql($sqltot, $params);
+            $totgood = $totrec->rv;
+       
+            $labelarray[] = $partner;
+            $val = $totgood / $basetot;
+            $val = round($val, 2);
+            $valarray[] = $val;
+            $svcnt = $svcnt + 1;                                 
+         }
+    }                 
     if ($svcnt == 0 ) {
     	 return '0';
     } else {
@@ -415,6 +533,7 @@ function block_questionreport_setchart($chartid, $stdate, $nddate, $cid, $sid, $
        $chart->set_labels($labelarray);
        return $chart;
     }
+    
 /*
     $chart = new core\chart_bar();
     switch($chartid) {
