@@ -73,7 +73,7 @@ function block_questionreport_get_allessay() {
     global $DB, $COURSE;
     $plugin = 'block_questionreport';
     $essaylist = array();
-    $essaylist[0] = get_string('none', $plugin);
+    $essaylist[0] = get_string('none', $plugin);    
     $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3'));
     foreach ($customfields as $field) {
     	  $content = $field->content;
@@ -149,7 +149,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['stdate'] = $std;        	  
     }
     if ($nddate > 0) {
-        $sqladmin = $sqladmin . ' AND qr2.submitted <= :nddate';
+        $sqladmin = $sqladmin . ' AND qr.submitted <= :nddate';
         $ndt = strtotime($nddate);
         $paramsql['nddate'] = $ndt;        	  
     }
@@ -281,33 +281,39 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            }
        }    
     }
+
     // Non Moodle courses
         switch($questionid) {
         	 case "1":
-        	 break;
+        	    $qname = "What is the learning from this course that you are most excited about trying out";
+        	    break;
      	    case "2":
-     	      $sql = "SELECT uidsurvey, coursedate, uidcourse, navigate response ";
+     	       $qname = "How, if in any way, this course helped you prepare for school opening after COVID-19?";
+     	      $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, navigate response ";
         	   break;
        	 case "3":
-       	   $sql = "SELECT uidsurvey, coursedate, uidcourse, overall response ";
+       	    $qname = "Overall, what went well in this course?";
+       	   $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, overall response ";
         	   break;      
         	 case "4":
-        	   $sql = "SELECT uidsurvey, coursedate, uidcourse, improved response ";
+        	    $qname = "Which activities best supported your learning in this course?";
+        	   $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, improved response ";
         	   break;      
         	 case "5":
-        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, reccomend response ";
+        	     $qname = "What could have improved your experience in this course?";        	     
+        	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, reccomend response ";
         	   break;      
         	 case "6":
-        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, choose response ";       	   
+        	     $qname = "Why did you choose this rating?";
+        	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, choose response ";       	   
         	   break;      
         	 case "7":
-        	   $sql = " SELECT uidsurvey, coursedate, uidcourse, comment response ";
+        	    $qname = "Do you have additional comments about  this course?";
+        	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, comment response ";
         	   break;      
-        	 case "8":
-        	 break;           
      }   
      $return = [];       
-     $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
+     $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$cid;
      $paramsql = array();
      if ($stdate > 0) {
          $std = strtotime($stdate);
@@ -320,29 +326,55 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $paramsql['nddate'] = $ndt;        	  
      }
      $resultlist = $DB->get_records_sql($sql, $paramsql);
+     
+     $portdisplay = "N/A";
+     // What is the question name.
+     
      if (!empty($resultlist)) {
         $cnt = 0;
+        
         foreach($resultlist as $result) {        
            $row = new stdClass();
            $row->date = date('Y-m-d', $result->coursedate);
-               $row->partner = $partnerdisplay;
-               $row->portfolio = $portdisplay;
-               $row->course_id = $courseid;
-               $row->course = $DB->get_field('course', 'fullname', array('id' => $courseid));
-               $row->question = $quest;
-               $cr = $result->response;
-               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr))); 
-               $row->response = $cr;
-               $row->teachers = $tlist;
-               array_push($content, $row);
+           $row->partner = $result->district;
+           $row->portfolio = $portdisplay;
+           $row->course_id = $cid;
+           $row->course = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
+           $row->question = $qname;
+           $cr = $result->response;
+           $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
+           $row->response = $cr;
+           $t1 = $result->teacher1id;
+           $t2 = $result->teacher2id;
+           $tname = '';
+           $t1name = $DB->get_field('local_teaching_teacher', 'teachername', array('id' => $t1));
+           if ($t1name)  {
+              $tname = $t1name;        
+           }
+           $t2name = $DB->get_field('local_teaching_teacher', 'teachername', array('id' => $t2));
+           if ($t2name)  {
+              $tname .= $t2name;        
+           }
+          
+           $row->teachers = $tname;
+           array_push($content, $row);
 
+           $displaycnt = $displaycnt + 1;
+           if ($displaycnt > $maxdisplay) { 
+               break;
+           } else {
+           	   $sub = date('Y-m-d', $result->coursedate);
+           	   $cfname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
+               $cr = $result->response;  
+               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
                $displaycnt = $displaycnt + 1;
-               if ($displaycnt > $maxdisplay) { 
-                   break;
-               }
-          }     
-        }   
-     }
+               $partnerdisplay = $result->district;                             
+               $output[] = array($sub, $partnerdisplay, $portdisplay, $tname, $cfname, $qname, $cr);
+           }
+
+      }     
+          
+   }
 
 //     echo $sql;
        

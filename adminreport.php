@@ -63,43 +63,52 @@ if ($sid == 1) {
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $params = array();
-if ($courseid == 0){
-	// Get a survey.
-    $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
-    $sqlcourse = "SELECT  max(m.instance) instance
-               FROM {course_modules} m
-               JOIN {tag_instance} ti on ti.itemid = m.id
-               JOIN {course} c on c.id = m.course
-              WHERE m.module = ".$moduleid. "
-               AND ti.tagid = ".$tagid . "
-               AND m.deletioninprogress = 0
-               AND c.visible = 1";
 
-    $surveys = $DB->get_record_sql($sqlcourse, $params);
-    if (!$surveys) {
-    	  // Should never get here.
-        echo 'no surveys';
-        echo $OUTPUT->footer();
-        exit();        
-    }
-    $surveyid = $surveys->instance;
-} else {
-    $sqlcourse = "SELECT m.course, m.id, m.instance
-               FROM {course_modules} m
-               JOIN {tag_instance} ti on ti.itemid = m.id
-              WHERE m.module = ".$moduleid. "
-               AND ti.tagid = ".$tagid . "
-               AND m.course = ".$courseid . "
-               AND m.deletioninprogress = 0";
+if ($ctype == "M") {
+	
+    if ($courseid == 0) {
+	     // Get a survey.
+        $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
+        $sqlcourse = "SELECT  max(m.instance) instance
+                        FROM {course_modules} m
+                        JOIN {tag_instance} ti on ti.itemid = m.id
+                        JOIN {course} c on c.id = m.course
+                       WHERE m.module = ".$moduleid. "
+                         AND ti.tagid = ".$tagid . "
+                         AND m.deletioninprogress = 0
+                        AND c.visible = 1";
 
-     $surveys = $DB->get_record_sql($sqlcourse);
-     if (!$surveys) {
-         echo 'not a valid survey';
-         echo $OUTPUT->footer();
-         exit();        
-     }
-    $surveyid = $surveys->instance;
-}
+         $surveys = $DB->get_record_sql($sqlcourse, $params);
+         if (!$surveys) {
+    	       // Should never get here.
+             echo 'no surveys';
+             echo $OUTPUT->footer();
+             exit();        
+         }
+         $surveyid = $surveys->instance;
+     } else {
+         $sqlcourse = "SELECT m.course, m.id, m.instance
+                         FROM {course_modules} m
+                         JOIN {tag_instance} ti on ti.itemid = m.id
+                        WHERE m.module = ".$moduleid. "
+                          AND ti.tagid = ".$tagid . "
+                          AND m.course = ".$courseid . "
+                          AND m.deletioninprogress = 0";
+
+          $surveys = $DB->get_record_sql($sqlcourse);
+          if (!$surveys) {
+              echo 'not a valid survey';
+              echo $OUTPUT->footer();
+              exit();        
+          }
+          $surveyid = $surveys->instance;
+     }     
+ } else {
+     $surveyid = 0;
+ } 
+    
+ 
+ 
 if ($action == 'csv') {
    $content = block_questionreport_get_adminreport($ctype, $sid, $courseid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
 
@@ -139,7 +148,7 @@ if ($action == 'csv') {
     echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
-    $questionlist = block_questionreport_get_all_questions($surveyid);
+    $questionlist = block_questionreport_get_essay($ctype, $surveyid);
 
     echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($questionlist,"question",$questionid, false);

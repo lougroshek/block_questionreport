@@ -260,6 +260,7 @@ function block_questionreport_get_courses() {
     global $DB, $USER;     
     $plugin = 'block_questionreport';
     $courselist = array();
+    $courselist[0] = get_string('allcourses', $plugin);
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
