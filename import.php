@@ -79,6 +79,8 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             $rec->reccomend = $data[24];
             $rec->choose = $data[25];
             $rec->comment = $data[26];
+            $rec->activities = $data[22];
+            $act = $data[22];
             //$rec->courseid = intval($courseid);
             $pname = trim($data[28]);
             $plen = strlen($pname);
@@ -117,6 +119,7 @@ if (($handle = fopen($url, "r")) !== FALSE) {
               $DB->set_field('local_teaching_survey', 'port2id', $port2id, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'teacher1id', $teacherid, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'teacher2id', $teacher2id, array('uidsurvey' => $lastrecord));
+              $DB->set_field('local_teaching_survey', 'activities', $act, array('uidsurvey' => $lastrecord));
 
 //exit();
       }

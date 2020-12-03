@@ -926,7 +926,8 @@ function block_questionreport_get_essay($ctype, $surveyid) {
        $essaylist[6] = 'Why did you choose this rating?';
        $essaylist[7] = 'Do you have additional comments about  this course?';
           
-    }   
+    }
+    $essaylist[10] = 'All';   
     return $essaylist;
 }
 

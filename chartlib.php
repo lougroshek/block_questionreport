@@ -166,9 +166,21 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $display = false;    
     }
     $maxdisplay = 10;
-    if ($action == 'csv') {
-        $rowheaders = array('date','partner', 'portfolio','teacher', 'course', 'question', 'response');    
+    $allquest = 0;
+    // Non Moodle courses
+    if ($questionid == 10) {
+        $allquest = "1";
+        $questionid = "1";    
     }
+    
+    if ($action == 'csv') {
+        $rowheaders = array('date','partner', 'portfolio','teacher', 'course', 'question', 'response');
+        if ($allquest == "1") {
+            $rowheaders = array('date','partner', 'portfolio','teacher', 'course', 'question1', 'response1', 'question2', 'response2',
+                                'question3', 'response3', 'question4', 'response4', 'question5', 'response5', 'question6', 'response6',
+                                'question7', 'response7');
+        }    
+    } 
     $output = array();
     $content = [];
     $var = array();
@@ -281,37 +293,40 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            }
        }    
     }
-
     // Non Moodle courses
         switch($questionid) {
         	 case "1":
+             $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, learning response ";        	   
         	    $qname = "What is the learning from this course that you are most excited about trying out";
         	    break;
      	    case "2":
      	       $qname = "How, if in any way, this course helped you prepare for school opening after COVID-19?";
-     	      $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, navigate response ";
-        	   break;
+     	       $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, navigate response ";
+        	    break;
        	 case "3":
        	    $qname = "Overall, what went well in this course?";
-       	   $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, overall response ";
-        	   break;      
+       	    $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, overall response ";
+        	    break;      
         	 case "4":
         	    $qname = "Which activities best supported your learning in this course?";
-        	   $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, improved response ";
-        	   break;      
+        	    $sql = "SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, activities response ";
+        	    break;      
         	 case "5":
-        	     $qname = "What could have improved your experience in this course?";        	     
-        	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, reccomend response ";
+        	   $qname = "What could have improved your experience in this course?";        	     
+        	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, improved response ";
         	   break;      
         	 case "6":
-        	     $qname = "Why did you choose this rating?";
+        	   $qname = "Why did you choose this rating?";
         	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, choose response ";       	   
         	   break;      
         	 case "7":
-        	    $qname = "Do you have additional comments about  this course?";
+        	   $qname = "Do you have additional comments about  this course?";
         	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, comment response ";
         	   break;      
-     }   
+     }
+     if ($allquest == 1) {
+         $sql = "SELECT * ";
+     }  
      $return = [];       
      $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$cid;
      $paramsql = array();
@@ -328,7 +343,6 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
      $resultlist = $DB->get_records_sql($sql, $paramsql);
      
      $portdisplay = "N/A";
-     // What is the question name.
      
      if (!empty($resultlist)) {
         $cnt = 0;
@@ -341,7 +355,11 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            $row->course_id = $cid;
            $row->course = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
            $row->question = $qname;
-           $cr = $result->response;
+           if ($allquest == 1) {
+              $cr = $result->learning;           
+           } else {
+              $cr = $result->response;
+           }   
            $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
            $row->response = $cr;
            $t1 = $result->teacher1id;
@@ -363,21 +381,44 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            if ($displaycnt > $maxdisplay) { 
                break;
            } else {
+           	   $partnerdisplay = $result->district;                             
            	   $sub = date('Y-m-d', $result->coursedate);
-           	   $cfname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
-               $cr = $result->response;  
-               $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
                $displaycnt = $displaycnt + 1;
-               $partnerdisplay = $result->district;                             
-               $output[] = array($sub, $partnerdisplay, $portdisplay, $tname, $cfname, $qname, $cr);
+
+           	   $cfname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
+               if ($allquest == 1) {
+                  $cr1 = $result->learning;  
+                  $cr1 =  str_replace("&nbsp;", '', trim(strip_tags($cr1)));
+                  $cr2 = $result->navigate;  
+                  $cr2 =  str_replace("&nbsp;", '', trim(strip_tags($cr2)));
+                  $cr3 = $result->overall;  
+                  $cr3 =  str_replace("&nbsp;", '', trim(strip_tags($cr3)));
+                  $cr4 = $result->activities;  
+                  $cr4 =  str_replace("&nbsp;", '', trim(strip_tags($cr4)));
+                  $cr5 = $result->improved;  
+                  $cr5 =  str_replace("&nbsp;", '', trim(strip_tags($cr5)));
+                  $cr6 = $result->choose;  
+                  $cr6 =  str_replace("&nbsp;", '', trim(strip_tags($cr6)));
+                  $cr7 = $result->comment;  
+                  $cr7 =  str_replace("&nbsp;", '', trim(strip_tags($cr7)));
+     	            $q2 = "How, if in any way, this course helped you prepare for school opening after COVID-19?";
+                  $q3 = "Overall, what went well in this course?";
+       	         $q4 = "Which activities best supported your learning in this course?";
+       	         $q5 = "What could have improved your experience in this course?";
+               	$q6 = "Why did you choose this rating?";
+               	$q7 = "Do you have additional comments about  this course?";
+                  $output[] = array($sub, $partnerdisplay, $portdisplay, $tname, $cfname, $qname, $cr1, $q2, $cr2, $q3,$cr3,
+                                      $q4, $cr4, $q5, $cr5, $q6, $cr6, $q7, $cr7);
+
+               } else {        	   
+                  $cr = $result->response;  
+                  $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
+                  $output[] = array($sub, $partnerdisplay, $portdisplay, $tname, $cfname, $qname, $cr);
+               }
            }
-
-      }     
-          
-   }
-
-//     echo $sql;
-       
+        }     
+    }
+           
     if ($action == "csv") {   
         $name = 'Results';
         \core\dataformat::download_data($name, 'csv', $rowheaders, $output);
