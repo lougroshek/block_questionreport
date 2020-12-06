@@ -123,7 +123,8 @@ $string['h_course_id'] = 'Course ID';
 $string['h_facilitator'] = 'Facilitator(s)';
 $string['h_question'] = 'Question';
 $string['h_response'] = 'Response';
-
+$string['partnerdesc'] = 'Filter by Partner Site';
+$string['coursedesc'] = 'Filter by Course';
 //Chart report
 $string['chartquestion'] = 'Select a question';
 $string['getthechart'] = 'Generate the chart';

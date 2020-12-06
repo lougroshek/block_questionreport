@@ -50,7 +50,11 @@ if ($ctype == "M") {
     require_login($courseid);
     global $COURSE;
 }
-
+if ($cid == '0') {
+    $ctype = 'A';
+    $cid = 0;
+    $courseid = 0;
+}
 // Build up the filters
 $courselist = block_questionreport_get_courses();
 $surveylist = array("1" => "End of Course Survey", "2" => "Diagnostic Survey");
@@ -63,7 +67,6 @@ if ($sid == 1) {
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $params = array();
-
 if ($ctype == "M") {
 	
     if ($courseid == 0) {
@@ -123,12 +126,12 @@ if ($action == 'csv') {
     echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($surveylist,"sid",$sid, false);
 
-    echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('coursedesc', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($courselist,"cid",$cid, false);
 
     $partnerlist = block_questionreport_get_partners_list();
 
-    echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('partnerdesc', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
     $portfoliolist = block_questionreport_get_portfolio_list();

@@ -50,7 +50,13 @@ if ($ctype == "M") {
     require_login($courseid);
     global $COURSE;
 }
-
+echo 'ddd '.$cid;
+if ($cid == '0') {
+	echo 'changing ';
+    $ctype = 'A';
+    $cid = 0;
+    $courseid = 0;
+}
 // Build up the filters
 $courselist = block_questionreport_get_courses();
 $surveylist = array("1" => "End of Course Survey", "2" => "Diagnostic Survey");
@@ -63,7 +69,8 @@ if ($sid == 1) {
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $params = array();
-
+echo 'cid '.$cid;
+exit();
 if ($ctype == "M") {
 	
     if ($courseid == 0) {
@@ -86,7 +93,7 @@ if ($ctype == "M") {
              exit();        
          }
          $surveyid = $surveys->instance;
-    // } else {
+     } else {
          $sqlcourse = "SELECT m.course, m.id, m.instance
                          FROM {course_modules} m
                          JOIN {tag_instance} ti on ti.itemid = m.id
@@ -102,11 +109,11 @@ if ($ctype == "M") {
               exit();        
           }
           $surveyid = $surveys->instance;
-          
-     } else {
-        $surveyid = 0;
-     } 
-  }   
+     }     
+ } else {
+     $surveyid = 0;
+ } 
+    
  
  
 if ($action == 'csv') {
@@ -123,12 +130,12 @@ if ($action == 'csv') {
     echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($surveylist,"sid",$sid, false);
 
-    echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('coursedesc', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($courselist,"cid",$cid, false);
 
     $partnerlist = block_questionreport_get_partners_list();
 
-    echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('partnerdesc', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
     $portfoliolist = block_questionreport_get_portfolio_list();

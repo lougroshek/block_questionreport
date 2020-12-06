@@ -124,8 +124,9 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
 
     // Get the name of the question.
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
+    $orderby = "ORDER BY ID";
     if ($choiceid == 0) {    
-        $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qt.response, qr.submitted, qs.courseid, qq.content 
+        $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qt.response, qr.userid, qr.submitted, qs.courseid, qq.content 
                        FROM {questionnaire_question} qq
                        JOIN {questionnaire_response_text} qt on qt.question_id = qq.id
                        JOIN {questionnaire_response} qr on qr.id = qt.response_id
@@ -133,7 +134,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                       WHERE qq.name = :qname and qr.complete = 'y'";
           $paramsql = array('qname' => $qname);
     } else {
-          $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qs.courseid, qr.submitted
+          $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qr.userid, qs.courseid, qr.submitted
                          FROM {questionnaire_response_rank} mr
                          JOIN {questionnaire_question} qq on qq.id = mr.question_id
                          JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
@@ -143,6 +144,16 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                           AND choice_id = :choiceid";
           $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid); 
     }
+    if ($questionid == '10') {
+        $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qr.userid, qt.response, qr.submitted, qs.courseid, qq.content, qq.name
+                     FROM {questionnaire_question} qq 
+                     JOIN {questionnaire_response_text} qt ON qt.question_id = qq.id 
+                     JOIN {questionnaire_response} qr ON qr.id = qt.response_id 
+                     JOIN {questionnaire_survey} qs ON qs.id = qq.surveyid  
+                     WHERE (qq.name = 'takeaway_text' )";
+        $orderby = "ORDER BY userid";              
+    }                  
+  
     if ($stdate > 0) {
         $sqladmin = $sqladmin . ' AND qr.submitted >= :stdate';
         $std = strtotime($stdate);
@@ -159,6 +170,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         $paramsql['courseid'] = $cid;
     }
+    $sqladmin = $sqladmin. ' '.$orderby; 
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -184,6 +196,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
     $output = array();
     $content = [];
     $var = array();
+    $olduserid = 0;
     foreach($results as $result) {
     	 $valid = true;
     	 $courseid = $result->courseid;    	 
@@ -288,8 +301,80 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            	   $cfname = $DB->get_field('course', 'fullname', array('id' => $courseid));
                $cr = $result->response;  
                $cr =  str_replace("&nbsp;", '', trim(strip_tags($cr)));
-               $displaycnt = $displaycnt + 1;                             
-               $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr);
+               if ($allquest == "1") {
+               
+               	// Get all the questions.
+               	$user = $result->userid;
+               	$sql2 = "SELECT qt.id qtid, qq.id, qq.surveyid, qr.userid, qt.response, qr.submitted, qs.courseid, qq.content, qq.name
+                           FROM {questionnaire_question} qq 
+                           JOIN {questionnaire_response_text} qt ON qt.question_id = qq.id 
+                           JOIN {questionnaire_response} qr ON qr.id = qt.response_id 
+                           JOIN {questionnaire_survey} qs ON qs.id = qq.surveyid";  
+                  $where1 = "  WHERE qq.name = 'covid_prepare_text' AND userid = ".$user;
+                  $where2 = "  WHERE qq.name = 'went_well_text' AND userid = ".$user;
+                  $where3 = "  WHERE qq.name = 'supported_text' AND userid = ".$user;
+                  $where4 = "  WHERE qq.name = 'improve_experience_text' AND userid = ".$user;
+                  $where5 = "  WHERE qq.name = 'why_NPS' AND userid = ".$user;
+                  $where6 = "  WHERE qq.name = 'additional_comments_text' AND userid = ".$user;
+                  $params = array();
+                  $sqlnew = $sql2. $where1;
+//                  echo $sqlnew;
+  //                exit();  
+                  $res1 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res1 as $res) {
+                     $r1 = $res->response;                  	
+                  }
+                  $r1 = $res->response;
+                  $r1 =  str_replace("&nbsp;", '', trim(strip_tags($r1)));
+                  $q1 = "How, if in any way, this course helped you prepare for school opening after COVID-19?";
+                  
+                  $sqlnew = $sql2. $where2;
+                  $res2 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res2 as $res) {
+                     $r2 = $res->response;
+                  }
+                  $r2 =  str_replace("&nbsp;", '', trim(strip_tags($r2)));
+                  $q2 = 'Overall, what went well in this course?';
+                  
+                  $sqlnew = $sql2. $where3;
+                  
+                  $res3 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res3 as $res) {
+                     $r3 = $res->response;
+                  }
+                  $r3 =  str_replace("&nbsp;", '', trim(strip_tags($r3)));
+                  $q3 = 'Which activities best supported your learning in this course?';
+
+                  $sqlnew = $sql2. $where4;
+                  $res4 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res4 as $res) {
+                     $r4 = $res->response;
+                  }                  
+                  $r4 =  str_replace("&nbsp;", '', trim(strip_tags($r4)));
+                  $q4 = 'What could have improved your experience in this course?';
+
+                  $sqlnew = $sql2. $where5;
+                  $res5 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res5 as $res) {
+                      $r5 = $res->response;                  
+                  }
+                  $r5 =  str_replace("&nbsp;", '', trim(strip_tags($r5)));
+                  $q5 = 'Why did you chose this rating';
+
+                  $sqlnew = $sql2. $where6;
+                  $res6 = $DB->get_records_sql($sqlnew, $params);
+                  foreach($res6 as $res) {
+                      $r6 = $res->response;                  
+                  }
+                  $r6 =  str_replace("&nbsp;", '', trim(strip_tags($r5)));
+                  
+                  $q6 =  'Do you have additional comments about  this course';                 
+                  $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr,
+                                    $q1, $r1, $q2, $r2, $q3, $r3, $q4, $r4, $q5, $r5, $q6, $r6);  
+                     
+               } else {
+                  $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr);
+               }   
            }
        }    
     }
@@ -324,11 +409,16 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         	   $sql = " SELECT uidsurvey, coursedate, courseid, district, teacher1id, teacher2id, comment response ";
         	   break;      
      }
+     $return = [];
      if ($allquest == 1) {
          $sql = "SELECT * ";
-     }  
-     $return = [];       
-     $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$cid;
+     }
+     $sql = $sql. " FROM {local_teaching_survey} ";
+     if ($cid > 0) {
+         $sql = $sql. " WHERE courseid  = ".$cid;
+     } else {
+         $sql = $sql. " WHERE 1 = 1 ";     
+     }
      $paramsql = array();
      if ($stdate > 0) {
          $std = strtotime($stdate);
@@ -340,8 +430,12 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $ndt = strtotime($nddate);
          $paramsql['nddate'] = $ndt;        	  
      }
+     if ($teacher > 1) {
+         $sql = $sql. " AND (teacherid1= :teacher1) OR (teacherid2= :teacher2)";
+         $paramsql['teacher1'] = $teacher;
+         $paramsql['teacher2'] = $teacher;        	  
+     }
      $resultlist = $DB->get_records_sql($sql, $paramsql);
-     
      $portdisplay = "N/A";
      
      if (!empty($resultlist)) {
@@ -371,21 +465,23 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            }
            $t2name = $DB->get_field('local_teaching_teacher', 'teachername', array('id' => $t2));
            if ($t2name)  {
-              $tname .= $t2name;        
+              $tname .= '  '.$t2name;        
            }
           
            $row->teachers = $tname;
            array_push($content, $row);
 
            $displaycnt = $displaycnt + 1;
-           if ($displaycnt > $maxdisplay) { 
-               break;
+           if ($display) {
+               if ($displaycnt > $maxdisplay) { 
+                   break;
+               } 
            } else {
            	   $partnerdisplay = $result->district;                             
            	   $sub = date('Y-m-d', $result->coursedate);
                $displaycnt = $displaycnt + 1;
-
-           	   $cfname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $cid));
+               $courseid = $result->courseid;
+           	   $cfname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $courseid));
                if ($allquest == 1) {
                   $cr1 = $result->learning;  
                   $cr1 =  str_replace("&nbsp;", '', trim(strip_tags($cr1)));
@@ -416,6 +512,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                   $output[] = array($sub, $partnerdisplay, $portdisplay, $tname, $cfname, $qname, $cr);
                }
            }
+           
         }     
     }
            
