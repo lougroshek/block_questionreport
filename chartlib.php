@@ -365,7 +365,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
        }
     }
     // Non Moodle courses
-    echo 'question '.$questionid;
+ //   echo 'question '.$questionid;
  //   exit();
         switch($questionid) {
            case "1":
