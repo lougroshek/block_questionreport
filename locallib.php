@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 function block_questionreport_get_choice_current($choiceid) {
     global $DB;
     $recsql = "SELECT count(id) from {questionnaire_response_rank} where choice_id = ".$choiceid ." and rankvalue > 3";
-    $recs = $DB->count_records_sql($recsql); 
+    $recs = $DB->count_records_sql($recsql);
     // Total the results from this course for this choice.
     return $recs;
 }
@@ -47,7 +47,6 @@ function block_questionreport_is_teacher() {
     global $USER, $COURSE;
     $roles = get_config('block_questionreport', 'roles');
     $teacherroles = explode(',', $roles);
-        
     $valid = false;
     if (!is_siteadmin($USER)) {
         $courseid = $COURSE->id;
@@ -60,7 +59,7 @@ function block_questionreport_is_teacher() {
             }
         }
     } else {
-        $valid = true;         
+        $valid = true;
     }
     return $valid;
 }
@@ -71,25 +70,21 @@ function block_questionreport_is_admin() {
 }
 
 function block_questionreport_get_evaluations() {
-
-    global $DB, $CFG, $COURSE, $PAGE, $OUTPUT; 
+    global $DB, $CFG, $COURSE, $PAGE, $OUTPUT;
     $plugin = 'block_questionreport';
-    
     $ctype = "M";
     // The object we will pass to mustache.
     $data = new stdClass();
-    
-    // Does the current course have results to display? 
+    // Does the current course have results to display?
     $has_responses_contentq = true;
     $has_responses_commq = true;
-    
     // Is the user a teacher or an admin?
     $is_admin = block_questionreport_is_admin();
     $is_teacher = block_questionreport_is_teacher();
     if (!$is_admin && !$is_teacher) {
         return;
     }
-    
+
     // Add buttons object.
     $data->buttons = new stdClass();
     // Build reports button object.
@@ -112,16 +107,16 @@ function block_questionreport_get_evaluations() {
         $adminreports->text = get_string('adminreports', $plugin);
         $adminreports->href = $CFG->wwwroot.'/blocks/questionreport/adminreport.php?action=view&cid='.$cid;
         $data->buttons->adminreports = $adminreports;
-    } 
+    }
     if (!!$is_teacher) {
         $data->role = 'teacher';
     }
-    
+
     // Objects for the question and percent display.
     $contentq = new stdClass();
     $contentq->desc = get_string('contentq_desc', $plugin);
     $contentq->stat = null;
-    
+
     // Get the tags list.
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
@@ -134,10 +129,10 @@ function block_questionreport_get_evaluations() {
                AND ti.tagid = ".$tagid . "
                AND m.course = ".$cid . "
                AND m.deletioninprogress = 0";
-   
+
     $surveys = $DB->get_record_sql($sqlcourse);
     if (!$surveys) {
-        return 'no surveys done';    
+        return 'no surveys done';
     }
     $surveyid = $surveys->instance;
     $params = array();
@@ -148,10 +143,10 @@ function block_questionreport_get_evaluations() {
     $cnt = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
     if ($cnt == '-') {
     	  $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
-    	  $totresql = "SELECT count(*) crnt 
+    	  $totresql = "SELECT count(*) crnt
     	                 FROM {questionnaire_response_rank} mr
     	                 JOIN {questionnaire_response} qr on qr.id = mr.response_id 
-    	                  AND mr.question_id = ".$questionid; 
+    	                  AND mr.question_id = ".$questionid;
        // $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
         $totres = $DB->get_records_sql($totsql);
         if ($totres->crnct > 0) {
@@ -162,30 +157,30 @@ function block_questionreport_get_evaluations() {
     } else {
        $contentq->stat = $cnt;
     }
-    
+
     if ($has_responses_contentq) {
         // Object for question 2 text and value.
         $commq = new stdClass();
         $commq->desc = get_string('commq_desc', $plugin);
         $commq->stat = null;
-        $stp = $stp + 1;    
+        $stp = $stp + 1;
         $cnt2 = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '');
         if ($cnt2 == '-') {
-   	      $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
-            $totresql = "SELECT count(*) crnt 
+   	    $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
+            $totresql = "SELECT count(*) crnt
     	                 FROM {questionnaire_response_rank} mr
     	                 JOIN {questionnaire_response} qr on qr.id = mr.response_id 
-    	                  AND mr.question_id = ".$questionid; 
-                 
+    	                  AND mr.question_id = ".$questionid;
+
            //  $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));        
             $totres = $DB->get_records_sql($totsql);
             if ($totres->crnct > 0) {
                 $commq->stat = 0;
-            } else { 
+            } else {
                 $has_responses_commq = false;
             }
         } else {
-            $commq->stat = $cnt2;  
+            $commq->stat = $cnt2;
         }
         // echo '<p>$commq</p>';
     // print_r($commq);
@@ -206,7 +201,7 @@ function block_questionreport_get_evaluations() {
     } else {
         $data->has_responses = true;
     }
-        
+
     // Return rendered template.
     return $OUTPUT->render_from_template('block_questionreport/initial', $data);
 }
@@ -221,7 +216,7 @@ function block_questionreport_get_choice_all($choicename) {
 
     $questlistsql = "SELECT mq.id, mq.extradata, ms.courseid from {questionnaire_survey} ms 
                      JOIN {questionnaire_question} mq on mq.surveyid = ms.id
-                     WHERE mq.name = 'Course Ratings' ";  
+                     WHERE mq.name = 'Course Ratings' ";
     $questions = $DB->get_records_sql($questlistsql);
 
     $qtot = 0;
@@ -235,29 +230,29 @@ function block_questionreport_get_choice_all($choicename) {
              $roles = get_user_roles($context, $USER->id, true);
              foreach ($roles as $role) {
                 if (in_array($role, $teacherroles)) {
-                    $valid = true;                
-                }              
+                    $valid = true;
+                }
              }
         } else {
-            $valid = true;         
-        }           
+            $valid = true;
+        }
         if ($valid) {
             $content = $DB->sql_compare_text($choicename);
             $choicesql = "SELECT id FROM {questionnaire_quest_choice} where question_id = ".$qid ." AND content like '%".$content. "%'";          
             $choices = $DB->get_records_sql($choicesql);
-            if ($choices) {               
+            if ($choices) {
                 foreach($choices as $choice) {
                     $curtotal = block_questionreport_get_choice_current($choice->id);
                     $qtot = $qtot + $curtotal;
                 }
-            } 
+            }
         }
-    }     
+    }
     return $qtot;
 }
 
 function block_questionreport_get_courses() {
-    global $DB, $USER;     
+    global $DB, $USER;
     $plugin = 'block_questionreport';
     $courselist = array();
     $courselist[0] = get_string('allcourses', $plugin);
@@ -276,20 +271,19 @@ function block_questionreport_get_courses() {
     $coursenames = $DB->get_records_sql($sqlcourse);
     foreach ($coursenames as $coursecert) {
     	 $valid = false;
-	    if (is_siteadmin() ) {
-           $valid = true;	    
-	    } else {
-          $context = context_course::instance($coursecert->id);
-           
+         if (is_siteadmin() ) {
+             $valid = true;
+         } else {
+               $context = context_course::instance($coursecert->id);
 	       if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-              $valid = true;	       
-	       }    
+                   $valid = true;
+	       }
 	    }
 	    if ($valid) {
-	    	  $cid = "M-".$coursecert->id;
-	    	  $cname = "M-".$coursecert->fullname;
-           $courselist[$cid] = $cname;
-       }
+	        $cid = "M-".$coursecert->id;
+	        $cname = "M-".$coursecert->fullname;
+                $courselist[$cid] = $cname;
+            }
     }
     // Get the non moodle courses;
     $dbman = $DB->get_manager();
@@ -298,14 +292,14 @@ function block_questionreport_get_courses() {
         foreach($altcourses as $alt) {
         	  $cid = "A-".$alt->id;
         	  $cname = "A-".$alt->coursename;
-           $courselist[$cid] = $cname;        
-        }    
+                  $courselist[$cid] = $cname;
+        }
     }
     return $courselist;
 }
 
 function block_questionreport_get_partners() {
-    global $DB;     
+    global $DB;
     $plugin = 'block_questionreport';
     $courselist = array();
     $courselist[0] = get_string('all', $plugin);
@@ -324,15 +318,15 @@ function block_questionreport_get_partners() {
 }
 
 function block_questionreport_get_partners_list() {
-    global $DB;     
+    global $DB;
     $plugin = 'block_questionreport';
     $courselist = array();
     $fieldid = get_config($plugin, 'partnerfield');
 
     $courselist[0] = get_string('all', $plugin);
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
-    $options = array();   
-    $x = json_decode($content);       
+    $options = array();
+    $x = json_decode($content);
     $opts = $x->options;
     $options = preg_split("/\s*\n\s*/", $opts);
     return $options;
@@ -364,46 +358,45 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             $fromressql = " FROM {questionnaire_response_rank} mr ";
             $whereressql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid;
             $paramsql = array();
-        	   if ($stdate > 0) {
-                $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-                $std = strtotime($stdate);
-                $paramsql['stdate'] = $std;        	  
-        	   }
-        	   if ($nddate > 0) {
-                $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-                $ndt = strtotime($nddate);
-                $paramsql['nddate'] = $ndt;        	  
-        	   }
+            if ($stdate > 0) {
+                 $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                 $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
+                 $std = strtotime($stdate);
+                 $paramsql['stdate'] = $std;
+             }
+             if ($nddate > 0) {
+                 $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                 $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
+                 $ndt = strtotime($nddate);
+                 $paramsql['nddate'] = $ndt;
+            }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
-           
-            $totres = $DB->count_records_sql($totgoodsql, $paramsql);        
+            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             if ($totres > 0) {
-        	       $totgoodsql  = "SELECT count(rankvalue) ";
-        	       $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
-        	       $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
-        	       $paramsql = array();
-        	       if ($stdate > 0) {
+                $totgoodsql  = "SELECT count(rankvalue) ";
+                $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
+                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
+                $paramsql = array();
+                if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                     $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
                     $std = strtotime($stdate);
-                    $paramsql['stdate'] = $std;        	  
-        	       }
-        	       if ($nddate > 0) {
+                    $paramsql['stdate'] = $std;
+                }
+                if ($nddate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                     $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
                     $ndt = strtotime($nddate);
-                    $paramsql['nddate'] = $ndt;        	  
-        	       }
-        	       $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-        	       $totgood = $DB->count_records_sql($totsql, $paramsql);
+                    $paramsql['nddate'] = $ndt;
+                }
+                $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+                $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     $percent = ($totgood / $totres) * 100;
                     $retval = round($percent, 2)."(%)";
                 } else {
-                    $retval = "0(%)"; 
-                } 
+                    $retval = "0(%)";
+                }
              }
           } else {
               $sqlext = "SELECT COUNT(ts.courseid) cdtot
@@ -423,16 +416,16 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
               }
               $sqlext = $sqlext .' '.$whereext;
               $respext = $DB->get_record_sql($sqlext, $paramsext);
-  
+
               $totres = $respext->cdtot;
               if ($totres > 0) {
                   $sqlext = "SELECT COUNT(ts.courseid) cdgood
                              FROM {local_teaching_survey} ts";
                   switch ($cid) {
-                	  case "1":
+                    case "1":
                        $whereext = "where satisfied >=4";
                        break;
-                    case "2": 
+                    case "2":
                        $whereext = "where topics >=4";
                        break;
                     case "3" :
@@ -441,7 +434,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     case "4" :
                        $whereext = "where zoom >=4";
                        break;
-                    case "5" :    
+                    case "5" :
                        $whereext = "where community >=4";
                        break;
                     case "6" :
@@ -450,7 +443,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     case "7" :
                        $whereext = "where practice >=4";
                        break;
-                  }                        
+                  }
                   if ($stdate > 0) {
                       $std = strtotime($stdate);
                       $whereext = $whereext . " AND coursedate >= :std";
@@ -468,97 +461,93 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                       $percent = ($totgood / $totres) * 100;
                       $retval = round($percent, 2)."(%)";
                   } else {
-                      $retval = "0(%)"; 
+                      $retval = "0(%)";
                   }
-            } 
-           
-          }              
-                 
+            }
+
+          }
+
     } else  {
     	   // Get all the courses;
     	   $gtres = 0;
     	   $gttotres = 0;
-         $sqlcourses = "SELECT m.course, m.id, m.instance
+           $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
                          WHERE m.module = ".$moduleid. "
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
-         $surveys = $DB->get_records_sql($sqlcourses);
-         foreach($surveys as $survey) {
-           // Check to see if the user has rights.
-           $valid = false;
-           if (is_siteadmin() ) {
-               $valid = true;	    
-	        } else {
-               $context = context_course::instance($survey->course);
-               if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                   $valid = true;	       
-	            }    	            
-	        }	
-           $sid = $survey->instance;
-           $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $sid, 'type_id' => '8'));
-           if (empty($qid) or !$valid) {
-              $totres = 0;           
-           } else { 
-
-              $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-              $cnt = 0;              
-              foreach ($choices as $choice) {          
-                 $chid = $choice->id;
-                 $cnt = $cnt + 1;
-                 if ($cnt == $choiceid) {
-                     break;                                      
-                 }
-              }
-                 $totresql  = "SELECT count(rankvalue) ";
-                 $fromressql = " FROM {questionnaire_response_rank} mr ";
-        	        $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
-                 $paramsql = array();
-        	        if ($stdate > 0) {
+          $surveys = $DB->get_records_sql($sqlcourses);
+          foreach($surveys as $survey) {
+             // Check to see if the user has rights.
+             $valid = false;
+             if (is_siteadmin() ) {
+                 $valid = true;
+	     } else {
+                $context = context_course::instance($survey->course);
+                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
+                    $valid = true;
+	        }
+	     }
+             $sid = $survey->instance;
+             $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $sid, 'type_id' => '8'));
+             if (empty($qid) or !$valid) {
+                 $totres = 0;
+              } else {
+                 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+                 $cnt = 0;
+                 foreach ($choices as $choice) {
+                    $chid = $choice->id;
+                    $cnt = $cnt + 1;
+                    if ($cnt == $choiceid) {
+                        break;
+                     }
+                }
+                $totresql  = "SELECT count(rankvalue) ";
+                $fromressql = " FROM {questionnaire_response_rank} mr ";
+                $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
+                $paramsql = array();
+                if ($stdate > 0) {
                      $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                      $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
                      $std = strtotime($stdate);
-                     $paramsql['stdate'] = $std;        	  
-        	        }
-        	        if ($nddate > 0) {
+                     $paramsql['stdate'] = $std;
+                }
+                if ($nddate > 0) {
                      $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                      $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
                      $ndt = strtotime($nddate);
-                     $paramsql['nddate'] = $ndt;        	  
-        	       }
+                     $paramsql['nddate'] = $ndt;
+               }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
-             }  
-           
+             }
+
              if($totres > 0) {
            	    $gtres = $gtres + $totres;
           	    $totgoodsql  = "SELECT count(rankvalue) ";
          	    $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
          	    $wheregoodsql = "WHERE mr.question_id = ".$qid ." AND choice_id =".$chid." AND (rankvalue = 4 or rankvalue = 5) ";
           	    $paramsql = array();
-        	       if ($stdate > 0) {
-                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                    $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                    $std = strtotime($stdate);
-                    $paramsql['stdate'] = $std;        	  
-        	       }
-        	       if ($nddate > 0) {
-                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                    $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                    $ndt = strtotime($nddate);
-                    $paramsql['nddate'] = $ndt;        	  
-        	       }
-     	          $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-          	    $totgood = $DB->count_records_sql($totsql, $paramsql);
-                if ($totgood > 0) {
-                    $gttotres = $gttotres + $totgood;        
-                }               
-                
-            }
-         }
-//echo 'zzzz ';
-//exit();
+        	    if ($stdate > 0) {
+                        $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                        $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
+                        $std = strtotime($stdate);
+                        $paramsql['stdate'] = $std;
+        	    }
+        	    if ($nddate > 0) {
+                        $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                        $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
+                        $ndt = strtotime($nddate);
+                        $paramsql['nddate'] = $ndt;
+        	   }
+     	           $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+          	   $totgood = $DB->count_records_sql($totsql, $paramsql);
+                   if ($totgood > 0) {
+                      $gttotres = $gttotres + $totgood;
+                   }
+               }
+           }
             $sqlext = "SELECT COUNT(ts.courseid) cdtot
                        FROM {local_teaching_survey} ts";
             $whereext = "WHERE 1 = 1";
@@ -594,7 +583,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                   case "4" :
                      $whereext = "where zoom >=4";
                      break;
-                  case "5" :    
+                  case "5" :
                      $whereext = "where community >=4";
                      break;
                   case "6" :
@@ -603,8 +592,8 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                   case "7" :
                      $whereext = "where practice >=4";
                      break;
- 
-                }                        
+
+                }
                 if ($stdate > 0) {
                     $std = strtotime($stdate);
                     $whereext = $whereext . " AND coursedate >= :std";
@@ -620,21 +609,20 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                 $respext = $DB->get_record_sql($sqlext, $paramsext);
                 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
-            } 
- 
+            }
+
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
                 $retval = round($percent, 2)."(%)";
             } else {
-               $retval = "0(%)";                    
+                $retval = "0(%)";
             }
         } else {
-            $retval = get_string('none', $plugin);        
+            $retval = get_string('none', $plugin);
         }
 }
-    
-    return $retval;  
+   return $retval;
 
 }
 function block_questionreport_get_question_results($ctype, $position, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner) {
@@ -646,7 +634,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 	 // stdate start date for the surveys (0 if not used)
 	 // nddate end date for the surveys (0 if not used)
 	 // partner partner - blank if not used.
-	 
     global $DB, $USER;
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
@@ -657,7 +644,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $comparevalue = $comparevalue + 1;
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }
-    
     if ($surveyid > 0) {
         // Get the question id;
          if ($ctype <> 'M') {
@@ -687,7 +673,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                        $whereext = $whereext ." AND (content1 >= 4 or content2 >=4)";
                    } else {
                        $whereext = $whereext ." AND (community1 >=4 or community2 >=4)";                   
-                   }    
+                   }
                    $paramsext = array();
                    if ($stdate > 0) {
                        $std = strtotime($stdate);
@@ -706,27 +692,27 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                    if ($totgood > 0) {
                        $percent = ($totgood / $totres) * 100;
                        $retval = round($percent, 2)."(%)";
-                   } else { 
+                   } else {
                        $retval = "0(%)";
                    }
               }
          } else {
          $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid, 'type_id' => 11));         
          $totresql  = "SELECT count(rankvalue) ";
-           $fromressql = " FROM {questionnaire_response_rank} mr ";
-        	  $whereressql = "WHERE mr.question_id = ".$questionid ;
-           $paramsql = array();
+         $fromressql = " FROM {questionnaire_response_rank} mr ";
+         $whereressql = "WHERE mr.question_id = ".$questionid ;
+         $paramsql = array();
         	  if ($stdate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-               $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-               $std = strtotime($stdate);
-               $paramsql['stdate'] = $std;        	  
+                      $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                      $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
+                      $std = strtotime($stdate);
+                      $paramsql['stdate'] = $std;
         	  }
         	  if ($nddate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-               $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-               $ndt = strtotime($nddate);
-               $paramsql['nddate'] = $ndt;        	  
+                      $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                      $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
+                      $ndt = strtotime($nddate);
+                      $paramsql['nddate'] = $ndt;
         	  }
            $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
@@ -736,32 +722,32 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         	      $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) ";
         	      $paramsql = array();
         	      if ($stdate > 0) {
-                   $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                   $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                   $std = strtotime($stdate);
-                   $paramsql['stdate'] = $std;        	  
+                          $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                          $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
+                          $std = strtotime($stdate);
+                          $paramsql['stdate'] = $std;
         	      }
         	      if ($nddate > 0) {
-                   $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                   $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                   $ndt = strtotime($nddate);
-                   $paramsql['nddate'] = $ndt;        	  
+                         $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                         $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
+                         $ndt = strtotime($nddate);
+                         $paramsql['nddate'] = $ndt;
         	      }
         	      $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
-               if ($totgood > 0) {
-                   $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2)."(%)";
-               } else { 
+                      if ($totgood > 0) {
+                          $percent = ($totgood / $totres) * 100;
+                          $retval = round($percent, 2)."(%)";
+               } else {
                    $retval = "0(%)";
-               } 
-           } 
-        }      
+               }
+           }
+        }
     } else  {
-    	   // Get all the courses;
-    	   $gtres = 0;
-    	   $gttotres = 0;
-         $sqlcourses = "SELECT m.course, m.id, m.instance
+        // Get all the courses;
+        $gtres = 0;
+        $gttotres = 0;
+        $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
                          WHERE m.module = ".$moduleid. "
@@ -772,36 +758,36 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
            // Check to see if the user has rights.
            $valid = false;
            if (is_siteadmin() ) {
-               $valid = true;	    
-	        } else {
+               $valid = true;
+           } else {
                $context = context_course::instance($survey->course);
                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                   $valid = true;	       
-	            }    	            
-	        }	
+                   $valid = true;
+	        }
+	   }
            $sid = $survey->instance;
            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
            if (empty($questionid) or !$valid) {
-              $totres = 0;           
-           } else { 
+              $totres = 0;
+           } else {
               $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));                     
 //echo '<br> qname '.$qname;
               $totresql  = "SELECT count(rankvalue) ";
               $fromressql = " FROM {questionnaire_response_rank} mr ";
-        	     $whereressql = "WHERE mr.question_id = ".$questionid ;
+              $whereressql = "WHERE mr.question_id = ".$questionid ;
               $paramsql = array();
-        	     if ($stdate > 0) {
+              if ($stdate > 0) {
                   $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                   $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
                   $std = strtotime($stdate);
-                  $paramsql['stdate'] = $std;        	  
-        	     }
-        	     if ($nddate > 0) {
+                  $paramsql['stdate'] = $std;
+              }
+              if ($nddate > 0) {
                   $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                   $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
                   $ndt = strtotime($nddate);
-                  $paramsql['nddate'] = $ndt;        	  
-        	     }
+                  $paramsql['nddate'] = $ndt;
+              }
               $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
               $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            }
@@ -811,24 +797,24 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
          	  $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
          	  $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) ";
           	  $paramsql = array();
-        	     if ($stdate > 0) {
-                  $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                  $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                  $std = strtotime($stdate);
-                  $paramsql['stdate'] = $std;        	  
-        	     }
-        	     if ($nddate > 0) {
-                  $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                  $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                  $ndt = strtotime($nddate);
-                  $paramsql['nddate'] = $ndt;        	  
-        	     }
-     	        $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-          	  $totgood = $DB->count_records_sql($totsql, $paramsql);
-              if ($totgood > 0) {
-                  $gttotres = $gttotres + $totgood;        
-              }  
-           }
+                  if ($stdate > 0) {
+                      $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                      $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
+                      $std = strtotime($stdate);
+                      $paramsql['stdate'] = $std;
+        	  }
+        	  if ($nddate > 0) {
+                      $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                      $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
+                      $ndt = strtotime($nddate);
+                      $paramsql['nddate'] = $ndt;
+        	  }
+     	         $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+          	 $totgood = $DB->count_records_sql($totsql, $paramsql);
+                 if ($totgood > 0) {
+                     $gttotres = $gttotres + $totgood;
+                 }
+             }
         }
         // Add in the non moodle courses.
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
@@ -860,7 +846,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                                FROM {local_teaching_survey} ts";
                    $whereext =" where (community1 >=4 or community2 >=4)";
-                } 
+                }
              } else {
                 if ($position == '0') {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
@@ -870,9 +856,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                                FROM {local_teaching_survey} ts";
                    $whereext =" where (community1 >=4 or community2 >=4)";
-                } 
-             
-             }
+                }
+
+            }
             if ($stdate > 0) {
                 $std = strtotime($stdate);
                 $whereext = $whereext . " AND coursedate >= :std";
@@ -888,24 +874,22 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             $respext = $DB->get_record_sql($sqlext, $paramsext);
             $tot2 = $respext->cdgood;
             $gttotres = $gttotres + $tot2;
-        } 
+        }
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
                 $retval = round($percent, 2)."(%)";
             } else {
-                $retval = "0(%)";                    
+                $retval = "0(%)";
             }
         } else {
-            $retval = get_string('none', $plugin);        
+            $retval = get_string('none', $plugin);
         }
-}
-    
-    return $retval;  
-
+    }
+    return $retval;
 }
 function block_questionreport_get_essay($ctype, $surveyid) {
-    global $DB, $COURSE;  
+    global $DB, $COURSE;
     $plugin = 'block_questionreport';
     $essaylist = array();
     $essaylist[0] = get_string('none', $plugin);
@@ -925,14 +909,13 @@ function block_questionreport_get_essay($ctype, $surveyid) {
        $essaylist[5] = 'What could have improved your experience in this course?';
        $essaylist[6] = 'Why did you choose this rating?';
        $essaylist[7] = 'Do you have additional comments about  this course?';
-          
     }
-    $essaylist[10] = 'All';   
+    $essaylist[10] = 'All';
     return $essaylist;
 }
 
 function block_questionreport_get_chartquestions($surveyid) {
-    global $DB, $COURSE;  
+    global $DB, $COURSE;
     $plugin = 'block_questionreport';
     $essaylist = array();
     $essaylist[0] = get_string('none', $plugin);
@@ -942,7 +925,7 @@ function block_questionreport_get_chartquestions($surveyid) {
     	$choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $fid));
       $choicecnt = 0;
       foreach ($choices as $choice) {
-          $fid = $choice->id;	
+          $fid = $choice->id;
           $display = $choice->content;
           $display = strip_tags($display);
           $display = trim($display);
@@ -962,7 +945,7 @@ function block_questionreport_get_chartquestions($surveyid) {
 }
 function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid) {
     global $DB, $COURSE;
-    if ($ctype == 'M') {    
+    if ($ctype == 'M') {
         // If limit = 0 return all essay results. Otherwise return the limit.
         $sqlessay  = "SELECT qt.response, qt.id ";
         $fromessaysql = " FROM {questionnaire_response_text} qt ";
@@ -972,7 +955,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr on qr.id = qt.response_id';
             $whereessaysql = $whereessaysql . ' AND qr.submitted >= :stdate';
             $std = strtotime($stdate);
-            $paramsql['stdate'] = $std;        	  
+            $paramsql['stdate'] = $std;
         }
         if ($nddate > 0) {
             $fromessaysql = $fromessaysql .' JOIN {questionnaire_response} qr2 on qr2.id = qt.response_id';
@@ -981,7 +964,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             $paramsql['nddate'] = $ndt;        	  
         }
         $sql = $sqlessay .' '.$fromessaysql. ' '.$whereessaysql;
-        $arrayid = array();     
+        $arrayid = array();
         $resultlist = $DB->get_records_sql($sql, $paramsql);
         foreach($resultlist as $result) {
             $arrayid[] = $result->id;
@@ -995,78 +978,73 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
     	          $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
     	          $cnt = $cnt + 1;
     	          if ($limit > 0 and $limit > $cnt) {
-                    break;    	   
+                    break;
     	          }
-           }   
+           }
          }
      } else {
         switch($questionid) {
-        	 case "1":
-        	 break;
+            case "1":
+              $sql = "SELECT uidsurvey, learning response";
+              break;
      	    case "2":
      	      $sql = "SELECT uidsurvey, navigate response ";
-        	   break;
-       	 case "3":
-       	   $sql = "SELECT uidsurvey, overall response ";
-        	   break;      
-        	 case "4":
-        	   $sql = "SELECT uidsurvey, improved response ";
-        	   break;      
-        	 case "5":
-        	   $sql = " SELECT uidsurvey, reccomend response ";
-        	   break;      
-        	 case "6":
-        	   $sql = " SELECT uidsurvey, choose response ";       	   
-        	   break;      
-        	 case "7":
-        	   $sql = " SELECT uidsurvey, comment response ";
-        	   break;      
-        	 case "8":
-        	 break;           
-     }   
-     $return = [];       
+              break;
+       	   case "3":
+       	      $sql = "SELECT uidsurvey, overall response ";
+              break;
+           case "4":
+              $sql = "SELECT uidsurvey, improved response ";
+              break;
+           case "5":
+               $sql = " SELECT uidsurvey, reccomend response ";
+               break;
+           case "6":
+               $sql = " SELECT uidsurvey, choose response ";
+               break;
+           case "7":
+               $sql = " SELECT uidsurvey, comment response ";
+               break;
+     }
+     $return = [];
      $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
      $paramsql = array();
      if ($stdate > 0) {
          $std = strtotime($stdate);
          $sql = $sql ." AND coursedate >= :stdate";
-         $paramsql['stdate'] = $std;        	  
+         $paramsql['stdate'] = $std;
      }
      if ($nddate > 0) {
          $sql = $sql. " AND coursedate <= :nddate";
          $ndt = strtotime($nddate);
-         $paramsql['nddate'] = $ndt;        	  
+         $paramsql['nddate'] = $ndt;
      }
-     echo $sql;
      $resultlist = $DB->get_records_sql($sql, $paramsql);
      if (!empty($resultlist)) {
         $cnt = 0;
         foreach($resultlist as $resid) {
             $cr = $resid->response;
-    	      $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
+    	      $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));
     	      $cnt = $cnt + 1;
     	      if ($limit > 0 and $limit > $cnt) {
-                 break;    	   
+                 break;
     	      }
-        }   
+        }
      }
-  }             
+  }
   return $return;
 }
 
 function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate) {
     global $DB;
-    
     $words = [];
     array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid));
-    
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }
 
 function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_words = array()) {
    $words = [];
-   
    foreach ($word_arrs as $w) {
        foreach($w as $val) {
            $wrds = explode(' ', $val);
@@ -1075,32 +1053,31 @@ function calculate_word_popularity($word_arrs, $min_word_char = 2, $exclude_word
            }
        }
    }
-   
+
    // echo '<br />$words<br />';
    // print_r($words);
-   
-	$result = array_combine($words, array_fill(0, count($words), 0));
+   $result = array_combine($words, array_fill(0, count($words), 0));
 
    foreach($words as $word) {
        $result[$word]++;
    }
-   
+
    // echo '<br />$result<br />';
    // print_r($result);
    
-   $ret = array();   
+   $ret = array();
    $total_words = 0;
    foreach($result as $word => $count) {
-	 $stl = strlen($word);
-     $wd = new stdClass();
-	 if ($stl > $min_word_char) {
+      $stl = strlen($word);
+      $wd = new stdClass();
+      if ($stl > $min_word_char) {
          $total_words = $total_words + $count;
          $wd->word = str_replace("&nbsp;", '', $word);
          $wd->count = $count;
          array_push($ret, $wd);
-	 }
+       }
    }
-   
+
    // echo '<br />$ret<br />';
    // print_r($ret);
 
@@ -1138,54 +1115,54 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
         $totresql  = "SELECT count(rankvalue) ";
         $fromressql = " FROM {questionnaire_response_rank} mr ";
         $whereressql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid;
-           $paramsql = array();
-        	  if ($stdate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-               $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-               $std = strtotime($stdate);
-               $paramsql['stdate'] = $std;        	  
-        	  }
-        	  if ($nddate > 0) {
-               $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-               $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-               $ndt = strtotime($nddate);
-               $paramsql['nddate'] = $ndt;        	  
-        	  }
-           $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
-           
-           $totres = $DB->count_records_sql($totgoodsql, $paramsql);        
+        $paramsql = array();
+        if ($stdate > 0) {
+            $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+            $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
+            $std = strtotime($stdate);
+            $paramsql['stdate'] = $std;
+        }
+        if ($nddate > 0) {
+            $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+            $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
+            $ndt = strtotime($nddate);
+            $paramsql['nddate'] = $ndt;
+        }
+        $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
+
+           $totres = $DB->count_records_sql($totgoodsql, $paramsql);
            if ($totres > 0) {
-        	      $totgoodsql  = "SELECT sum(rankvalue) sr ";
-        	      $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
-        	      $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid;
-        	      $paramsql = array();
-        	      if ($stdate > 0) {
+               $totgoodsql  = "SELECT sum(rankvalue) sr ";
+               $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
+               $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid;
+               $paramsql = array();
+               if ($stdate > 0) {
                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                    $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
                    $std = strtotime($stdate);
-                   $paramsql['stdate'] = $std;        	  
-        	      }
-        	      if ($nddate > 0) {
+                   $paramsql['stdate'] = $std;
+               }
+               if ($nddate > 0) {
                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                    $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
                    $ndt = strtotime($end_date);
-                   $paramsql['nddate'] = $ndt;        	  
-        	      }
-        	      $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-        	      $trsql = $DB->get_record_sql($totsql, $paramsql);
-        	      $totgood = $trsql->sr;
+                   $paramsql['nddate'] = $ndt;
+               }
+               $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+               $trsql = $DB->get_record_sql($totsql, $paramsql);
+               $totgood = $trsql->sr;
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
                    $retval = round($percent, 2)."(%)";
-               }  
-           }    
+               }
+           }
     } else  {
     	   // Get all the courses;
     	   $gtres = 0;
     	   $gttotres = 0;
-         $sqlcourses = "SELECT m.course, m.id, m.instance
+           $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
-                          JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "                          
+                          JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
                          WHERE m.module = ".$moduleid. "
                            AND ti.tagid = ".$tagid . "
                            AND m.deletioninprogress = 0";
@@ -1194,81 +1171,80 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
            // Check to see if the user has rights.
            $valid = false;
            if (is_siteadmin() ) {
-               $valid = true;	    
-	        } else {
+               $valid = true;
+	   } else {
                $context = context_course::instance($survey->course);
                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                   $valid = true;	       
-	            }    	            
-	        }	
+                   $valid = true;
+	       }
+	   }
            $sid = $survey->instance;
            $qid = $DB->get_field('questionnaire_question', 'id', array('position' =>'9', 'surveyid' => $sid, 'type_id' => '8'));
            if (empty($qid) or !$valid) {
-              $totres = 0;           
-           } else { 
+              $totres = 0;
+           } else {
               $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-              $cnt = 0;              
-              foreach ($choices as $choice) {          
+              $cnt = 0;
+              foreach ($choices as $choice) {
                  $chid = $choice->id;
                  $cnt = $cnt + 1;
                  if ($cnt == $choiceid) {
-                     break;                                      
+                     break;
                  }
-              }
-                 $totresql  = "SELECT count(rankvalue)" ;
-                 $fromressql = " FROM {questionnaire_response_rank} mr ";
-        	        $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
-                 $paramsql = array();
-        	        if ($stdate > 0) {
-                     $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                     $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
-                     $std = strtotime($stdate);
-                     $paramsql['stdate'] = $std;        	  
-        	        }
-        	        if ($nddate > 0) {
-                     $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                     $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
-                     $ndt = strtotime($nddate);
-                     $paramsql['nddate'] = $ndt;        	  
-        	       }
-                $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
-                $totres = $DB->count_records_sql($totgoodsql, $paramsql);
-             }  
-           
-             if($totres > 0) {
+            }
+            $totresql  = "SELECT count(rankvalue)" ;
+            $fromressql = " FROM {questionnaire_response_rank} mr ";
+            $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
+            $paramsql = array();
+            if ($stdate > 0) {
+                $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                $whereressql = $whereressql . ' AND qr.submitted >= :stdate';
+                $std = strtotime($stdate);
+                $paramsql['stdate'] = $std;
+            }
+            if ($nddate > 0) {
+                $fromressql = $fromressql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                $whereressql = $whereressql . ' AND qr2.submitted <= :nddate';
+                $ndt = strtotime($nddate);
+                $paramsql['nddate'] = $ndt;
+            }
+            $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
+            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+        }
+        if($totres > 0) {
            	    $gtres = $gtres + $totres;
           	    $totgoodsql  = "SELECT sum(rankvalue) src";
          	    $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
          	    $wheregoodsql = "WHERE mr.question_id = ".$qid ." AND choice_id =".$chid;
           	    $paramsql = array();
-        	       if ($stdate > 0) {
-                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-                    $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
-                    $std = strtotime($stdate);
-                    $paramsql['stdate'] = $std;        	  
-        	       }
-        	       if ($nddate > 0) {
-                    $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
-                    $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
-                    $ndt = strtotime($nddate);
-                    $paramsql['nddate'] = $ndt;        	  
-        	       }
-     	          $totgoodsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-     	          
-          	    $trsql = $DB->get_record_sql($totgoodsql, $paramsql);
-          	    $totgood = $trsql->src;
-                if ($totgood > 0) {
-                    $gttotres = $gttotres + $totgood;        
-                }  
-           }
+                    if ($stdate > 0) {
+                        $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
+                        $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
+                        $std = strtotime($stdate);
+                        $paramsql['stdate'] = $std;
+        	    }
+        	    if ($nddate > 0) {
+                        $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
+                        $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
+                        $ndt = strtotime($nddate);
+                        $paramsql['nddate'] = $ndt;
+        	   }
+     	           $totgoodsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+
+          	  $trsql = $DB->get_record_sql($totgoodsql, $paramsql);
+                  $totgood = $trsql->src;
+                  if ($totgood > 0) {
+                     $gttotres = $gttotres + $totgood;
+                  }
+              }
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
             $retval = round($percent, 2)."(%)";
 
         }
-}
-    
-    return $retval;  
+    }
+
+    return $retval;
 
 }

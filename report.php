@@ -79,10 +79,10 @@ $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 
 $content = '';
-if ($ctype == "M") { 
+if ($ctype == "M") {
     $content = '';
     // Get teachers separated by roles.
-    $context = context_course::instance($COURSE->id);  
+    $context = context_course::instance($COURSE->id);
     $roles = get_config('block_questionreport', 'roles');
 
     if (!empty($roles)) {
@@ -115,7 +115,7 @@ if ($ctype == "M") {
      if (!$surveys) {
          echo 'not a valid survey';
          echo $OUTPUT->footer();
-         exit();        
+         exit();
      }
      $surveyid = $surveys->instance;
 
@@ -123,7 +123,7 @@ if ($ctype == "M") {
      $displayedteachers = array();
      $sqlresp = "SELECT COUNT(r.id) crid FROM {questionnaire_response} r
                  WHERE r.questionnaireid = ".$surveyid." AND r.complete = 'y'";
-  
+
      $paramscourse = array();
      if ($start_date > 0) {
          $std = strtotime($start_date);
@@ -149,7 +149,7 @@ if ($ctype == "M") {
          $partnerid = get_config($plugin, 'partnerfield');
          $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
      }
-    
+
      $totresp = 0;
      $sqlcourses = "SELECT m.course, m.id, m.instance
                       FROM {course_modules} m
@@ -178,19 +178,19 @@ if ($ctype == "M") {
      foreach($surveys as $survey) {
 	      $valid = false;
 	      if (is_siteadmin() ) {
-             $valid = true;	    
+                  $valid = true;
 	      } else {
              $context = context_course::instance($survey->course);
              if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                 $valid = true;	       
-	          }    
-	      }
-	      if ($valid) {
-             $sid = $survey->instance;
-             $paramstot['questionnaireid'] = $sid;
-             $sqlquestion = $sqltot . $fromtot . $wheretot;
-             $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
-             $totresp = $respsql->crid + $totresp;
+                 $valid = true;
+	       }
+	     }
+	     if ($valid) {
+                $sid = $survey->instance;
+                $paramstot['questionnaireid'] = $sid;
+                $sqlquestion = $sqltot . $fromtot . $wheretot;
+                $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
+               $totresp = $respsql->crid + $totresp;
          }
      }
 
@@ -253,7 +253,7 @@ if ($ctype == "M") {
      $totresp = $respext->cdtot;
      $sqlcourses = "SELECT m.course, m.id, m.instance
                       FROM {course_modules} m
-                      JOIN {tag_instance} ti on ti.itemid = m.id 
+                      JOIN {tag_instance} ti on ti.itemid = m.id
                      WHERE m.module = ".$moduleid. "
                        AND ti.tagid = ".$tagid . "
                        AND m.deletioninprogress = 0";
@@ -282,7 +282,7 @@ if ($ctype == "M") {
          $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
          $totresp = $respsql->crid + $totresp;
      }
-     
+
 }
 // Assembled data for lead facilitator table.
 $data = new stdClass();
@@ -347,11 +347,11 @@ if ($ctype == 'M') {
         $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
         $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-        $obj->all = $all; 
+        $obj->all = $all;
         array_push($data->session, $obj);
     }
 } else {
-   for ($x=1; $x< 8; $x++) { 
+   for ($x=1; $x< 8; $x++) {
         $obj = new stdClass;
         switch ($x) {
        	 case "1":
@@ -374,25 +374,26 @@ if ($ctype == 'M') {
              break;
           case "7" :
              $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
-             break; 
+             break;
           }
           $obj->question = $quest;
           $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
           $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
           $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-          $obj->all = $all; 
+          $obj->all = $all;
           array_push($data->session, $obj);
-                        
+
     }
-                
+
 }
 if ($ctype <> 'M') {
-    $surveyid = $courseid;	 
+    $surveyid = $courseid;
 }
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
 $questionlist = block_questionreport_get_essay($ctype, $surveyid);
+$removed = array_pop($questionlist); // Remove all from the array.
 $content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 $content .= "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
@@ -408,13 +409,13 @@ $content .= '</form>';
 // Assemble data for word cloud.
 $word_cloud = new stdClass();
 // wordcount is an array.
-// Array should be in the list form stipulated here: 
+// Array should be in the list form stipulated here:
 // https://github.com/timdream/wordcloud2.js/
 // [ [ "word", size], ["word", size], ... ]
 
 if ($questionid > 0 ) {
 	 if ($ctype <> 'M') {
-        $surveyid = $courseid;	 
+        $surveyid = $courseid;
 	 }
     $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date);
     $default_font_size = 20; // Adjust for more words.
@@ -474,5 +475,5 @@ foreach ($choices as $choice) {
 // Return rendered quote list.
 $content .= $OUTPUT->render_from_template('block_questionreport/custom_quotes', $quote_data);
 
-echo $content;  
+echo $content;
 echo $OUTPUT->footer();

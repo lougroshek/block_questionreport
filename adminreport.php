@@ -68,7 +68,6 @@ $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $params = array();
 if ($ctype == "M") {
-	
     if ($courseid == 0) {
 	     // Get a survey.
         $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
@@ -83,10 +82,10 @@ if ($ctype == "M") {
 
          $surveys = $DB->get_record_sql($sqlcourse, $params);
          if (!$surveys) {
-    	       // Should never get here.
+             // Should never get here.
              echo 'no surveys';
              echo $OUTPUT->footer();
-             exit();        
+             exit();
          }
          $surveyid = $surveys->instance;
      } else {
@@ -102,19 +101,15 @@ if ($ctype == "M") {
           if (!$surveys) {
               echo 'not a valid survey';
               echo $OUTPUT->footer();
-              exit();        
+              exit();
           }
           $surveyid = $surveys->instance;
-     }     
+     }
  } else {
      $surveyid = 0;
- } 
-    
- 
- 
+ }
 if ($action == 'csv') {
-   $content = block_questionreport_get_adminreport($ctype, $sid, $courseid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action); 
-
+   $content = block_questionreport_get_adminreport($ctype, $sid, $courseid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action);
 } else {
     echo $OUTPUT->header();
 
@@ -178,8 +173,8 @@ if ($action == 'csv') {
         $content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
         $content .= "<input type=\"hidden\" name=\"portfolio\" value=\"$portfolio\" />\n";
         $content .= "<input type=\"hidden\" name=\"sid\" value=\"$sid\" />\n";
-        $content .= "<input type=\"hidden\" name=\"action\" value=\"csv\" />\n";    
-        $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";    
+        $content .= "<input type=\"hidden\" name=\"action\" value=\"csv\" />\n";
+        $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
         $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('generatecsv', $plugin).'" />';
         $content .= '</form>';
         echo $content;

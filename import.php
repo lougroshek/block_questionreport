@@ -83,31 +83,36 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             $act = $data[22];
             //$rec->courseid = intval($courseid);
             $pname = trim($data[28]);
+            echo 'pname '.$pname;
             $plen = strlen($pname);
             $portid = 0;
             if ($plen > 4) {
-                if ($DB->record_exists('local_teaching_port', array ('portname'=> $tname))) {
-                    $portid = $DB->get_field('local_teaching_port', 'id', array ('portname'=> $tname));            
+                if ($DB->record_exists('local_teaching_port', array ('portname'=> $pname))) {
+                    $portid = $DB->get_field('local_teaching_port', 'id', array ('portname'=> $pname));            
                 } else {
                     $prec = new stdClass();
-                    $prec->portname = $tname;
+                    $prec->portname = $pname;
                     $portid = $DB->insert_record('local_teaching_port', $prec);
                 }            
             }
   //          $rec->port1id = $portid;
 
             $pname = trim($data[29]);
+            echo '<br> pname '.$pname;
             $plen = strlen($pname);
             $port2id = 0;
             if ($plen > 4) {
-                if ($DB->record_exists('local_teaching_port', array ('portname'=> $tname))) {
-                    $port2id = $DB->get_field('local_teaching_port', 'id', array ('portname'=> $tname));            
+                if ($DB->record_exists('local_teaching_port', array ('portname'=> $pname))) {
+                    $port2id = $DB->get_field('local_teaching_port', 'id', array ('portname'=> $pname));            
                 } else {
                     $prec = new stdClass();
-                    $prec->portname = $tname;
+                    $prec->portname = $pname;
                     $port2id = $DB->insert_record('local_teaching_port', $prec);
                 }            
             }
+            echo '<br> port1 id'.$portid;
+            echo '<br> port2 id '.$port2id;
+            
 //            $rec->port2id = $portid;
 //            var_dump($rec);
 //            exit();
@@ -121,7 +126,7 @@ if (($handle = fopen($url, "r")) !== FALSE) {
               $DB->set_field('local_teaching_survey', 'teacher2id', $teacher2id, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'activities', $act, array('uidsurvey' => $lastrecord));
 
-//exit();
+exit();
       }
   }
 echo 'done';
