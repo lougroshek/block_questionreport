@@ -25,7 +25,6 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
     global $CFG;
-    // Locallib for updatedcallback function.
     require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 
     // Settings title to group role related settings together with a common heading. We don't want a description here.
@@ -41,6 +40,13 @@ if ($ADMIN->fulltree) {
     $default = array('editingteacher');
     $settings->add(new admin_setting_pickroles($name, $title, $description, $default));
 
+    // Setting to configure the roles to view the admin reports.
+    $name = 'block_questionreport/adminroles';
+    $title = get_string('setting_admin_roles', 'block_questionreport', null, true);
+    $description = get_string('setting_admin_roles_desc', 'block_questionreport', null, true);
+    $default = array('editingteacher');
+    $settings->add(new admin_setting_pickroles($name, $title, $description, $default));
+ 
     // Setting to show multiple roles within the block.
     $name = 'block_questionreport/multipleroles';
     $title = get_string('setting_multipleroles', 'block_questionreport', null, true);

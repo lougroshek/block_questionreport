@@ -49,6 +49,9 @@ $string['setting_rolesheading'] = 'Roles';
 $string['setting_roles'] = 'Show these roles';
 $string['setting_roles_desc'] = 'This setting allows you to control which users appear in this block. Users need to have at least one of these roles in a course to be shown in the block.';
 
+$string['setting_admin_roles'] = 'Admin report roles';
+$string['setting_admin_roles_desc'] = 'This setting allows you to control which roles can view the admin reports.';
+
 // Notifications.
 $string['resetvisibilitysuccess'] = 'Success! All "block_people" instances are visible (again). <br/> The setting "Reset visibility" has been reset.';
 $string['resetvisibilityerror'] = 'Oops... Something went wrong updating the database tables... <br/> The setting "Reset visibility" has been reset.';
@@ -101,6 +104,7 @@ $string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
 $string['getthequestion'] = 'Display question results';
+$string['pdfquestion'] = 'Download question results as a pdf';
 $string['none'] = '-';
 
 // Charts

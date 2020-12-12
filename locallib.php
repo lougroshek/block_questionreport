@@ -70,7 +70,7 @@ function block_questionreport_is_admin() {
 }
 
 function block_questionreport_get_evaluations() {
-    global $DB, $CFG, $COURSE, $PAGE, $OUTPUT;
+    global $DB, $CFG, $COURSE, $USER, $PAGE, $OUTPUT;
     $plugin = 'block_questionreport';
     $ctype = "M";
     // The object we will pass to mustache.
@@ -94,7 +94,24 @@ function block_questionreport_get_evaluations() {
     $reports->href = $CFG->wwwroot.'/blocks/questionreport/report.php?action=view&cid='.$cid;
     $data->buttons->reports = $reports;
     // Conditionally add charts button object.
+    $adminvalue = get_config($plugin, 'adminroles');
+    $adminarray = explode(', ',$adminvalue);
+    // check to see if they are an admin.
+    $adminuser = false;
     if (!!$is_admin) {
+        $adminuser = true;    
+    } else {
+        $context = context_course::instance($COURSE->id);
+        $roles = get_user_roles($context, $USER->id, true);
+        foreach ($adminarray as $val) {
+           foreach ($roles as $role) {
+              if ($val == $role) {
+                  $adminuser = true;              
+              }           
+           }       	
+        }    
+    }
+    if ($adminuser) {
         // echo 'user is admin';
         $data->role = 'admin';
         // Build charts object.
@@ -943,10 +960,19 @@ function block_questionreport_get_chartquestions($surveyid) {
   */  
     return $essaylist;
 }
-function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid) {
-    global $DB, $COURSE;
+function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid, $action) {
+    global $DB, $COURSE, $CFG;
+    require_once($CFG->libdir . '/pdflib.php');
+    if ($action == 'pdf') {
+        $html = '<table border="0" cellpadding="6">';    
+    }   
     if ($ctype == 'M') {
         // If limit = 0 return all essay results. Otherwise return the limit.
+        if ($action == 'pdf' ) {
+        	   $quest = $DB->get_field('questionnaire_question', 'content', array('id' => $questionid));
+            $html = $html .'<tr><td><b>Question: '.$quest.'</b></td></tr>';        
+        }
+
         $sqlessay  = "SELECT qt.response, qt.id ";
         $fromessaysql = " FROM {questionnaire_response_text} qt ";
         $whereessaysql = "WHERE qt.question_id = ".$questionid;
@@ -975,7 +1001,11 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             $cnt = 0;
             foreach($arrayid as $resid) {
                 $cr = $DB->get_field('questionnaire_response_text','response', array('id' => $resid));
-    	          $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));   
+                if ($action == 'pdf') {
+                	  $html = $html .'<tr><td>'.str_replace("&nbsp;", '', trim(strip_tags($cr))).'</td></tr>';
+                } else {    	          
+    	              $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));
+    	          }   
     	          $cnt = $cnt + 1;
     	          if ($limit > 0 and $limit > $cnt) {
                     break;
@@ -986,25 +1016,32 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
         switch($questionid) {
             case "1":
               $sql = "SELECT uidsurvey, learning response";
+              $quest = "What is the learning from this course that you are most excited about trying out?";
               break;
      	    case "2":
-     	      $sql = "SELECT uidsurvey, navigate response ";
+     	        $sql = "SELECT uidsurvey, navigate response ";
+              $quest = "How, if in any way, this course helped you prepare for school opening after COVID-19?'";
               break;
        	   case "3":
-       	      $sql = "SELECT uidsurvey, overall response ";
+      	     $sql = "SELECT uidsurvey, overall response ";
+      	     $quest = "Overall, what went well in this course?";
               break;
            case "4":
-              $sql = "SELECT uidsurvey, improved response ";
+              $sql = "SELECT uidsurvey, activities response ";
+              $quest = "Which activities best supported your learning in this course?";
               break;
            case "5":
-               $sql = " SELECT uidsurvey, reccomend response ";
-               break;
+              $sql = " SELECT uidsurvey, improved response ";
+              $quest = " What could have improved your experience in this course?";
+              break;
            case "6":
-               $sql = " SELECT uidsurvey, choose response ";
-               break;
+              $quest = "Why did you choose this rating?";              
+              $sql = " SELECT uidsurvey, choose response ";
+              break;
            case "7":
-               $sql = " SELECT uidsurvey, comment response ";
-               break;
+              $quest = " Do you have additional comments about  this course?'";       
+              $sql = " SELECT uidsurvey, comment response ";
+              break;
      }
      $return = [];
      $sql = $sql. " FROM {local_teaching_survey} WHERE courseid  = ".$surveyid;
@@ -1022,9 +1059,16 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
      $resultlist = $DB->get_records_sql($sql, $paramsql);
      if (!empty($resultlist)) {
         $cnt = 0;
+        if ($action == 'pdf' ) {
+            $html = $html .'<tr><td><b>Question: '.$quest.'</b></td></tr>';        
+        }
         foreach($resultlist as $resid) {
             $cr = $resid->response;
-    	      $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));
+            if ($action == 'pdf') {
+           	    $html = $html .'<tr><td>'.str_replace("&nbsp;", '', trim(strip_tags($cr))).'</td></tr>';
+            } else {
+    	          $return[] = str_replace("&nbsp;", '', trim(strip_tags($cr)));
+    	      }
     	      $cnt = $cnt + 1;
     	      if ($limit > 0 and $limit > $cnt) {
                  break;
@@ -1032,13 +1076,24 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
         }
      }
   }
-  return $return;
+  if ($action == 'view') {
+      return $return;
+  } else {
+    	 $doc = new pdf;
+       $doc->setPrintHeader(false);
+       $doc->setPrintFooter(false);
+       $doc->AddPage();
+       $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+       $doc->Output();
+      // var_dump($doc);
+       exit();
+  }
 }
 
-function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate) {
+function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate, $action) {
     global $DB;
     $words = [];
-    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid));
+    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action));
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }

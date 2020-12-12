@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
+// You shou3ld have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
@@ -26,6 +26,7 @@ $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
+$surveyid   = optional_param('surveyid', 0, PARAM_INT);
 
 $plugin = 'block_questionreport';
 // Require the javascript for wordcloud.
@@ -46,6 +47,10 @@ $courseid = substr($cid, 2);
 if ($ctype == "M") {
     require_login($courseid);
     global $COURSE;
+}
+if ($action == 'pdf') {
+    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action);
+    exit();
 }
 echo $OUTPUT->header();
 // Build up the filters
@@ -405,6 +410,16 @@ $content .= html_writer::select($questionlist,"question",$questionid, false);
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
 $content .= '</form>';
 
+$content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+$content .= "<input type=\"hidden\" name=\"action\" value=\"pdf\" />\n";
+$content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+$content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+$content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
+$content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
+$content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
+$content .= '</form>';
 
 // Assemble data for word cloud.
 $word_cloud = new stdClass();
@@ -417,7 +432,7 @@ if ($questionid > 0 ) {
 	 if ($ctype <> 'M') {
         $surveyid = $courseid;
 	 }
-    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date);
+    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date, $action);
     $default_font_size = 20; // Adjust for more words.
     $words = [];
     foreach ($wordcount as $wd) {
@@ -438,7 +453,7 @@ if ($questionid > 0 ) {
 $quote_data = new stdClass();
 // Array of text responses to render.
 if ($questionid > 0 ){
-    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid);
+    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action);
 }
 /*
 
