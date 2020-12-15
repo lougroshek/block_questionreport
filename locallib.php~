@@ -1102,62 +1102,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            $html1 .= '<tr><td>'.$qcontent.'</td><td>'.$cr.'</td><td>'.$all.'</td></tr>';     
        }
        $html1 .= '</table>';
-       $html1 .= '<br><h1>Session Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';    
-       $html1 .= '<tr><td></td><td><b>This Course</b></td><td><b>All Courses</b></td></tr>';
-  /*     
-       if ($ctype == 'M') {
-           $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-           $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
-           $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
-           $choicecnt = 0;
-           foreach ($choices as $choice) {
-            $obj = new stdClass;
-            $obj->question = $choice->content;
-            $choiceid = $choice->id;
-            $choicecnt = $choicecnt + 1;
-            $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-            $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-            $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-            $obj->all = $all;
-       }
-     } else {
-      for ($x=1; $x< 8; $x++) {
-        $obj = new stdClass;
-        switch ($x) {
-       	 case "1":
-             $quest = "I am satisfied with the overall quality of this course.";
-             break;
-          case "2":
-             $quest = "The topics for this course were relevant for my role. "; 
-             break;
-          case "3" :
-             $quest = "The independent online work activities were well-designed to help me meet the learning targets. ";
-             break;
-          case "4" :
-             $quest = "The Zoom meeting activities were well-designed to help me meet the learning targets.";
-             break;
-          case "5" :
-             $quest = "I felt a sense of community with the other participants in this course even though we were meeting virtually. ";
-             break;
-          case "6" :
-             $quest = "This course helped me navigate remote and/or hybrid learning during COVID-19. ";
-             break;
-          case "7" :
-             $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
-             break;
-          }
-          $obj->question = $quest;
-          $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-          $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-          $obj->all = $all;
-      
-    }
-
-}
-*/
- $html1 .= '</table>';
-      
        $html = $html1.'<br>'.$html;
        
        $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
