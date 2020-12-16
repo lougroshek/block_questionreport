@@ -1091,43 +1091,56 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $partner = '';
        $html1 = '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';    
        $html1 .= '<tr><td></td><td><b>This Course</b></td><td><b>All Courses</b></td></tr>';
-       for($x =0; $x <=1; $x++) {
+       if ($ctype == 'M') {
+           $params = array();
+           $courseid = $DB->get_field('questionnaire_survey','courseid', array('id' => $surveyid));
+           $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
+           $records = $DB->get_record_sql($sql, $params);
+           $stp = $records->mp;
+           for ($x = 0; $x <= 1; $x++) {
+	            $pnum = $stp + $x;
+               // Question
+               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
+               // Course
+               $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
+               $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+               $html1 .= '<tr><td>'.$qcontent.'</td><td>'.$cr.'</td><td>'.$all.'</td></tr>';     
+            }
+       } else {         
+           for($x =0; $x <=1; $x++) {
            if ($x == 0) {
-             $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
+               $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
            } else {
-         	 $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. "; 
+         	   $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. "; 
            }
            $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
            $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
            $html1 .= '<tr><td>'.$qcontent.'</td><td>'.$cr.'</td><td>'.$all.'</td></tr>';     
        }
+    }
        $html1 .= '</table>';
        $html1 .= '<br><h1>Session Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';    
        $html1 .= '<tr><td></td><td><b>This Course</b></td><td><b>All Courses</b></td></tr>';
-  /*     
+       
        if ($ctype == 'M') {
            $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
            $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
            $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
            $choicecnt = 0;
            foreach ($choices as $choice) {
-            $obj = new stdClass;
-            $obj->question = $choice->content;
-            $choiceid = $choice->id;
-            $choicecnt = $choicecnt + 1;
-            $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-            $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-            $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-            $obj->all = $all;
-       }
+              $choiceid = $choice->id;
+              $choicecnt = $choicecnt + 1;
+              $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
+              $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+              $html1 .= '<tr><td>'.$choice->content.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
+           }
      } else {
-      for ($x=1; $x< 8; $x++) {
-        $obj = new stdClass;
-        switch ($x) {
-       	 case "1":
-             $quest = "I am satisfied with the overall quality of this course.";
-             break;
-          case "2":
+         for ($x=1; $x< 8; $x++) {
+          switch ($x) {
+       	   case "1":
+              $quest = "I am satisfied with the overall quality of this course.";
+              break;
+            case "2":
              $quest = "The topics for this course were relevant for my role. "; 
              break;
           case "3" :
@@ -1146,20 +1159,14 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
              $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
              break;
           }
-          $obj->question = $quest;
-          $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
-          $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
-          $obj->all = $all;
-      
+          $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
+          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+          $html1 .= '<tr><td>'.$quest.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
     }
+ }
 
-}
-*/
- $html1 .= '</table>';
-      
-       $html = $html1.'<br>'.$html;
-       
+       $html1 .= '</table>';      
+       $html = $html1.'<br>'.$html;       
        $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
        $doc->Output();
       // var_dump($doc);
