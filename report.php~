@@ -27,6 +27,7 @@ $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
 $surveyid   = optional_param('surveyid', 0, PARAM_INT);
+$coursefilter = optional_param('coursefilter', '0', PARAM_RAW);
 
 $plugin = 'block_questionreport';
 // Require the javascript for wordcloud.
@@ -60,9 +61,10 @@ echo get_string('filters', $plugin);
 echo html_writer::end_tag('h2');
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
 echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
 
-echo html_writer::label(get_string('coursefilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($courselist,"cid",$cid, false);
+echo html_writer::label(get_string('courseonly', $plugin), false, array('class' => 'accesshide'));
+echo html_writer::select($courselist,"coursefilter",$coursefilter, false);
 
 $partnerlist = block_questionreport_get_partners_list();
 
@@ -83,6 +85,13 @@ $tagvalue = get_config($plugin, 'tag_value');
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
 
+if ($coursefilter > '0') {
+    $filtertype = substr($coursefilter, 0, 1);
+    $filterid = substr($coursefilter, 2);
+} else {
+    $filtertype = 'A';
+    $filterid = substr($coursefilter, 2);        
+}
 $content = '';
 if ($ctype == "M") {
     $content = '';
@@ -145,7 +154,7 @@ if ($ctype == "M") {
      $resp = $DB->get_record_sql($sqlresp, $paramscourse);
 
      $totrespcourse = $resp->crid;
-
+     
      // Get the total responses.
      $partnersql = '';
      if ($partner > '') {
@@ -154,7 +163,7 @@ if ($ctype == "M") {
          $partnerid = get_config($plugin, 'partnerfield');
          $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
      }
-
+     
      $totresp = 0;
      $sqlcourses = "SELECT m.course, m.id, m.instance
                       FROM {course_modules} m
@@ -162,7 +171,13 @@ if ($ctype == "M") {
                      WHERE m.module = ".$moduleid. "
                        AND ti.tagid = ".$tagid . "
                        AND m.deletioninprogress = 0";
-
+     if ($filtertype == 'M') {
+         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;      
+     }                          
+     
+     if ($filtertype == 'A' ) {
+         $sqlcourses = $sqlcourses .' AND m.course = -1';           
+     }
      $sqltot = "SELECT COUNT(r.id) crid ";
      $fromtot = " FROM {questionnaire_response} r ";
      $wheretot = "WHERE r.questionnaireid = :questionnaireid AND r.complete = 'y' ";
@@ -216,6 +231,15 @@ if ($ctype == "M") {
          $paramsext['endtd'] = $endtd;
      }
      $sqlext = $sqlext .' '.$whereext;
+   
+     if ($filtertype == 'A') {
+         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;      
+     }                          
+
+     if ($filtertype == 'M') {
+         $sqlext = $sqlext .' AND ts.courseid = -1';     
+     }                          
+
      $respext = $DB->get_record_sql($sqlext, $paramsext);
 
      $totresp = $totresp + $respext->cdtot;
@@ -236,11 +260,21 @@ if ($ctype == "M") {
          $paramsext['endtd'] = $endtd;
      }
      $sqlext = $sqlext .' '.$whereext;
+     
      $respext = $DB->get_record_sql($sqlext, $paramsext);
      $totrespcourse = $respext->cdtot;
      $sqlext = "SELECT COUNT(ts.courseid) cdtot
                   FROM {local_teaching_survey} ts";
      $whereext = "WHERE 1 = 1";
+     if ($filtertype == 'A') {
+         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;      
+     }                          
+
+     if ($filtertype == 'M') {
+         $sqlext = $sqlext .' AND ts.courseid = -1';     
+     }                          
+
+     
      $paramsext = array();
      if ($start_date > 0) {
          $std = strtotime($start_date);
@@ -278,7 +312,14 @@ if ($ctype == "M") {
          $wheretot = $wheretot . " AND submitted <= :endtd";
          $paramstot['endtd'] = $endtd;
      }
-
+     if ($filtertype == 'M') {
+         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;      
+     }                          
+     
+     if ($filtertype == 'A' ) {
+         $sqlcourses = $sqlcourses .' AND m.course = -1';           
+     }
+    
      $surveys = $DB->get_records_sql($sqlcourses);
      foreach($surveys as $survey) {
 	      $sid = $survey->instance;
@@ -303,15 +344,15 @@ if ($ctype == 'M') {
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     $records = $DB->get_record_sql($sql, $params);
     $stp = $records->mp;
-echo $sql;
-exit();
+//echo $sql;
+//exit();
     for ($x = 0; $x <= 1; $x++) {
 	     $pnum = $stp + $x;
          // Question
          $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
          // Course
          $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
          // Build object from data and assign it to the $data object passed to the template.
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
@@ -323,7 +364,7 @@ exit();
     for($x =0; $x <=1; $x++) {
          // Course
          $course = block_questionreport_get_question_results($ctype, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
          // Build object from data and assign it to the $data object passed to the template.
          if ($x == 0) {
              $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
@@ -351,7 +392,7 @@ if ($ctype == 'M') {
         $choiceid = $choice->id;
         $choicecnt = $choicecnt + 1;
         $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
         $obj->all = $all;
         array_push($data->session, $obj);
@@ -384,7 +425,7 @@ if ($ctype == 'M') {
           }
           $obj->question = $quest;
           $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+          $all = block_questionreport_get_question_results_rank($ctype, $x, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
           $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
           $obj->all = $all;
           array_push($data->session, $obj);
