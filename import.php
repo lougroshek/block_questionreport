@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__).'/../../config.php');
 global  $DB;
-$url = '/var/www/html/m39/blocks/questionreport/sys20.csv';
+$url = '/var/www/html/m39/blocks/questionreport/sys20b.csv';
 if (($handle = fopen($url, "r")) !== FALSE) {
      fgetcsv($handle, ",");
      fgetcsv($handle, ",");
@@ -30,8 +30,21 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             $rec->community = $data[9];
             $rec->covid = $data[10];
             $rec->navigate = $data[11];
-            $rec->learning = $data[12];
-            $rec->practice = $data[13];
+            if (is_int($data[12])) {
+               $rec->learning = $data[12];
+            } else {
+  	            $rec->learning = 3;
+            }	
+        //    $rec->learning = $data[12];
+            if (is_int($data[13])) {
+               $rec->practice = $data[13];
+            } else {
+  	            $rec->practice = 3;
+            }	
+
+           
+//            $rec->practice = $data[13];
+            
             // check the teacher
             $tname = trim($data[14]);
 //            echo 'teacher name '.$tname;
@@ -76,14 +89,18 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             $rec->community2 = $data[20];
             $rec->overall = $data[21];
             $rec->improved = $data[23];
-            $rec->reccomend = $data[24];
+            if (is_int($data[24])) {
+                $rec->reccomend = $data[24];
+            } else {
+                $rec->reccomend = 3;            
+            }
             $rec->choose = $data[25];
             $rec->comment = $data[26];
             $rec->activities = $data[22];
             $act = $data[22];
             //$rec->courseid = intval($courseid);
             $pname = trim($data[28]);
-            echo 'pname '.$pname;
+//            echo 'pname '.$pname;
             $plen = strlen($pname);
             $portid = 0;
             if ($plen > 4) {
@@ -97,6 +114,7 @@ if (($handle = fopen($url, "r")) !== FALSE) {
             }
   //          $rec->port1id = $portid;
 
+/*
             $pname = trim($data[29]);
             echo '<br> pname '.$pname;
             $plen = strlen($pname);
@@ -118,15 +136,16 @@ if (($handle = fopen($url, "r")) !== FALSE) {
 //            exit();
 //            $rec->port1 = $data[28];
            // $rec->port2 = $data[29];
+           */
               $lastrecord = $DB->insert_record('local_teaching_survey', $rec);
               $DB->set_field('local_teaching_survey', 'courseid', $courseid, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'port1id', $portid, array('uidsurvey' => $lastrecord));
-              $DB->set_field('local_teaching_survey', 'port2id', $port2id, array('uidsurvey' => $lastrecord));
+             // $DB->set_field('local_teaching_survey', 'port2id', $port2id, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'teacher1id', $teacherid, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'teacher2id', $teacher2id, array('uidsurvey' => $lastrecord));
               $DB->set_field('local_teaching_survey', 'activities', $act, array('uidsurvey' => $lastrecord));
 
-exit();
+//exit();
       }
   }
 echo 'done';
