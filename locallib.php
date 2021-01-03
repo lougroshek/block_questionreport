@@ -410,7 +410,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     $percent = ($totgood / $totres) * 100;
-                    $retval = round($percent, 2)."(%)";
+                    $retval = round($percent, 0)."(%)";
                 } else {
                     $retval = "0(%)";
                 }
@@ -476,7 +476,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                   $totgood = $respext->cdgood;
                   if ($totgood > 0) {
                       $percent = ($totgood / $totres) * 100;
-                      $retval = round($percent, 2)."(%)";
+                      $retval = round($percent, 0)."(%)";
                   } else {
                       $retval = "0(%)";
                   }
@@ -631,7 +631,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
-                $retval = round($percent, 2)."(%)";
+                $retval = round($percent, 0)."(%)";
             } else {
                 $retval = "0(%)";
             }
@@ -708,7 +708,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                    $totgood = $resgood->cdtot;
                    if ($totgood > 0) {
                        $percent = ($totgood / $totres) * 100;
-                       $retval = round($percent, 2)."(%)";
+                       $retval = round($percent, 0)."(%)";
                    } else {
                        $retval = "0(%)";
                    }
@@ -754,7 +754,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         	      $totgood = $DB->count_records_sql($totsql, $paramsql);
                       if ($totgood > 0) {
                           $percent = ($totgood / $totres) * 100;
-                          $retval = round($percent, 2)."(%)";
+                          $retval = round($percent, 0)."(%)";
                } else {
                    $retval = "0(%)";
                }
@@ -895,7 +895,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
-                $retval = round($percent, 2)."(%)";
+                $retval = round($percent, 0)."(%)";
             } else {
                 $retval = "0(%)";
             }
@@ -1082,6 +1082,8 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
     	 $doc = new pdf;
        $doc->setPrintHeader(false);
        $doc->setPrintFooter(false);
+       $doc->setFont('helvetica',' ', '10');
+       $doc->SetFillColor(0,255,0);  
        $doc->AddPage();
        $plugin = 'block_questionreport';
        $tagvalue = get_config($plugin, 'tag_value');
@@ -1132,7 +1134,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               $choicecnt = $choicecnt + 1;
               $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
               $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-              $html1 .= '<tr><td>'.$choice->content.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
+              if ($choice->id %2 == 0) {              
+                  $font = ' style="background-color:green;color:white;"';
+              } else {
+              	   $font = '';
+              }	   
+              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
            }
      } else {
          for ($x=1; $x< 8; $x++) {
@@ -1161,12 +1168,23 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
           }
           $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
           $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-          $html1 .= '<tr><td>'.$quest.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
+     
+          if ($x % 2 == 0) {   
+              $font = ' style="background-color:green;"';
+          } else {
+              $font = '';          
+          }
+          $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
     }
  }
+//echo $html;
+//exit();
 
        $html1 .= '</table>';      
-       $html = $html1.'<br>'.$html;       
+ //      $html = $html1.'<br>'.$html; 
+       $html = $html1;
+   //    echo $html;
+    //   exit();      
        $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
        $doc->Output();
       // var_dump($doc);
@@ -1292,7 +1310,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
                $totgood = $trsql->sr;
                if ($totgood > 0) {
                    $percent = ($totgood / $totres) * 100;
-                   $retval = round($percent, 2)."(%)";
+                   $retval = round($percent, 0)."(%)";
                }
            }
     } else  {
@@ -1379,7 +1397,7 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
         }
         if ($gttotres > 0) {
             $percent = ($gttotres / $gtres) * 100;
-            $retval = round($percent, 2)."(%)";
+            $retval = round($percent, 0)."(%)";
 
         }
     }
