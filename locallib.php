@@ -1106,7 +1106,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                // Course
                $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
                $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-               $html1 .= '<tr><td>'.$qcontent.'</td><td style="text-align: center; vertical-align: middle;">'.$cr.'</td><td style="text-align: center; vertical-align: middle;">'.$all.'</td></tr>';
+               $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
             }
        } else {
            for($x =0; $x <=1; $x++) {
@@ -1117,7 +1117,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
            $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
            $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-           $html1 .= '<tr><td>'.$qcontent.'</td><td style="text-align: center; vertical-align: middle;">'.$cr.'</td><td style="text-align: center; vertical-align: middle;">'.$all.'</td></tr>';
+           $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
        }
     }
        $html1 .= '</table>';
@@ -1139,7 +1139,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               } else {
               	   $font = '';
               }
-              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td style="text-align: center; vertical-align: middle;">'.$course.'</td><td style="text-align: center; vertical-align: middle;">'.$all.'</td></tr>';
+              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
            }
      } else {
          for ($x=1; $x< 8; $x++) {
@@ -1174,7 +1174,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
           } else {
               $font = '';
           }
-          $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td style="text-align: center; vertical-align: middle;">'.$course.'</td><td style="text-align: center; vertical-align: middle;">'.$all.'</td></tr>';
+          $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
     }
  }
 //echo $html;
