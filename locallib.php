@@ -1092,7 +1092,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
        $partner = '';
        $html1 = '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';
-       $html1 .= '<tr><td></td><td><b>This Course</b></td><td><b>All Courses</b></td></tr>';
+       $html1 .= '<tr><td></td><td align="center"><b>This Course</b></td><td align="center"><b>All Courses</b></td></tr>';
        if ($ctype == 'M') {
            $params = array();
            $courseid = $DB->get_field('questionnaire_survey','courseid', array('id' => $surveyid));
@@ -1106,7 +1106,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                // Course
                $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
                $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-               $html1 .= '<tr><td>'.$qcontent.'</td><td>'.$cr.'</td><td>'.$all.'</td></tr>';
+               $html1 .= '<tr><td align="center" valign="middle">'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td>'.$all.'</td></tr>';
             }
        } else {
            for($x =0; $x <=1; $x++) {
@@ -1117,12 +1117,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
            $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
            $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-           $html1 .= '<tr><td>'.$qcontent.'</td><td>'.$cr.'</td><td>'.$all.'</td></tr>';
+           $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
        }
     }
        $html1 .= '</table>';
        $html1 .= '<br><h1>Session Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';
-       $html1 .= '<tr><td></td><td><b>This Course</b></td><td><b>All Courses</b></td></tr>';
+       $html1 .= '<tr><td></td><td align="center"><b>This Course</b></td><td align="center"><b>All Courses</b></td></tr>';
 
        if ($ctype == 'M') {
            $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
@@ -1139,7 +1139,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               } else {
               	   $font = '';
               }
-              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
+              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
            }
      } else {
          for ($x=1; $x< 8; $x++) {
@@ -1174,7 +1174,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
           } else {
               $font = '';
           }
-          $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td>'.$course.'</td><td>'.$all.'</td></tr>';
+          $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
     }
  }
 //echo $html;
