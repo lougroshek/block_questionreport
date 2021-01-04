@@ -153,7 +153,7 @@ if ($ctype == "M") {
      $resp = $DB->get_record_sql($sqlresp, $paramscourse);
 
      $totrespcourse = $resp->crid;
-     
+
      // Get the total responses.
      $partnersql = '';
      if ($partner > '') {
@@ -162,20 +162,20 @@ if ($ctype == "M") {
          $partnerid = get_config($plugin, 'partnerfield');
          $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
      }
-     
+
      $totresp = 0;
      $sqlcourses = "SELECT m.course, m.id, m.instance
                       FROM {course_modules} m
-                      JOIN {tag_instance} ti on ti.itemid = m.id ".$partnersql. " 
+                      JOIN {tag_instance} ti on ti.itemid = m.id ".$partnersql. "
                      WHERE m.module = ".$moduleid. "
                        AND ti.tagid = ".$tagid . "
                        AND m.deletioninprogress = 0";
      if ($filtertype == 'M') {
-         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;      
-     }                          
-     
+         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;
+     }
+
      if ($filtertype == 'A' ) {
-         $sqlcourses = $sqlcourses .' AND m.course = -1';           
+         $sqlcourses = $sqlcourses .' AND m.course = -1';
      }
      $sqltot = "SELECT COUNT(r.id) crid ";
      $fromtot = " FROM {questionnaire_response} r ";
@@ -230,14 +230,14 @@ if ($ctype == "M") {
          $paramsext['endtd'] = $endtd;
      }
      $sqlext = $sqlext .' '.$whereext;
-   
+
      if ($filtertype == 'A') {
-         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;      
-     }                          
+         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;
+     }
 
      if ($filtertype == 'M') {
-         $sqlext = $sqlext .' AND ts.courseid = -1';     
-     }                          
+         $sqlext = $sqlext .' AND ts.courseid = -1';
+     }
 
      $respext = $DB->get_record_sql($sqlext, $paramsext);
 
@@ -259,21 +259,21 @@ if ($ctype == "M") {
          $paramsext['endtd'] = $endtd;
      }
      $sqlext = $sqlext .' '.$whereext;
-     
+
      $respext = $DB->get_record_sql($sqlext, $paramsext);
      $totrespcourse = $respext->cdtot;
      $sqlext = "SELECT COUNT(ts.courseid) cdtot
                   FROM {local_teaching_survey} ts";
      $whereext = "WHERE 1 = 1";
      if ($filtertype == 'A') {
-         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;      
-     }                          
+         $sqlext = $sqlext .' AND ts.courseid ='.$filterid;
+     }
 
      if ($filtertype == 'M') {
-         $sqlext = $sqlext .' AND ts.courseid = -1';     
-     }                          
+         $sqlext = $sqlext .' AND ts.courseid = -1';
+     }
 
-     
+
      $paramsext = array();
      if ($start_date > 0) {
          $std = strtotime($start_date);
@@ -312,13 +312,13 @@ if ($ctype == "M") {
          $paramstot['endtd'] = $endtd;
      }
      if ($filtertype == 'M') {
-         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;      
-     }                          
-     
-     if ($filtertype == 'A' ) {
-         $sqlcourses = $sqlcourses .' AND m.course = -1';           
+         $sqlcourses = $sqlcourses .' AND m.course ='.$filterid;
      }
-    
+
+     if ($filtertype == 'A' ) {
+         $sqlcourses = $sqlcourses .' AND m.course = -1';
+     }
+
      $surveys = $DB->get_records_sql($sqlcourses);
      foreach($surveys as $survey) {
 	      $sid = $survey->instance;
@@ -368,7 +368,7 @@ if ($ctype == 'M') {
          if ($x == 0) {
              $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
          } else {
-         	 $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. "; 
+         	 $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. ";
          }
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
@@ -404,7 +404,7 @@ if ($ctype == 'M') {
              $quest = "I am satisfied with the overall quality of this course.";
              break;
           case "2":
-             $quest = "The topics for this course were relevant for my role. "; 
+             $quest = "The topics for this course were relevant for my role. ";
              break;
           case "3" :
              $quest = "The independent online work activities were well-designed to help me meet the learning targets. ";
@@ -438,6 +438,17 @@ if ($ctype <> 'M') {
 
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
+$content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
+$content .= "<input type=\"hidden\" name=\"action\" value=\"pdf\" />\n";
+$content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
+$content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
+$content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
+$content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
+$content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
+$content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
+$content .= '</form>';
+
 $questionlist = block_questionreport_get_essay($ctype, $surveyid);
 $removed = array_pop($questionlist); // Remove all from the array.
 $content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
@@ -451,16 +462,7 @@ $content .= html_writer::select($questionlist,"question",$questionid, false);
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('getthequestion', $plugin).'" />';
 $content .= '</form>';
 
-$content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";
-$content .= "<input type=\"hidden\" name=\"action\" value=\"pdf\" />\n";
-$content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
-$content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
-$content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";
-$content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
-$content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
-$content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
-$content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
-$content .= '</form>';
+
 
 // Assemble data for word cloud.
 $word_cloud = new stdClass();
@@ -524,7 +526,7 @@ foreach ($choices as $choice) {
     $course = block_questionreport_get_question_results_percent($qid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
     $all = block_questionreport_get_question_results_percent($qid, $choicecnt, 0, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
     $obj->course = $course;
-    $obj->all = $all; 
+    $obj->all = $all;
     array_push($data->session, $obj);
 }
 */

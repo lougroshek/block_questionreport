@@ -58,7 +58,7 @@ $string['resetvisibilityerror'] = 'Oops... Something went wrong updating the dat
 $string['summary'] = 'Facilitation summary (% Agree & Strongly Agree)';
 $string['thiscourse'] = 'This Course';
 $string['allcourses'] = 'All Courses';
-$string['session'] = 'Session (% Agree & Strongly Agree)'; 
+$string['session'] = 'Session (% Agree & Strongly Agree)';
 $string['surveyresp'] = 'Number of survey responses';
 $string['reports'] = 'Access Survey Reports';
 $string['adminreports'] = 'Access Admin Reports';
@@ -104,7 +104,7 @@ $string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
 $string['getthequestion'] = 'Display question results';
-$string['pdfquestion'] = 'Download question results as a pdf';
+$string['pdfquestion'] = 'Download survey results as a pdf';
 $string['none'] = '-';
 
 // Charts
