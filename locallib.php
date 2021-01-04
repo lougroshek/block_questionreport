@@ -1135,7 +1135,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner);
               $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
               if ($choice->id %2 == 0) {
-                  $font = ' style="background-color:rgba(0,0,0,.05);"';
+                  $font = ' style="background-color:#ebebeb;"';
               } else {
               	   $font = '';
               }
@@ -1170,7 +1170,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
           $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
 
           if ($x % 2 == 0) {
-              $font = ' style="background-color:rgba(0,0,0,.05);"';
+              $font = ' style="background-color:#ebebeb;"';
           } else {
               $font = '';
           }
