@@ -28,6 +28,8 @@ $partner      = optional_param('partner', '', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
 $surveyid   = optional_param('surveyid', 0, PARAM_INT);
 $coursefilter = optional_param('coursefilter', '0', PARAM_RAW);
+$portfolio    = optional_param('portfolio', '', PARAM_RAW);
+$teacher      = optional_param('teacher', '', PARAM_RAW); //Teacher id.
 
 $plugin = 'block_questionreport';
 // Require the javascript for wordcloud.
@@ -43,6 +45,8 @@ $PAGE->navbar->add($header, new moodle_url('/blocks/questionreport/report.php'))
 
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
+require_once($CFG->dirroot.'/blocks/questionreport/chartlib.php');
+
 $ctype = substr($cid, 0, 1);
 $courseid = substr($cid, 2);
 if ($ctype == "M") {
@@ -70,7 +74,39 @@ $partnerlist = block_questionreport_get_partners_list();
 
 echo html_writer::label(get_string('partnerfilter', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
+// See if they are an admin.
+$adminvalue = get_config($plugin, 'adminroles');
+$adminarray = explode(', ',$adminvalue);
+// check to see if they are an admin.
+$adminuser = false;
+$is_admin = block_questionreport_is_admin();
+if (!!$is_admin) {
+    $adminuser = true;
+} else {
+    $context = context_course::instance($COURSE->id);
+    $roles = get_user_roles($context, $USER->id, true);
+    foreach ($adminarray as $val) {
+       foreach ($roles as $role) {
+          if ($val == $role) {
+              $adminuser = true;
+          }
+       }
+    }
+}
+if ($adminuser) {
+    $portfoliolist = block_questionreport_get_portfolio_list();
+    echo html_writer::label(get_string('portfoliofilteronly', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($portfoliolist, "portfolio", $portfolio, get_string("all", $plugin));
+    $teacherlist = block_questionreport_get_teachers_list();
 
+    echo html_writer::label(get_string('teacherfilteronly', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
+} else {
+	 $def = 0;
+    echo "<input type=\"hidden\" name=\"portfolio\" value=\"$def\" />\n";
+    echo "<input type=\"hidden\" name=\"teacher\" value=\"$def\" />\n";
+
+}
 // Date select.
 echo html_writer::start_tag('div', array('class' => 'date-input-group'));
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));

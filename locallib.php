@@ -24,6 +24,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+
 function block_questionreport_get_choice_current($choiceid) {
     global $DB;
     $recsql = "SELECT count(id) from {questionnaire_response_rank} where choice_id = ".$choiceid ." and rankvalue > 3";
@@ -1080,11 +1081,15 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
       return $return;
   } else {
     	 $doc = new pdf;
-       $doc->setPrintHeader(false);
+      // $doc->setPrintHeader(false);
        $doc->setPrintFooter(false);
-       $doc->setFont('helvetica',' ', '10');
+       $doc->setFont('helvetica',' ', '8');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
+
+       $doc->Image('images/logo.png', '', '', 0, 0, 'png', 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, false);
+
+       $doc->SetXY(1000, 40);       
        $plugin = 'block_questionreport';
        $tagvalue = get_config($plugin, 'tag_value');
        $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));

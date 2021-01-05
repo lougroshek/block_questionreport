@@ -98,7 +98,7 @@ $string['by_question_instr'] = 'To see anonymous responses to survey questions, 
 $string['tables_heading'] = 'Survey Data and Historical Responses';
 $string['table_header_facilitator'] = 'Facilitation Summary (% Agree and Strongly Agree)';
 $string['table_header_session'] = 'Session Summary (% Agree and Strongly Agree)';
-$string['courseonly'] = 'Filter by Course - applies to All courses column';
+$string['courseonly'] = 'Filter by Course - (applies to All Courses column)';
 // Word Cloud template.
 $string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
@@ -133,3 +133,5 @@ $string['coursedesc'] = 'Filter by Course';
 $string['chartquestion'] = 'Select a question';
 $string['getthechart'] = 'Generate the chart';
 $string['nochart'] = 'No chart can be generated ';
+$string['portfoliofilteronly'] = 'Filter by Portfolio (applies to All Courses column)';
+$string['teacherfilteronly'] = 'Filter by Facilitator (applies to All Courses column)';
