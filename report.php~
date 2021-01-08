@@ -79,6 +79,7 @@ $adminvalue = get_config($plugin, 'adminroles');
 $adminarray = explode(', ',$adminvalue);
 // check to see if they are an admin.
 $adminuser = false;
+$is_admin = block_questionreport_is_admin();
 if (!!$is_admin) {
     $adminuser = true;
 } else {
@@ -385,8 +386,8 @@ if ($ctype == 'M') {
          // Question
          $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
          // Course
-         $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner,$portfolio, $teacher);
+         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
          // Build object from data and assign it to the $data object passed to the template.
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
@@ -397,8 +398,8 @@ if ($ctype == 'M') {
 } else {
     for($x =0; $x <=1; $x++) {
          // Course
-         $course = block_questionreport_get_question_results($ctype, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $course = block_questionreport_get_question_results($ctype, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
+         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
          // Build object from data and assign it to the $data object passed to the template.
          if ($x == 0) {
              $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
@@ -425,8 +426,10 @@ if ($ctype == 'M') {
         $obj->question = $choice->content;
         $choiceid = $choice->id;
         $choicecnt = $choicecnt + 1;
-        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
+                                                                 $end_date, $partner, $portfolio, $teacher);
+        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
+                                                              $end_date, $partner, $portfolio, $teacher);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
         $obj->all = $all;
         array_push($data->session, $obj);

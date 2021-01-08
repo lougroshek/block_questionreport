@@ -26,14 +26,18 @@ defined('MOODLE_INTERNAL') || die();
 function block_questionreport_get_portfolio_list() {
     global $DB;
     $plugin = 'block_questionreport';
-    $courselist = array();
-    $courselist[0] = get_string('all', $plugin);
+    $options = array();
     $fieldid = get_config($plugin, 'portfoliofield');
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
-    $options = array();
+    
     $x = json_decode($content);
     $opts = $x->options;
-    $options = preg_split("/\s*\n\s*/", $opts);
+    $options_old = preg_split("/\s*\n\s*/", $opts);
+    $x = 1;
+    foreach($options_old as $val) {
+       $options[$x] = $val;
+       $x = $x + 1;    
+    }
     $dbman = $DB->get_manager();
     if ($dbman->table_exists('local_teaching_port')) {
         $altcourses = $DB->get_records('local_teaching_port');
@@ -692,7 +696,8 @@ function block_questionreport_setchart($ctype, $chartid, $stdate, $nddate, $cid,
         if ($basetot > 0) {
             switch ($choicecnt) {
               case "1":
-                 $s = "SELECT sum(satisfied) rv";
+                 $s = "SELECT count(*) rv";
+                 $whereressql = $whereressql . ' AND (satisfied = 4 or satisfied = 5)';
                  break;
               case "2": 
                  $s = "SELECT sum(topics) rv";
@@ -714,6 +719,8 @@ function block_questionreport_setchart($ctype, $chartid, $stdate, $nddate, $cid,
                  break;
             }
             $sqltot = $s. " ".$whereext. ' '.$whereressql;
+            echo $sqltot;
+            exit();
             $totrec = $DB->get_record_sql($sqltot, $params);
             $totgood = $totrec->rv;
             $labelarray[] = $partner;

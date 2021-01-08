@@ -233,19 +233,48 @@ if ($ctype == "M") {
      foreach($surveys as $survey) {
 	      $valid = false;
 	      if (is_siteadmin() ) {
-                  $valid = true;
+             $valid = true;
 	      } else {
              $context = context_course::instance($survey->course);
              if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
                  $valid = true;
-	       }
+	          }
 	     }
+	     if ($valid && $portfolio > "") {
+            $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course, 
+                                         'fieldid' => $portfieldid));
+            if ($courseport != $portfolio) {
+                $valid = false;                 
+            }	          
+        }
+        if ($valid and $teacher > "") {
+            $context = context_course::instance($survey->course);
+            $contextid = $context->id;
+            $sqlteacher = "SELECT u.firstname, u.lastname, u.id
+                           FROM {user} u
+                           JOIN {role_assignments} ra on ra.userid = u.id
+                           AND   ra.contextid = :context
+                           AND roleid in (".$roles.")";
+            $paramteacher = array ('context' => $contextid);
+            $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+            $tlist = '';
+            $validteacher = false;
+            foreach($teacherlist as $te) {
+              if ($te->id == $teacher) {
+                   $validteacher = true;
+               }
+            }
+            if (!$validteacher) {
+                 $valid = false;
+            }
+        }              
+
 	     if ($valid) {
-                $sid = $survey->instance;
-                $paramstot['questionnaireid'] = $sid;
-                $sqlquestion = $sqltot . $fromtot . $wheretot;
-                $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
-               $totresp = $respsql->crid + $totresp;
+            $sid = $survey->instance;
+            $paramstot['questionnaireid'] = $sid;
+            $sqlquestion = $sqltot . $fromtot . $wheretot;
+            $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
+            $totresp = $respsql->crid + $totresp;
          }
      }
 
@@ -265,6 +294,13 @@ if ($ctype == "M") {
          $whereext = $whereext . " AND coursedate <= :endtd";
          $paramsext['endtd'] = $endtd;
      }
+     if ($portfolio > "") {
+         $whereext = $whereext . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;            
+     }
+     if ($teacher > " ") {
+         $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;                        
+     }
+
      $sqlext = $sqlext .' '.$whereext;
 
      if ($filtertype == 'A') {
@@ -386,8 +422,8 @@ if ($ctype == 'M') {
          // Question
          $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
          // Course
-         $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner,$portfolio, $teacher);
+         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
          // Build object from data and assign it to the $data object passed to the template.
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
@@ -398,8 +434,8 @@ if ($ctype == 'M') {
 } else {
     for($x =0; $x <=1; $x++) {
          // Course
-         $course = block_questionreport_get_question_results($ctype, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
-         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+         $course = block_questionreport_get_question_results($ctype, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
+         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
          // Build object from data and assign it to the $data object passed to the template.
          if ($x == 0) {
              $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
@@ -426,8 +462,10 @@ if ($ctype == 'M') {
         $obj->question = $choice->content;
         $choiceid = $choice->id;
         $choicecnt = $choicecnt + 1;
-        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner);
-        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner);
+        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
+                                                                 $end_date, $partner, $portfolio, $teacher);
+        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
+                                                              $end_date, $partner, $portfolio, $teacher);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
         $obj->all = $all;
         array_push($data->session, $obj);
