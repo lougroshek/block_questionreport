@@ -694,32 +694,31 @@ function block_questionreport_setchart($ctype, $chartid, $stdate, $nddate, $cid,
         $basetot = $base->cdgood;
 
         if ($basetot > 0) {
+     	      $s = "SELECT count(*) rv";
             switch ($choicecnt) {
               case "1":
-                 $s = "SELECT sum(satisfied) rv";
+                 $whereressql = $whereressql . ' AND (satisfied = 4 or satisfied = 5)';
                  break;
               case "2": 
-                 $s = "SELECT sum(topics) rv";
+                 $whereressql = $whereressql . ' AND (topics = 4 or topics = 5)';
                  break;
               case "3" :
-                 $s = "SELECT sum(online) rv";
+                 $whereressql = $whereressql . ' AND (online = 4 or online = 5)';
                  break;
                case "4" :
-                 $s = "SELECT sum(zoom) rv ";
+                 $whereressql = $whereressql . ' AND (zoom = 4 or zoom = 5)';
                  break;
               case "5" :
-                 $s = "SELECT sum(community) rv";
+                 $whereressql = $whereressql . ' AND (community = 4 or community = 5)';
                  break;
               case "6" :
-                 $s = "SELECT sum(covid) rv ";
+                 $whereressql = $whereressql . ' AND (covid = 4 or covid = 5)';
                  break;
               case "7" :
-                 $s = "SELECT sum(practice) rv";
+                 $whereressql = $whereressql . ' AND (practice = 4 or practice = 5)';
                  break;
             }
             $sqltot = $s. " ".$whereext. ' '.$whereressql;
-            echo $sqltot;
-            exit();
             $totrec = $DB->get_record_sql($sqltot, $params);
             $totgood = $totrec->rv;
             $labelarray[] = $partner;

@@ -54,7 +54,7 @@ if ($ctype == "M") {
     global $COURSE;
 }
 if ($action == 'pdf') {
-    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action);
+    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher, $courseid);
     exit();
 }
 echo $OUTPUT->header();
@@ -570,7 +570,7 @@ if ($questionid > 0 ) {
 $quote_data = new stdClass();
 // Array of text responses to render.
 if ($questionid > 0 ){
-    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action);
+    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher);
 }
 /*
 
