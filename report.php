@@ -415,8 +415,6 @@ if ($ctype == 'M') {
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     $records = $DB->get_record_sql($sql, $params);
     $stp = $records->mp;
-//echo $sql;
-//exit();
     for ($x = 0; $x <= 1; $x++) {
 	     $pnum = $stp + $x;
          // Question

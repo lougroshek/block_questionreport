@@ -54,7 +54,7 @@ if ($ctype == "M") {
     global $COURSE;
 }
 if ($action == 'pdf') {
-    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher);
+    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher, $courseid);
     exit();
 }
 echo $OUTPUT->header();
@@ -415,8 +415,6 @@ if ($ctype == 'M') {
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     $records = $DB->get_record_sql($sql, $params);
     $stp = $records->mp;
-//echo $sql;
-//exit();
     for ($x = 0; $x <= 1; $x++) {
 	     $pnum = $stp + $x;
          // Question
@@ -456,6 +454,8 @@ if ($ctype == 'M') {
     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+    echo $qid;
+    exit();
     $choicecnt = 0;
     foreach ($choices as $choice) {
         $obj = new stdClass;

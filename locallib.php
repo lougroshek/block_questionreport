@@ -96,7 +96,8 @@ function block_questionreport_get_evaluations() {
     $data->buttons->reports = $reports;
     // Conditionally add charts button object.
     $adminvalue = get_config($plugin, 'adminroles');
-    $adminarray = explode(', ',$adminvalue);
+    $adminarray = explode(',',$adminvalue);
+    
     // check to see if they are an admin.
     $adminuser = false;
     if (!!$is_admin) {
@@ -105,15 +106,20 @@ function block_questionreport_get_evaluations() {
         $context = context_course::instance($COURSE->id);
         $roles = get_user_roles($context, $USER->id, true);
         foreach ($adminarray as $val) {
-           foreach ($roles as $role) {
-              if ($val == $role) {
-                  $adminuser = true;
-              }
-           }
-        }
-    }
+          	$sql = "SELECT * FROM {role_assignments} 
+          	            AS ra LEFT JOIN {user_enrolments}
+          	            AS ue ON ra.userid = ue.userid 
+          	            LEFT JOIN {role} AS r ON ra.roleid = r.id 
+          	            LEFT JOIN {context} AS c ON c.id = ra.contextid 
+          	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+          	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
+ 	         $result = $DB->get_records_sql($sql, array( ''));
+ 	         if ( $result ) {
+                  $adminuser = true;	
+            }
+         }    
+    }         
     if ($adminuser) {
-        // echo 'user is admin';
         $data->role = 'admin';
         // Build charts object.
         $charts = new stdClass();
@@ -129,7 +135,7 @@ function block_questionreport_get_evaluations() {
     if (!!$is_teacher) {
         $data->role = 'teacher';
     }
-
+//exit();
     // Objects for the question and percent display.
     $contentq = new stdClass();
     $contentq->desc = get_string('contentq_desc', $plugin);
@@ -440,6 +446,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
               }
               $sqlext = $sqlext .' '.$whereext;
               $respext = $DB->get_record_sql($sqlext, $paramsext);
+
 
               $totres = $respext->cdtot;
               if ($totres > 0) {
@@ -1208,21 +1215,33 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
        $htmlhead = ''; 
        $partner = '';
+       $partnerid = get_config($plugin, 'partnerfield');
+    //   $comparevalue = $comparevalue + 1;
+     //  $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
+ 
        if ($courseid > 0) {
            if ($ctype == 'M') {
                $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
-               $htmlhead = '<h1> Course '.$cname.'</h1><br>'; 
+               $htmlhead = '<h1>Course; '.$cname.'</h1><br>'; 
                $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
                $context = context_course::instance($courseid);
                $tlist = get_role_users($role->id, $context);
-               $htmlhead = $htmlhead .'<br><h1> Facilitators:';
+               $htmlhead = $htmlhead .'<br><h1>Facilitators:';
                foreach ($tlist as $teachernames) {
                   $htmlhead = $htmlhead .'<br>'.fullname($teachernames);
                }
-               $htmlhead .'</h1>';          
+               $htmlhead .'</h1>';
+               // Partner.
+               $partnervalue = $DB->get_field('customfield_data', 'intvalue', array ('fieldid' => $partnerid, 'instanceid' => $courseid));
+               if ($partnervalue) {
+                   $partnervalue = $partnervalue - 1;
+                   $htmlhead = $htmlhead.'<br><h1>Partner: ';
+                   $plist = block_questionreport_get_partners_list();
+                   $htmlhead = $htmlhead. $plist[$partnervalue].'</h1><br>';
+               }                           
            } else {
                $cname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $courseid));
-               $htmlhead = '<h1> Course '.$cname.'</h1><br>';
+               $htmlhead = '<h1>Course :'.$cname.'</h1><br>';
                // Get the teacher lists
                $tlist = '';
                $tcnt = 0;
@@ -1248,7 +1267,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                   }
                }
                if ($tcnt > 0) {
-                  $htmlhead = $htmlhead.'<h1> Facilitators:';
+                  $htmlhead = $htmlhead.'<h1>Facilitators:';
                   $sqlteacher = "SELECT distinct(teachername) from {local_teaching_teacher} where id in ($tlist)";
                   $teachernames = $DB->get_records_select($sqlteacher, array());
                   foreach($teachernames as $teacher) {
