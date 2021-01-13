@@ -648,11 +648,6 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             $respext = $DB->get_record_sql($sqlext, $paramsext);
 
             $gtres = $gtres + $respext->cdtot;
-            echo '<br> cnt '.$cnt;
-            if ($cnt == 7) {
-         echo ' in the mid '.$gttotres .' gtres '. $gtres ;
-           
-            }
             if ($respext->cdtot > 0) {
                 $sqlext = "SELECT COUNT(ts.courseid) cdgood
                            FROM {local_teaching_survey} ts";
@@ -1221,8 +1216,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $htmlhead = ''; 
        $partner = '';
        $partnerid = get_config($plugin, 'partnerfield');
-    //   $comparevalue = $comparevalue + 1;
-     //  $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
  
        if ($courseid > 0) {
            if ($ctype == 'M') {
@@ -1333,6 +1326,23 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               }
               $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
            }
+           $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid));
+           $qid = $DB->get_field('questionnaire_question', 'id', array('name' => 'NPS', 'surveyid' => $surveyid));
+           $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+           $choicecnt = 0;
+           foreach ($choices as $choice) {
+              $choiceid = $choice->id;
+              $choicecnt = $choicecnt + 1;
+              $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+              $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+              if ($choice->id %2 == 0) {
+                  $font = ' style="background-color:#ebebeb;"';
+              } else {
+              	   $font = '';
+              }
+              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+           }
+
      } else {
          for ($x=1; $x< 8; $x++) {
           switch ($x) {

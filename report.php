@@ -451,8 +451,8 @@ if ($ctype == 'M') {
 // Container for session survey questions passed to template.
 $data->session = [];
 if ($ctype == 'M') {
-    $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
     $choicecnt = 0;
     foreach ($choices as $choice) {
@@ -468,8 +468,27 @@ if ($ctype == 'M') {
         $obj->all = $all;
         array_push($data->session, $obj);
     }
+    $qid = $DB->get_field('questionnaire_question', 'id', array('name' => 'NPS', 'surveyid' => $surveyid));
+    $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+    $choicecnt = 0;
+    foreach ($choices as $choice) {
+        $obj = new stdClass;
+        $obj->question = $choice->content;
+        $choiceid = $choice->id;
+        $choicecnt = $choicecnt + 1;
+        $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
+                                                                 $end_date, $partner, $portfolio, $teacher);
+        $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
+                                                              $end_date, $partner, $portfolio, $teacher);
+        $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
+        $obj->all = $all;
+        array_push($data->session, $obj);
+    }
+
+    
 } else {
-   for ($x=1; $x< 8; $x++) {
+   for ($x=1; $x< 9; $x++) {
         $obj = new stdClass;
         switch ($x) {
        	 case "1":
@@ -493,6 +512,10 @@ if ($ctype == 'M') {
           case "7" :
              $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
              break;
+          case "8":
+             $quest = "How likely are you to recommend this professional learning to a colleague or friend? ";
+             break;
+            
           }
           $obj->question = $quest;
           $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $courseid, 1, $moduleid, $tagid, $start_date, $end_date, $partner);
@@ -507,7 +530,6 @@ if ($ctype == 'M') {
 if ($ctype <> 'M') {
     $surveyid = $courseid;
 }
-
 // Return rendered template.
 $content .= $OUTPUT->render_from_template('block_questionreport/report_tables', $data);
 $content .= "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/report.php\" method=\"get\">\n";

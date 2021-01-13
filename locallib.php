@@ -673,6 +673,9 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                   case "7" :
                      $whereext = "where practice >=4";
                      break;
+                  case "8" :
+                     $whereext = "where reccomend >= 8";
+                     break;                      
 
                 }
                 if ($stdate > 0) {
@@ -1216,8 +1219,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $htmlhead = ''; 
        $partner = '';
        $partnerid = get_config($plugin, 'partnerfield');
-    //   $comparevalue = $comparevalue + 1;
-     //  $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
  
        if ($courseid > 0) {
            if ($ctype == 'M') {
@@ -1328,13 +1329,30 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               }
               $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
            }
+           $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid));
+           $qid = $DB->get_field('questionnaire_question', 'id', array('name' => 'NPS', 'surveyid' => $surveyid));
+           $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+           $choicecnt = 0;
+           foreach ($choices as $choice) {
+              $choiceid = $choice->id;
+              $choicecnt = $choicecnt + 1;
+              $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+              $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+              if ($choice->id %2 == 0) {
+                  $font = ' style="background-color:#ebebeb;"';
+              } else {
+              	   $font = '';
+              }
+              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+           }
+
      } else {
-         for ($x=1; $x< 8; $x++) {
+         for ($x=1; $x< 9; $x++) {
           switch ($x) {
-       	   case "1":
+       	  case "1":
               $quest = "I am satisfied with the overall quality of this course.";
               break;
-            case "2":
+           case "2":
              $quest = "The topics for this course were relevant for my role. ";
              break;
           case "3" :
@@ -1351,6 +1369,9 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
              break;
           case "7" :
              $quest = "I will apply my learning from this course to my practice in the next 4-6 weeks. ";
+             break;
+          case "8":
+             $quest = "How likely are you to recommend this professional learning to a colleague or friend?";
              break;
           }
           $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);

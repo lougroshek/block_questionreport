@@ -135,3 +135,5 @@ $string['getthechart'] = 'Generate the chart';
 $string['nochart'] = 'No chart can be generated ';
 $string['portfoliofilteronly'] = 'Filter by Portfolio (applies to All Courses column)';
 $string['teacherfilteronly'] = 'Filter by Facilitator (applies to All Courses column)';
+// Feedback Report
+$string['feedbackheader'] = 'Feedback reports';
