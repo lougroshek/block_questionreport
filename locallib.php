@@ -172,8 +172,8 @@ function block_questionreport_get_evaluations() {
     	                 JOIN {questionnaire_response} qr on qr.id = mr.response_id
     	                  AND mr.question_id = ".$questionid;
        // $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));
-        $totres = $DB->get_records_sql($totsql);
-        if ($totres->crnct > 0) {
+        $totres = $DB->get_record_sql($totresql);
+        if ($totres->crnt > 0) {
             $contentq->stat = 0;
         } else {
             $has_responses_contentq = false;
@@ -371,6 +371,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
     $partnersql = '';
+    $gtnpr = 0;
     if ($partner > '') {
     	  $comparevalue = $DB->sql_compare_text($partner);
         $partnerid = get_config($plugin, 'partnerfield');
@@ -402,10 +403,17 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
             $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+            $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
-                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
+                if ($qname == 'NPS') {
+                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 9 or rankvalue = 10) ";
+                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 9 ) ";
+                } else {
+                   $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";                                
+                }
+//                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
@@ -422,8 +430,17 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
-                    $percent = ($totgood / $totres) * 100;
-                    $retval = round($percent, 0)."(%)";
+                    if ($qname == 'NPS') {
+                       $percent = ($totgood / $totres) * 100;
+                       $totnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
+                       $totnpr = $DB->count_records_sql($totnpr, $paramsql);
+                       $percent2 = ($totnpr / $totres) * 100;
+                       $percent = $percent - $percent2;
+                       $retval = round($percent, 0)."(%)";
+                    } else {
+                       $percent = ($totgood / $totres) * 100;
+                       $retval = round($percent, 0)."(%)";
+                    }
                 } else {
                     $retval = "0(%)";
                 }
@@ -474,23 +491,39 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     case "7" :
                        $whereext = "where practice >=4";
                        break;
+                    case "8" :
+                       $whereext = "where reccomend >= 9";
+                       $where1 = "where reccommend <= 8";
+                       break;                      
                   }
                   if ($stdate > 0) {
                       $std = strtotime($stdate);
                       $whereext = $whereext . " AND coursedate >= :std";
+                      $where1 = $where1 . " AND coursedate >= :std";
                       $paramsext['std'] = $std;
                   }
                   if ($nddate > 0) {
                       $endtd = strtotime($nddate);
                       $whereext = $whereext . " AND coursedate <= :endtd";
+                      $where1 = $where1 . " AND coursedate <= :endtd";
                       $paramsext['endtd'] = $endtd;
                   }
                   $sqlext = $sqlext .' '.$whereext;
                   $respext = $DB->get_record_sql($sqlext, $paramsext);
                   $totgood = $respext->cdgood;
                   if ($totgood > 0) {
-                      $percent = ($totgood / $totres) * 100;
-                      $retval = round($percent, 0)."(%)";
+                  	 if ($cid <> 8) { 
+                         $percent = ($totgood / $totres) * 100;
+                         $retval = round($percent, 0)."(%)";
+                      } else {
+                 	       $percent = ($totgood / $totres) * 100;
+                         $sqlnpr = $sqlext .' '.$where1; 
+                         $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
+                         $totnpr = $repnpr->cdgood;
+                         $gtnpr = ($totnpr / $totres) * 100;
+                         $percent = $percent - $gtnpr;
+                         $retval = round($percent, 0)."(%)";
+                      }
                   } else {
                       $retval = "0(%)";
                   }
@@ -502,6 +535,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
     	   // Get all the courses;
     	   $gtres = 0;
     	   $gttotres = 0;
+    	   $gtnpr = 0;
     	   if ($portfolio > "") {
              $portfieldid = get_config($plugin, 'portfoliofield');
              $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
@@ -674,37 +708,56 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                      $whereext = "where practice >=4";
                      break;
                   case "8" :
-                     $whereext = "where reccomend >= 8";
+                     $whereext = "where reccomend >= 9";
+                     $where1 = "where reccommend <= 8";
                      break;                      
-
                 }
                 if ($stdate > 0) {
                     $std = strtotime($stdate);
                     $whereext = $whereext . " AND coursedate >= :std";
+                    $where1 = $where1 . " AND coursedate >= :std";
                     $paramsext['std'] = $std;
                 }
 
                 if ($nddate > 0) {
                     $endtd = strtotime($nddate);
                     $whereext = $whereext . " AND coursedate <= :endtd";
+                    $where1 = $where1 . " AND coursedate >= :std";
                     $paramsext['endtd'] = $endtd;
                 }
                 if ($portfolio > "") {
                     $whereext = $whereext . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;            
+                    $where1 = $where1 . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;            
                 }
                 if ($teacher > " ") {
                     $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;                        
+                    $where1 = $where1 . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;                        
                 }
                 $sqlext = $sqlext .' '.$whereext;
                 $respext = $DB->get_record_sql($sqlext, $paramsext);
-                $tot2 = $respext->cdgood;
-                $gttotres = $gttotres + $tot2;
+                if ($cnt <> 8) {                
+                    $tot2 = $respext->cdgood;
+                    $gttotres = $gttotres + $tot2;
+                } else {
+                    $gttotres = $gttotres + $tot2;
+                    $sqlnpr = $sqlext .' '.$where1; 
+                    $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
+                    $totnpr = $repnpr->cdgood;
+                    $gtnpr = $gtnpr + $totnpr;
+                }
             }
 
             if ($gtres > 0) {
                 if ($gttotres > 0) {
-                    $percent = ($gttotres / $gtres) * 100;
-                    $retval = round($percent, 0)."(%)";
+                	  if ($cnt <> 8) { 
+                        $percent = ($gttotres / $gtres) * 100;
+                        $retval = round($percent, 0)."(%)";
+                    } else {
+                        $percent = ($gttotres / $gtres) * 100;
+                        $percent2 = ($gtnpr / $gtres) * 100;
+                        $percent = $percent - $percent2;                    	
+                        $retval = round($percent, 0)."(%)";                    
+                    }
                 } else {
                    $retval = "0(%)";
                 }
@@ -1208,8 +1261,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $doc->setFont('helvetica',' ', '8');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
-
-       $doc->Image('images/logo.png', '', '', 0, 0, 'png', 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, false);
+       $filename = 'images/logo.png';       
+       $imagesize = getimagesize($filename);
+//       var_dump($imagesize);
+       list($width, $height) = $imagesize;
+//       exit();
+       $doc->Image('images/logo.png', '', '', $width, $height, 'png', 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
 
        $doc->SetXY(1000, 40);       
        $plugin = 'block_questionreport';
