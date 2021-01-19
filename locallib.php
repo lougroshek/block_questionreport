@@ -431,7 +431,7 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     if ($qname == 'NPS') {
-                       $percent = ($totgood / $totres) * 100;
+                       $percent = ($totgood / $totres) * 100;                       
                        $totnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
                        $totnpr = $DB->count_records_sql($totnpr, $paramsql);
                        $percent2 = ($totnpr / $totres) * 100;
@@ -1261,14 +1261,22 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $doc->setFont('helvetica',' ', '8');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
-       $filename = 'images/logo.png';       
+    //   $filename = get_config('core_admin', 'logocompact');
+    //   $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    //   $dir = core_component::get_component_directory('core_admin');
+    //   $fs = get_file_storage();
+    //   $filepath = "/1/core_admin/logocompact/0{$filename}";
+    //   $file = $fs->get_file_by_hash(sha1($filepath));
+       $filename = 'images/logo.png';
+       $ext = 'png';              
        $imagesize = getimagesize($filename);
 //       var_dump($imagesize);
        list($width, $height) = $imagesize;
-//       exit();
-       $doc->Image('images/logo.png', '', '', $width, $height, 'png', 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
+       //$width = 300;
+       //$height = 300;  
+       $doc->Image('images/logo.png', '', '', $width, $height, $ext, 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
 
-       $doc->SetXY(1000, 40);       
+       $doc->SetXY(5000, 70);       
        $plugin = 'block_questionreport';
        $tagvalue = get_config($plugin, 'tag_value');
        $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
@@ -1670,3 +1678,4 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
     return $retval;
 
 }
+ 

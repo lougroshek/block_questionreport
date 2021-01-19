@@ -403,13 +403,17 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
             $totres = $DB->count_records_sql($totgoodsql, $paramsql);
-                 $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
-                echo '<br> qname '.$qname;
-           
+            $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
-                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
+                if ($qname == 'NPS') {
+                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 9 or rankvalue = 10) ";
+                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 9 ) ";
+                } else {
+                   $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";                                
+                }
+//                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
@@ -424,14 +428,19 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     $paramsql['nddate'] = $ndt;
                 }
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-                $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
-                echo '<br> qname '.$qname;
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
-                if ($choiceid == 8) {
-                }
                 if ($totgood > 0) {
-                    $percent = ($totgood / $totres) * 100;
-                    $retval = round($percent, 0)."(%)";
+                    if ($qname == 'NPS') {
+                       $percent = ($totgood / $totres) * 100;                       
+                       $totnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
+                       $totnpr = $DB->count_records_sql($totnpr, $paramsql);
+                       $percent2 = ($totnpr / $totres) * 100;
+                       $percent = $percent - $percent2;
+                       $retval = round($percent, 0)."(%)";
+                    } else {
+                       $percent = ($totgood / $totres) * 100;
+                       $retval = round($percent, 0)."(%)";
+                    }
                 } else {
                     $retval = "0(%)";
                 }
@@ -1252,14 +1261,22 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $doc->setFont('helvetica',' ', '8');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
-       $filename = 'images/logo.png';       
+    //   $filename = get_config('core_admin', 'logocompact');
+    //   $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    //   $dir = core_component::get_component_directory('core_admin');
+    //   $fs = get_file_storage();
+    //   $filepath = "/1/core_admin/logocompact/0{$filename}";
+    //   $file = $fs->get_file_by_hash(sha1($filepath));
+       $filename = 'images/logo.png';
+       $ext = 'png';              
        $imagesize = getimagesize($filename);
 //       var_dump($imagesize);
        list($width, $height) = $imagesize;
-//       exit();
-       $doc->Image('images/logo.png', '', '', $width, $height, 'png', 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
+       //$width = 300;
+       //$height = 300;  
+       $doc->Image('images/logo.png', '', '', $width, $height, $ext, 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
 
-       $doc->SetXY(1000, 40);       
+       $doc->SetXY(5000, 40);       
        $plugin = 'block_questionreport';
        $tagvalue = get_config($plugin, 'tag_value');
        $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
@@ -1661,3 +1678,4 @@ function block_questionreport_get_question_results_percent($questionid, $choicei
     return $retval;
 
 }
+ 
