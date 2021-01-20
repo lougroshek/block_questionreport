@@ -128,10 +128,12 @@ if ($coursefilter > '0') {
     $filtertype = 'All';
 }
 $content = '';
+$cname = '';
 if ($ctype == "M") {
     $content = '';
     // Get teachers separated by roles.
     $context = context_course::instance($COURSE->id);
+    $cname = $COURSE->fullname;
     $roles = get_config('block_questionreport', 'roles');
 
     if (!empty($roles)) {
@@ -315,6 +317,7 @@ if ($ctype == "M") {
 
      $totresp = $totresp + $respext->cdtot;
 } else {
+	  $cname = $DB->get_field('local_teaching_course', 'coursename', array('id' => $courseid));
      $sqlext = "SELECT COUNT(ts.courseid) cdtot
                   FROM {local_teaching_survey} ts";
      $whereext = "WHERE courseid = ".$courseid;
@@ -401,13 +404,14 @@ if ($ctype == "M") {
      }
 
 }
+
 // Assembled data for lead facilitator table.
 $data = new stdClass();
 // Response data.
 $data->responses = new stdClass();
 $data->responses->this_course = $totrespcourse;
 $data->responses->all_courses = $totresp;
-
+echo '<br><b>Selected Course : </b><i>'. $cname. '</i>';
 // Facilitator data container.
 $data->facilitator = [];
 if ($ctype == 'M') {
