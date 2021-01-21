@@ -1276,7 +1276,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        //$height = 300;  
        $doc->Image('images/logo.png', '', '', $width, $height, $ext, 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
 
-       $doc->SetXY(5000, 40);       
+       $doc->SetXY(5000, 70);       
        $plugin = 'block_questionreport';
        $tagvalue = get_config($plugin, 'tag_value');
        $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));

@@ -411,7 +411,7 @@ $data = new stdClass();
 $data->responses = new stdClass();
 $data->responses->this_course = $totrespcourse;
 $data->responses->all_courses = $totresp;
-echo '<br><b> Course :</b><i>'. $cname. '</i>';
+echo '<br><b>Selected Course : </b><i>'. $cname. '</i>';
 // Facilitator data container.
 $data->facilitator = [];
 if ($ctype == 'M') {
