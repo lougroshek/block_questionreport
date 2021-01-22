@@ -135,3 +135,13 @@ $string['getthechart'] = 'Generate the chart';
 $string['nochart'] = 'No chart can be generated ';
 $string['portfoliofilteronly'] = 'Filter by Portfolio (applies to All Courses column)';
 $string['teacherfilteronly'] = 'Filter by Facilitator (applies to All Courses column)';
+// Feedback Report
+$string['feedbackheader'] = 'Feedback reports';
+$string['feedback'] = 'Participant Feedback Reports';
+$string['feedbacktype'] = 'Report Type';
+$string['noreport'] = 'Choose a report';
+$string['report1'] = 'Participant feedback, by month';
+$string['report2'] = 'Participant feedback, by portfolio';
+$string['report3'] = 'Participant feedback, by partner site';
+$string['year'] = 'Starting Year';
+$string['getthereports'] = 'Generate the reports';

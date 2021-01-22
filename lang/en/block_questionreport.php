@@ -137,3 +137,12 @@ $string['portfoliofilteronly'] = 'Filter by Portfolio (applies to All Courses co
 $string['teacherfilteronly'] = 'Filter by Facilitator (applies to All Courses column)';
 // Feedback Report
 $string['feedbackheader'] = 'Feedback reports';
+$string['feedback'] = 'Participant Feedback Reports';
+$string['feedbacktype'] = 'Report Type';
+$string['noreport'] = 'Choose a report';
+$string['report1'] = 'Participant feedback, by month';
+$string['report2'] = 'Participant feedback, by portfolio';
+$string['report3'] = 'Participant feedback, by partner site';
+$string['year'] = 'Starting Year';
+$string['getthereports'] = 'Generate the reports';
+$string['partnerreport'] = 'Partner List - only applies to partner site report';
