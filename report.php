@@ -507,8 +507,6 @@ if ($ctype == 'M') {
            $obj = new stdClass;
            $obj->question = $choice->content;
            $choiceid = $choice->id;
-           echo 'cid '.$choiceid;
-           exit();
            $choicecnt = $choicecnt + 1;
            $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
                                                                     $end_date, $partner, $portfolio, $teacher);

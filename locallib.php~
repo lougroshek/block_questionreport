@@ -402,6 +402,8 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                  $paramsql['nddate'] = $ndt;
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
+            echo $totgoodsql;
+            exit();
             $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
             if ($totres > 0) {
