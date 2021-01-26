@@ -37,7 +37,17 @@ $PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->set_cacheable(true);
 $PAGE->navbar->add('Feedback Reports', new moodle_url('/blocks/questionreport/feedback.php'));
+?>
+<style>
+table, th, td {
+  border: 1px solid black;
+}
 
+table {
+  width: 100%;
+}
+</style>
+<?php
 $reportlist = array();
 $reportlist[0] = get_string('noreport', $plugin);
 $reportlist[1] = get_string('report1', $plugin);
