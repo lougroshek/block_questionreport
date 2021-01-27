@@ -46,6 +46,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[6] = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
      $qlist[7] = 'I will apply my learning from this course to my practice in the next 4-6 weeks';
      $qlist[8] = 'Recommend this course to a colleague or friend';
+     $qlist[100] = ' He/she/they facilitated the content clearly. ';
+     $qlist[101] = ' He/she/they effectively built a community of learners.';
      
      
      switch($reportnum) { 
@@ -83,6 +85,30 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
           $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 1; $ql < 9; $ql++) {
+               $line1 = '<tr><td>'.$qlist[$ql].'</td>';
+               for ($mnlist = 6; $mnlist < 13; $mnlist ++) {
+          	        $stdate = '01-'.$mnlist.'-'.$yrnum;
+          	        if ($mnlist < 12) {
+                   	   $nm2 = $mnlist + 1;          	        	
+                        $nddate = '01-'.$nm2.'-'.$yrnum;
+                    } else {
+                        $nddate = '01-01-'.$yr2;
+                    }
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $line1 .= '<td>'.$mn1.'</td>';
+               }
+               for ($mnlist = 1; $mnlist < 6; $mnlist ++) {
+          	        $stdate = '01-'.$mnlist.'-'.$yr2;
+              	     $nm2 = $mnlist + 1;
+                    $nddate = '01-'.$nm2.'-'.$yr2;
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $line1 .= '<td>'.$mn1.'</td>';
+               }
+               $content = $content .$line1;            
+          }
+          $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
+          $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
+          for ($ql = 100; $ql < 102; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
                for ($mnlist = 6; $mnlist < 13; $mnlist ++) {
           	        $stdate = '01-'.$mnlist.'-'.$yrnum;
@@ -190,8 +216,18 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
       case "8":
         $mdlsql = "AND content = 'Recommend this course to a colleague or friend.'";
         $nonmdl = "WHERE reccomend >=9";
-        $nonmdl1 = "AND recommend <=8";
+        $nonmdl1 = " WHERE reccomend <=6";
         break;
+     case "100" :
+        $qname = "facilitator_rate_content";  
+        $mdlsql = " 1 = 1";
+        $nonmdl = " where (content1 >=4 or content2 >=4";
+        break;
+     case "101" :
+        $mdlsql = " 1 = 1";
+        $qname = "facilitator_rate_community";
+        $nonmdl = " where (community1 >=4 or community2 >=4";
+        break;   
    }
    //
    if ($stdate > 0) {
@@ -220,13 +256,12 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
    $sqlnonmoodle = $DB->get_record_sql($sqlext, $paramsext);
    $cntnonmoodle = $sqlnonmoodle->cdtot;
    $sqlmoodle = " SELECT COUNT(qr.id) crid 
-                  FROM {questionnaire_response} qr 
-                  JOIN {questionnaire} q on q.id = qr.questionnaireid
-                  WHERE q.name = 'End-of-Course Survey' 
-                  AND qr.complete = 'y'
-                  AND qr.submitted >= :stdate 
-                  AND qr.submitted < :nddate";
-  
+                         FROM {questionnaire_response} qr 
+                         JOIN {questionnaire} q on q.id = qr.questionnaireid
+                        WHERE q.name = 'End-of-Course Survey' 
+                          AND qr.complete = 'y'
+                          AND qr.submitted >= :stdate 
+                          AND qr.submitted < :nddate";
    $sqlrecmoodle = $DB->get_record_sql($sqlmoodle, $paramsql);
 
    $cntmoodle = $sqlrecmoodle->crid;
@@ -234,37 +269,65 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
        $val = $cntmoodle + $cntnonmoodle;
        return $val;   
    } else {
-       $val = $cntmoodle + $cntnonmoodle;   	
-       $sqlmoodle = " select count(rankvalue) crid
-                      from {questionnaire_quest_choice} qc
-                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
-                      join {questionnaire_response} q on q.id = qr.response_id 
-                      and qc.id = qr.choice_id
-                      AND q.submitted >= :stdate 
-                      AND q.submitted < :nddate";
-        if ($qnum != 8) {
-            $sqlmoodle = $sqlmoodle . " AND (rankvalue = 4 or rankvalue = 5) ";          
+       $val = $cntmoodle + $cntnonmoodle;
+       if ($qnum < 100 )  {  	
+           $sqlmoodle = " select count(rankvalue) crid
+                            from {questionnaire_quest_choice} qc
+                            join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
+                            join {questionnaire_response} q on q.id = qr.response_id 
+                            and qc.id = qr.choice_id
+                            AND q.submitted >= :stdate 
+                           AND q.submitted < :nddate";
+            if ($qnum != 8) {
+                $sqlmoodle = $sqlmoodle . " AND (rankvalue = 4 or rankvalue = 5) ";          
+            } else {
+                $sqlmoodle2 = $sqlmoodle . " AND (rankvalue < 9 ) ";                  
+                $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
+            }
         } else {
-            $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
-        }                
+          $sqlmoodle = " SELECT COUNT(qr.id) crid 
+                         FROM {questionnaire_response} qr 
+                         JOIN {questionnaire} q on q.id = qr.questionnaireid
+                        WHERE q.name = '".$qname. ."' 
+                          AND qr.complete = 'y'
+                          AND qr.submitted >= :stdate 
+                          AND qr.submitted < :nddate";
+
+        }                    
         $sqlmoodle = $sqlmoodle ." ".$mdlsql;
         $sqlrecans = $DB->get_record_sql($sqlmoodle, $paramsql);
+        if ($qnum == 8) {
+            $sqlrecans2 = $DB->get_record_sql($sqlmoodle2, $paramsql);
+            $ans1a = $sqlrecans2->crid;        
+        }
         $ans1 = $sqlrecans->crid;
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
                    FROM {local_teaching_survey} ts ";
+        if ($qnum == 8) {
+            $sqlext2 = $sqlext .$nonmdl1. $whereext;            
+            $sqlrecans2a = $DB->get_record_sql($sqlext2, $paramsext);
+            $ans2a = $sqlrecans2a->cdtot;
+        }
         $sqlext = $sqlext .$nonmdl.$whereext;
         $sqlrecans2 = $DB->get_record_sql($sqlext, $paramsext);
         $ans2 = $sqlrecans2->cdtot;
         if ($val > 0) {
-            $totgood = $ans1 + $ans2;
-            $val = ($totgood / $val);
-            $ret = round($val, 0)."(%)";
+            if ($qnum <> 8 ) {       	   
+                $totgood = $ans1 + $ans2;
+                $val = ($totgood / $val) * 100;
+                $ret = round($val, 0)."(%)";
+            } else {
+                $ans1 = $ans1 + $ans2;
+                $ans1a = $ans1a + $ans2a;
+                $ans1 = ($ans1 / $val) * 100;
+                $ans1a = ($ans1a / $val) * 100;
+                $ret = $ans1 - $ans1a;
+                $ret = round($ret, 0);   
+            }
             return $ret; 
         } else {
            return '-';        
         }  
-                   
-                
                   
    }    
                                
