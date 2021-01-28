@@ -26,7 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 // Function to generate the feedback reports.
 function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->libdir . '/pdflib.php');
     $content = '';
     $plugin = 'block_questionreport';
     if ($reportnum == '0') {
@@ -104,7 +105,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
-               $content = $content .$line1;            
+               $content = $content .$line1.'</tr>';            
           }
           $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
@@ -128,9 +129,17 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
-               $content = $content .$line1;            
+               $content = $content .$line1.'</tr>';            
           }
           $content = $content.'</table>';
+        	 $doc = new pdf;
+          $doc->setPrintFooter(false);
+          $doc->setFont('helvetica',' ', '8');
+          $doc->SetFillColor(0,255,0);
+          $doc->AddPage();
+           $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+        //  $doc->Output();
+
           echo $content;
           exit();                                      
           break;
@@ -220,13 +229,13 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
         break;
      case "100" :
         $qname = "facilitator_rate_content";  
-        $mdlsql = " 1 = 1";
-        $nonmdl = " where (content1 >=4 or content2 >=4";
+        $mdlsql = " AND 1 = 1";
+        $nonmdl = " where (content1 >=4 or content2 >=4) ";
         break;
      case "101" :
-        $mdlsql = " 1 = 1";
+        $mdlsql = " AND 1 = 1";
         $qname = "facilitator_rate_community";
-        $nonmdl = " where (community1 >=4 or community2 >=4";
+        $nonmdl = " where (community1 >=4 or community2 >=4) ";
         break;   
    }
    //
@@ -285,15 +294,18 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
                 $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
             }
         } else {
-          $sqlmoodle = " SELECT COUNT(qr.id) crid 
-                         FROM {questionnaire_response} qr 
-                         JOIN {questionnaire} q on q.id = qr.questionnaireid
-                        WHERE q.name = '".$qname. ."' 
-                          AND qr.complete = 'y'
-                          AND qr.submitted >= :stdate 
-                          AND qr.submitted < :nddate";
-
-        }                    
+            	  $sqlmoodle = "SELECT count(rankvalue) crid 
+                                 FROM {questionnaire_response_rank} mr 
+                                 JOIN {questionnaire_question} qu 
+                                  ON qu.id = mr.question_id                                        
+                                JOIN {questionnaire_response} qr on qr.id = mr.response_id
+                               WHERE qu.name = '".$qname. "'
+                                 AND (rankvalue = 4 or rankvalue = 5)
+                                 AND qr.submitted >= :stdate 
+                                 AND qr.submitted < :nddate";
+                         
+               }
+        }                           
         $sqlmoodle = $sqlmoodle ." ".$mdlsql;
         $sqlrecans = $DB->get_record_sql($sqlmoodle, $paramsql);
         if ($qnum == 8) {
@@ -331,4 +343,3 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
                   
    }    
                                
-}

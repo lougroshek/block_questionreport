@@ -74,7 +74,7 @@ echo html_writer::label(get_string('partnerreport', $plugin), false, array('clas
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthereports', $plugin).'" />';
 echo '</form>';
-//$content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
+$content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
 
 
 echo $OUTPUT->footer();

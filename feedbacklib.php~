@@ -26,7 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 // Function to generate the feedback reports.
 function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
-    global $DB;
+    global $DB, $CFG;
+    require_once($CFG->libdir . '/pdflib.php');
     $content = '';
     $plugin = 'block_questionreport';
     if ($reportnum == '0') {
@@ -46,6 +47,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[6] = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
      $qlist[7] = 'I will apply my learning from this course to my practice in the next 4-6 weeks';
      $qlist[8] = 'Recommend this course to a colleague or friend';
+     $qlist[100] = ' He/she/they facilitated the content clearly. ';
+     $qlist[101] = ' He/she/they effectively built a community of learners.';
      
      
      switch($reportnum) { 
@@ -104,7 +107,39 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                }
                $content = $content .$line1;            
           }
+          $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
+          $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
+          for ($ql = 100; $ql < 102; $ql++) {
+               $line1 = '<tr><td>'.$qlist[$ql].'</td>';
+               for ($mnlist = 6; $mnlist < 13; $mnlist ++) {
+          	        $stdate = '01-'.$mnlist.'-'.$yrnum;
+          	        if ($mnlist < 12) {
+                   	   $nm2 = $mnlist + 1;          	        	
+                        $nddate = '01-'.$nm2.'-'.$yrnum;
+                    } else {
+                        $nddate = '01-01-'.$yr2;
+                    }
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $line1 .= '<td>'.$mn1.'</td>';
+               }
+               for ($mnlist = 1; $mnlist < 6; $mnlist ++) {
+          	        $stdate = '01-'.$mnlist.'-'.$yr2;
+              	     $nm2 = $mnlist + 1;
+                    $nddate = '01-'.$nm2.'-'.$yr2;
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $line1 .= '<td>'.$mn1.'</td>';
+               }
+               $content = $content .$line1;            
+          }
           $content = $content.'</table>';
+        	 $doc = new pdf;
+          $doc->setPrintFooter(false);
+          $doc->setFont('helvetica',' ', '8');
+          $doc->SetFillColor(0,255,0);
+          $doc->AddPage();
+          // $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+        //  $doc->Output();
+
           echo $content;
           exit();                                      
           break;
@@ -192,6 +227,16 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
         $nonmdl = "WHERE reccomend >=9";
         $nonmdl1 = " WHERE reccomend <=6";
         break;
+     case "100" :
+        $qname = "facilitator_rate_content";  
+        $mdlsql = " AND 1 = 1";
+        $nonmdl = " where (content1 >=4 or content2 >=4) ";
+        break;
+     case "101" :
+        $mdlsql = " AND 1 = 1";
+        $qname = "facilitator_rate_community";
+        $nonmdl = " where (community1 >=4 or community2 >=4) ";
+        break;   
    }
    //
    if ($stdate > 0) {
@@ -220,13 +265,12 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
    $sqlnonmoodle = $DB->get_record_sql($sqlext, $paramsext);
    $cntnonmoodle = $sqlnonmoodle->cdtot;
    $sqlmoodle = " SELECT COUNT(qr.id) crid 
-                  FROM {questionnaire_response} qr 
-                  JOIN {questionnaire} q on q.id = qr.questionnaireid
-                  WHERE q.name = 'End-of-Course Survey' 
-                  AND qr.complete = 'y'
-                  AND qr.submitted >= :stdate 
-                  AND qr.submitted < :nddate";
-  
+                         FROM {questionnaire_response} qr 
+                         JOIN {questionnaire} q on q.id = qr.questionnaireid
+                        WHERE q.name = 'End-of-Course Survey' 
+                          AND qr.complete = 'y'
+                          AND qr.submitted >= :stdate 
+                          AND qr.submitted < :nddate";
    $sqlrecmoodle = $DB->get_record_sql($sqlmoodle, $paramsql);
 
    $cntmoodle = $sqlrecmoodle->crid;
@@ -234,20 +278,34 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
        $val = $cntmoodle + $cntnonmoodle;
        return $val;   
    } else {
-       $val = $cntmoodle + $cntnonmoodle;   	
-       $sqlmoodle = " select count(rankvalue) crid
-                      from {questionnaire_quest_choice} qc
-                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
-                      join {questionnaire_response} q on q.id = qr.response_id 
-                      and qc.id = qr.choice_id
-                      AND q.submitted >= :stdate 
-                      AND q.submitted < :nddate";
-        if ($qnum != 8) {
-            $sqlmoodle = $sqlmoodle . " AND (rankvalue = 4 or rankvalue = 5) ";          
+       $val = $cntmoodle + $cntnonmoodle;
+       if ($qnum < 100 )  {  	
+           $sqlmoodle = " select count(rankvalue) crid
+                            from {questionnaire_quest_choice} qc
+                            join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
+                            join {questionnaire_response} q on q.id = qr.response_id 
+                            and qc.id = qr.choice_id
+                            AND q.submitted >= :stdate 
+                           AND q.submitted < :nddate";
+            if ($qnum != 8) {
+                $sqlmoodle = $sqlmoodle . " AND (rankvalue = 4 or rankvalue = 5) ";          
+            } else {
+                $sqlmoodle2 = $sqlmoodle . " AND (rankvalue < 9 ) ";                  
+                $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
+            }
         } else {
-            $sqlmoodle2 = $sqlmoodle . " AND (rankvalue < 9 ) ";                  
-            $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
-        }                
+            	  $sqlmoodle = "SELECT count(rankvalue) crid 
+                                 FROM {questionnaire_response_rank} mr 
+                                 JOIN {questionnaire_question} qu 
+                                  ON qu.id = mr.question_id                                        
+                                JOIN {questionnaire_response} qr on qr.id = mr.response_id
+                               WHERE qu.name = '".$qname. "'
+                                 AND (rankvalue = 4 or rankvalue = 5)
+                                 AND qr.submitted >= :stdate 
+                                 AND qr.submitted < :nddate";
+                         
+               }
+        }                           
         $sqlmoodle = $sqlmoodle ." ".$mdlsql;
         $sqlrecans = $DB->get_record_sql($sqlmoodle, $paramsql);
         if ($qnum == 8) {
@@ -285,4 +343,3 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
                   
    }    
                                
-}
