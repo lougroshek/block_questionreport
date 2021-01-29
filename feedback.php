@@ -31,8 +31,21 @@ $action      = optional_param('action', '', PARAM_RAW);
 
 if ($action == 'pdf') {
     $content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
+    
     exit();
 }
+?>
+<style>
+table {
+  border-collapse: collapse;
+}
+
+td, th {
+  border: 1px solid #999;
+  padding: 0.5rem;
+  text-align: left;
+}
+</style>
 $plugin = 'block_questionreport';
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/feedback.php');

@@ -49,20 +49,19 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[8] = 'Recommend this course to a colleague or friend';
      $qlist[100] = ' He/she/they facilitated the content clearly. ';
      $qlist[101] = ' He/she/they effectively built a community of learners.';
-     
-     
      switch($reportnum) { 
         case "1":
           $yr2 = $yrnum + 1;
           $header = get_string('report1', $plugin);
           $content = '<h1><p>'.$header.'</p></h1><br>';
-          $content .= '<table><tr><th></th>';
-          $tablestart = '<th>01_JUN'.$yrnum.'</th><th>02_JUL'.$yrnum.'</th>'.
-                                 '<th>03_AUG'.$yrnum.'</th><th>04_SEP'.$yrnum.'</th>'.
-                                 '<th>05_OCT'.$yrnum.'</th><th>06_NOV'.$yrnum.'</th>'.
-                                 '<th>07_DEC'.$yrnum.'</th><th>08_JAN'.$yr2.'</th>'.
-                                 '<th>09_FEB'.$yr2.'</th><th>03_MAR'.$yr2.'</th>'.
-                                 '<th>10_APR'.$yr2.'</th><th>11_MAY'.$yr2.'</th><tr>';
+          $content .= '<table style="width:100%;" border="1" cellspacing="0" cellpadding="4"><tr><th></th>';
+          $tablestart = '<th style="background-color:#ccf5ff">01_JUN'.$yrnum.'</th><th style="background-color:#ccf5ff">02_JUL'.$yrnum.'</th>'.
+                                 '<th style="background-color:#ccf5ff">03_AUG'.$yrnum.'</th><th style="background-color:#ccf5ff">04_SEP'.$yrnum.'</th>'.
+                                 '<th style="background-color:#ccf5ff">05_OCT'.$yrnum.'</th><th style="background-color:#ccf5ff">06_NOV'.$yrnum.'</th>'.
+                                 '<th style="background-color:#ccf5ff">07_DEC'.$yrnum.'</th><th style="background-color:#ccf5ff">08_JAN'.$yr2.'</th>'.
+                                 '<th style="background-color:#ccf5ff">09_FEB'.$yr2.'</th><th style="background-color:#ccf5ff">03_MAR'.$yr2.'</th>'.
+                                 '<th style="background-color:#ccf5ff">10_APR'.$yr2.'</th><th style="background-color:#ccf5ff">11_MAY'.$yr2.'</th>
+                                 <th style="background-color:#ccf5ff">Grand Total</th></tr>';
           $content = $content.$tablestart;
           $line1 = '<tr><td>Number of Survey Responses</td>';
           for ($mnlist = 6; $mnlist < 13; $mnlist ++) {
@@ -82,8 +81,14 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                $nddate = '01-'.$nm2.'-'.$yr2;
                $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
                $line1 .= '<td>'.$mn1.'</td>';
+               
           }
-          $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
+          $stdate = '01-06-'.$yrnum;
+          $nddate = '01-06-'.$yr2;
+          $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
+          $line1 .= '<td>'.$mn1.'</td>';
+
+          $content = $content .$line1.'</tr><tr><td colspan = "14">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 1; $ql < 9; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
@@ -105,9 +110,14 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
+               $stdate = '01-06-'.$yrnum;
+               $nddate = '01-06-'.$yr2;
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $line1 .= '<td>'.$mn1.'</td>';
+               
                $content = $content .$line1.'</tr>';            
           }
-          $content = $content .$line1.'<tr><td colspan = "13">&nbsp;</td></tr>';
+          $content = $content .$line1.'</tr><tr><td colspan = "14">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 100; $ql < 102; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
@@ -129,18 +139,24 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
+               $stdate = '01-06-'.$yrnum;
+               $nddate = '01-06-'.$yr2;
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $line1 .= '<td>'.$mn1.'</td>';
+
                $content = $content .$line1.'</tr>';            
           }
           $content = $content.'</table>';
         	 $doc = new pdf;
           $doc->setPrintFooter(false);
-          $doc->setFont('helvetica',' ', '8');
+          $doc->setFont('helvetica',' ', '4');
           $doc->SetFillColor(0,255,0);
           $doc->AddPage();
-           $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
-        //  $doc->Output();
+          $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+          $name = 'Feedback_by_month_'.$yrnum.'.pdf';
+          $doc->Output($name);
 
-          echo $content;
+        //  echo $content;
           exit();                                      
           break;
         case "2":

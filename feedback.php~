@@ -27,7 +27,12 @@ require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 $reportnum   = optional_param('reportnum', '0', PARAM_RAW);
 $yrnum       = optional_param('yrnum', '0', PARAM_RAW);
 $partner     = optional_param('partner', '', PARAM_RAW);
+$action      = optional_param('action', '', PARAM_RAW);
 
+if ($action == 'pdf') {
+    $content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
+    exit();
+}
 $plugin = 'block_questionreport';
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/feedback.php');
@@ -63,7 +68,7 @@ echo html_writer::start_tag('h2');
 echo get_string('feedback', $plugin);
 echo html_writer::end_tag('h2');
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/feedback.php\" method=\"get\">\n";
-echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
+echo "<input type=\"hidden\" name=\"action\" value=\"pdf\" />\n";
 echo html_writer::label(get_string('feedbacktype', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($reportlist,"reportnum",$reportnum, false);
 echo html_writer::label(get_string('year', $plugin), false, array('class' => 'accesshide'));
@@ -74,7 +79,7 @@ echo html_writer::label(get_string('partnerreport', $plugin), false, array('clas
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthereports', $plugin).'" />';
 echo '</form>';
-$content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
+//$content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
 
 
 echo $OUTPUT->footer();
