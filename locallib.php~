@@ -82,9 +82,6 @@ function block_questionreport_get_evaluations() {
     // Is the user a teacher or an admin?
     $is_admin = block_questionreport_is_admin();
     $is_teacher = block_questionreport_is_teacher();
-    if (!$is_admin && !$is_teacher) {
-        return;
-    }
 
     // Add buttons object.
     $data->buttons = new stdClass();
@@ -428,9 +425,6 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     $paramsql['nddate'] = $ndt;
                 }
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-                echo $qname;
-                echo $totsql;
-                exit();
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     if ($qname == 'NPS') {
@@ -1264,20 +1258,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $doc->setFont('helvetica',' ', '8');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
-    //   $filename = get_config('core_admin', 'logocompact');
-    //   $ext = pathinfo($filename, PATHINFO_EXTENSION);
-    //   $dir = core_component::get_component_directory('core_admin');
-    //   $fs = get_file_storage();
-    //   $filepath = "/1/core_admin/logocompact/0{$filename}";
-    //   $file = $fs->get_file_by_hash(sha1($filepath));
        $filename = 'images/logo.png';
        $ext = 'png';              
        $imagesize = getimagesize($filename);
-//       var_dump($imagesize);
        list($width, $height) = $imagesize;
-       //$width = 300;
-       //$height = 300;  
-       $doc->Image('images/logo.png', '', '', $width, $height, $ext, 'https://learning.teachinglab.org', '', true, 150, '', false, false, 1, false, false, true);
+       $url = $CFG->wwwroot;  
+       $doc->Image('images/logo.png', '', '', $width, $height, $ext, $url, '', true, 150, '', false, false, 1, false, false, true);
 
        $doc->SetXY(5000, 70);       
        $plugin = 'block_questionreport';
@@ -1291,7 +1277,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        if ($courseid > 0) {
            if ($ctype == 'M') {
                $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
-               $htmlhead = '<h1>Course; '.$cname.'</h1><br>'; 
+               $htmlhead = '<h1>Course: '.$cname.'</h1><br>'; 
                $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
                $context = context_course::instance($courseid);
                $tlist = get_role_users($role->id, $context);
@@ -1347,7 +1333,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
                   
        }       
-       $html1 = $htmlhead. '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';
+       $html1 = $htmlhead. '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="1" cellpadding="4">';
        $html1 .= '<tr><td></td><td align="center"><b>This Course</b></td><td align="center"><b>All Courses</b></td></tr>';
        if ($ctype == 'M') {
            $params = array();
@@ -1356,28 +1342,36 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            $records = $DB->get_record_sql($sql, $params);
            $stp = $records->mp;
            for ($x = 0; $x <= 1; $x++) {
+               if ($x == 0) {
+                  $font = ' style="background-color:#ebebeb;"';
+                  $qcontent = "He/she/they facilitated the content clearly. ";             
+               } else {
+              	    $font = '';
+                   $qcontent = "He/she/they effectively built a community of learners. ";
+               }   	
 	            $pnum = $stp + $x;
                // Question
-               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
+//               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
                // Course
                $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, '0', '0');
                $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
-               $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+               $html1 .= '<tr' .$font.'><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
             }
        } else {
            for($x =0; $x <=1; $x++) {
-           if ($x == 0) {
-               $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they facilitated the content clearly. ";
-           } else {
-         	   $qcontent = "Please rate the following statement for each of your course facilitators: He/she/they effectively built a community of learners. ";
-           }
-           $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
-           $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
-           $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+               if ($x == 0) {
+                  $font = ' style="background-color:#ebebeb;"';
+                  $qcontent = "He/she/they facilitated the content clearly. ";             
+               } else {
+              	    $font = '';
+                   $qcontent = "He/she/they effectively built a community of learners. ";
+               }   	
+               $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
+               $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+               $html1 .= '<tr><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
        }
     }
-       $html1 .= '</table>';
-       $html1 .= '<br><h1>Session Summary (% Agree and Strongly Agree)</h1><br><table border="0" cellpadding="6">';
+       $html1 .= '<tr><td colspan="3"><b>Session Summary (% Agree and Strongly Agree)</b></td></tr>';
        $html1 .= '<tr><td></td><td align="center"><b>This Course</b></td><td align="center"><b>All Courses</b></td></tr>';
 
        if ($ctype == 'M') {
@@ -1453,17 +1447,15 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
           $html1 .= '<tr '.$font.' ><td>'.$quest.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
     }
  }
-//echo $html;
-//exit();
 
        $html1 .= '</table>';
- //      $html = $html1.'<br>'.$html;
        $html = $html1;
-   //    echo $html;
-    //   exit();
        $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+       $date = date('Y-m-d');
+       $name = 'Evaluation-report-course-'.$cname.'-'.$date.'.pdf';
+       $doc->Output($name);
+
        $doc->Output();
-      // var_dump($doc);
        exit();
   }
 }
