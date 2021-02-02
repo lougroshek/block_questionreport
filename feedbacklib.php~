@@ -47,8 +47,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[6] = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
      $qlist[7] = 'I will apply my learning from this course to my practice in the next 4-6 weeks';
      $qlist[8] = 'Recommend this course to a colleague or friend';
-     $qlist[100] = ' He/she/they facilitated the content clearly. ';
-     $qlist[101] = ' He/she/they effectively built a community of learners.';
+     $qlist[100] = 'He/she/they facilitated the content clearly. ';
+     $qlist[101] = 'He/she/they effectively built a community of learners.';
      switch($reportnum) { 
         case "1":
           $yr2 = $yrnum + 1;
@@ -60,7 +60,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                                  '<th style="background-color:#ccf5ff">05_OCT'.$yrnum.'</th><th style="background-color:#ccf5ff">06_NOV'.$yrnum.'</th>'.
                                  '<th style="background-color:#ccf5ff">07_DEC'.$yrnum.'</th><th style="background-color:#ccf5ff">08_JAN'.$yr2.'</th>'.
                                  '<th style="background-color:#ccf5ff">09_FEB'.$yr2.'</th><th style="background-color:#ccf5ff">03_MAR'.$yr2.'</th>'.
-                                 '<th style="background-color:#ccf5ff">10_APR'.$yr2.'</th><th style="background-color:#ccf5ff">11_MAY'.$yr2.'</th></tr>';
+                                 '<th style="background-color:#ccf5ff">10_APR'.$yr2.'</th><th style="background-color:#ccf5ff">11_MAY'.$yr2.'</th>
+                                 <th style="background-color:#ccf5ff">Grand Total</th></tr>';
           $content = $content.$tablestart;
           $line1 = '<tr><td>Number of Survey Responses</td>';
           for ($mnlist = 6; $mnlist < 13; $mnlist ++) {
@@ -80,8 +81,14 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                $nddate = '01-'.$nm2.'-'.$yr2;
                $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
                $line1 .= '<td>'.$mn1.'</td>';
+               
           }
-          $content = $content .$line1.'</tr><tr><td colspan = "13">&nbsp;</td></tr>';
+          $stdate = '01-06-'.$yrnum;
+          $nddate = '01-06-'.$yr2;
+          $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
+          $line1 .= '<td>'.$mn1.'</td>';
+
+          $content = $content .$line1.'</tr><tr><td colspan = "14">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 1; $ql < 9; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
@@ -103,9 +110,14 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
+               $stdate = '01-06-'.$yrnum;
+               $nddate = '01-06-'.$yr2;
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $line1 .= '<td>'.$mn1.'</td>';
+               
                $content = $content .$line1.'</tr>';            
           }
-          $content = $content .$line1.'</tr><tr><td colspan = "13">&nbsp;</td></tr>';
+          $content = $content .'<tr><td colspan = "14">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 100; $ql < 102; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
@@ -127,6 +139,11 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
+               $stdate = '01-06-'.$yrnum;
+               $nddate = '01-06-'.$yr2;
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $line1 .= '<td>'.$mn1.'</td>';
+
                $content = $content .$line1.'</tr>';            
           }
           $content = $content.'</table>';

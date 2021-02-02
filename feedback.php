@@ -46,6 +46,7 @@ td, th {
   text-align: left;
 }
 </style>
+<?php
 $plugin = 'block_questionreport';
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/feedback.php');
@@ -66,6 +67,7 @@ table {
 }
 </style>
 <?php
+$plugin = 'block_questionreport';
 $reportlist = array();
 $reportlist[0] = get_string('noreport', $plugin);
 $reportlist[1] = get_string('report1', $plugin);

@@ -47,8 +47,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[6] = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
      $qlist[7] = 'I will apply my learning from this course to my practice in the next 4-6 weeks';
      $qlist[8] = 'Recommend this course to a colleague or friend';
-     $qlist[100] = ' He/she/they facilitated the content clearly. ';
-     $qlist[101] = ' He/she/they effectively built a community of learners.';
+     $qlist[100] = 'He/she/they facilitated the content clearly. ';
+     $qlist[101] = 'He/she/they effectively built a community of learners.';
      switch($reportnum) { 
         case "1":
           $yr2 = $yrnum + 1;
@@ -117,7 +117,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                
                $content = $content .$line1.'</tr>';            
           }
-          $content = $content .$line1.'</tr><tr><td colspan = "14">&nbsp;</td></tr>';
+          $content = $content .'<tr><td colspan = "14">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart;
           for ($ql = 100; $ql < 102; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';

@@ -1255,7 +1255,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
     	 $doc = new pdf;
       // $doc->setPrintHeader(false);
        $doc->setPrintFooter(false);
-       $doc->setFont('helvetica',' ', '8');
+       $doc->setFont('helvetica',' ', '4');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
        $filename = 'images/logo.png';

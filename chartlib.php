@@ -38,13 +38,6 @@ function block_questionreport_get_portfolio_list() {
        $options[$x] = $val;
        $x = $x + 1;    
     }
-    $dbman = $DB->get_manager();
-    if ($dbman->table_exists('local_teaching_port')) {
-        $altcourses = $DB->get_records('local_teaching_port');
-        foreach($altcourses as $alt) {
-           $options[$alt->id] = $alt->portname;
-        }
-    }
     return $options;
 
 }
@@ -106,6 +99,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         return $content;
         exit();
     }
+    $content = array();
      // Get teachers separated by roles.
     $roles = get_config('block_questionreport', 'roles');
     $roles = str_replace('"', "", $roles);
@@ -400,34 +394,49 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
     }
     // Non Moodle courses
  //   exit();
+     if ($portfolio > 0) {    
+         $portfieldid = get_config($plugin, 'portfoliofield');
+         $data = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));    
+         $x = json_decode($data);
+         $opts = $x->options;
+         $x = 1;
+         $options_old = preg_split("/\s*\n\s*/", $opts);
+         foreach($options_old as $val) {
+            if ($x == $portfolio) {
+                $portval = $val;
+            }
+            $x = $x + 1;    
+         }
+     }
+ 
         switch($nquestionid) {
            case "1":
-              $sql = "SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, learning response ";
+              $sql = "SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, learning response ";
               $qname = "What is the learning from this course that you are most excited about trying out";
               break;
      	   case "2":
      	       $qname = "How, if in any way, this course helped you prepare for school opening after COVID-19?";
-     	       $sql = "SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, navigate response ";
+     	       $sql = "SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, navigate response ";
                break;
        	   case "3":
        	       $qname = "Overall, what went well in this course?";
-       	       $sql = "SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, overall response ";
+       	       $sql = "SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, overall response ";
                break;
            case "4":
                $qname = "Which activities best supported your learning in this course?";
-               $sql = "SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, activities response ";
+               $sql = "SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, activities response ";
                break;
            case "5":
                $qname = "What could have improved your experience in this course?";
-               $sql = " SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, improved response ";
+               $sql = " SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, improved response ";
                break;
            case "6":
                $qname = "Why did you choose this rating?";
-               $sql = " SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, choose response ";
+               $sql = " SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, choose response ";
                break;
            case "7":
               $qname = "Do you have additional comments about  this course?";
-              $sql = " SELECT uidsurvey, coursedate, courseid, district, port1id, port2id, teacher1id, teacher2id, comment response ";
+              $sql = " SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, comment response ";
               break;
      }
      $return = [];
@@ -457,9 +466,9 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $paramsql['teacher2'] = $teacher;
      }
      if ($portfolio > 0) {
-         $sql = $sql. " AND (port1id = :port1) OR (port2id= :port2)";
-         $paramsql['port1'] = $portfolio;
-         $paramsql['port2'] = $portfolio;
+         $sql = $sql. " AND (port1name = :port1) OR (port2name= :port2)";
+         $paramsql['port1'] = $portval;
+         $paramsql['port2'] = $portval;
      
      }
      $resultlist = $DB->get_records_sql($sql, $paramsql);
@@ -472,15 +481,13 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            $row->date = date('Y-m-d', $result->coursedate);
            $row->partner = $result->district;
            $portdisplay = '';
-           $p1 = $result->port1id;
-           $p2 = $result->port2id;
-           $portname1 = $DB->get_field('local_teaching_port', 'portname', array ('id' => $p1));
-           $portname2 = $DB->get_field('local_teaching_port', 'portname', array ('id' => $p2));
-           if ($portname1) {
-               $portdisplay = $portname1;           
+           $p1 = $result->port1name;
+           $p2 = $result->port2name;
+           if ($p1) {
+               $portdisplay = $p1;           
            }
-           if ($portname2) {
-               $portdisplay = $portdisplay .' '.$portname2;           
+           if ($p2) {
+               $portdisplay = $portdisplay .' '.$p2;           
            }
            $row->portfolio = $portdisplay;
            $row->course_id = $cid;
@@ -505,6 +512,8 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
               $tname .= '  '.$t2name;
            }
            $row->teachers = $tname;
+         //  var_dump($row);
+          // exit();
            array_push($content, $row);
 
            $displaycnt = $displaycnt + 1;
@@ -765,3 +774,32 @@ function block_questionreport_get_all_questions($surveyid) {
     }
     return $essaylist;
 }
+//ALTER TABLE mdl_local_teaching_survey
+//ADD COLUMN port1name VARCHAR(254) AFTER activities;
+
+//ALTER TABLE mdl_local_teaching_survey
+//ADD COLUMN port2name VARCHAR(254) AFTER port1name;
+
+//select distinct(port1id) from mdl_local_teaching_survey
+/*
+SET SQL_SAFE_UPDATES=0;
+update mdl_local_teaching_survey set port1name ="Math: IM" where port1id = 19
+update mdl_local_teaching_survey set port1name ="ELA: Guidebooks" where port1id = 20
+update mdl_local_teaching_survey set port1name ="ELA: EL" where port1id = 21
+update mdl_local_teaching_survey set port1name ="State-level" where port1id = 22
+update mdl_local_teaching_survey set port1name ="ELA: Flexible" where port1id = 23
+update mdl_local_teaching_survey set port1name ="Math: Eureka/EngageNY" where port1id = 24
+update mdl_local_teaching_survey set port1name ="Math: Flexible" where port1id = 25
+update mdl_local_teaching_survey set port1name = "Math: Zearn" where port1id = 26
+
+
+
+update mdl_local_teaching_survey set port2name ="Math: IM" where port2id = 19
+update mdl_local_teaching_survey set port2name ="ELA: Guidebooks" where port2id = 20
+update mdl_local_teaching_survey set port2name ="ELA: EL" where port2id = 21
+update mdl_local_teaching_survey set port2name ="State-level" where port2id = 22
+update mdl_local_teaching_survey set port2name ="ELA: Flexible" where port2id = 23
+update mdl_local_teaching_survey set port2name ="Math: Eureka/EngageNY" where port2id = 24
+update mdl_local_teaching_survey set port2name ="Math: Flexible" where port2id = 25
+update mdl_local_teaching_survey set port2name = "Math: Zearn" where port2id = 26
+*/
