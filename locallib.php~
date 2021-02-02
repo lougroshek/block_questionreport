@@ -723,8 +723,20 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
                     $paramsext['endtd'] = $endtd;
                 }
                 if ($portfolio > "") {
-                    $whereext = $whereext . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;            
-                    $where1 = $where1 . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;            
+                    $portfieldid = get_config($plugin, 'portfoliofield');
+                    $data = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));    
+                    $x = json_decode($data);
+                    $opts = $x->options;
+                    $x = 1;
+                    $options_old = preg_split("/\s*\n\s*/", $opts);
+                    foreach($options_old as $val) {
+                      if ($x == $portfolio) {
+                          $portval = $val;
+                      }
+                      $x = $x + 1;    
+                    }
+                    $whereext = $whereext . " AND (port1name = '".$portval. "' or port2name =' ".$portval ."' )" ;            
+                    $where1 = $where1 . " AND (port1name = '".$portval. "' or port2name = '".$portval ."' )" ;            
                 }
                 if ($teacher > " ") {
                     $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;                        

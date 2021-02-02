@@ -1265,7 +1265,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
       return $return;
   } else {
     	 $doc = new pdf;
-      // $doc->setPrintHeader(false);
        $doc->setPrintFooter(false);
        $doc->setFont('helvetica',' ', '4');
        $doc->SetFillColor(0,255,0);

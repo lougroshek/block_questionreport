@@ -76,7 +76,7 @@ echo html_writer::label(get_string('partnerfilter', $plugin), false, array('clas
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 // See if they are an admin.
 $adminvalue = get_config($plugin, 'adminroles');
-$adminarray = explode(', ',$adminvalue);
+$adminarray = explode(',',$adminvalue);
 // check to see if they are an admin.
 $adminuser = false;
 $is_admin = block_questionreport_is_admin();
@@ -86,12 +86,19 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
-       foreach ($roles as $role) {
-          if ($val == $role) {
-              $adminuser = true;
-          }
-       }
-    }
+    	 	$sql = "SELECT * FROM {role_assignments} 
+       	            AS ra LEFT JOIN {user_enrolments}
+        	            AS ue ON ra.userid = ue.userid 
+        	            LEFT JOIN {role} AS r ON ra.roleid = r.id 
+        	            LEFT JOIN {context} AS c ON c.id = ra.contextid 
+        	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+        	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
+ 	       $result = $DB->get_records_sql($sql, array( ''));
+ 	       if ( $result ) {
+              $adminuser = true;	
+        }
+   }		
+
 }
 if ($adminuser) {
     $portfoliolist = block_questionreport_get_portfolio_list();
