@@ -51,6 +51,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
      $qlist[101] = 'He/she/they effectively built a community of learners.';
      switch($reportnum) { 
         case "1":
+          $val = '0';
           $yr2 = $yrnum + 1;
           $header = get_string('report1', $plugin);
           $content = '<h1><p>'.$header.'</p></h1><br>';
@@ -72,20 +73,20 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                } else {
                    $nddate = '01-01-'.$yr2;
                }
-               $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
+               $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, 0, $val);
                $line1 .= '<td>'.$mn1.'</td>';
           }
           for ($mnlist = 1; $mnlist < 6; $mnlist ++) {
           	   $stdate = '01-'.$mnlist.'-'.$yr2;
           	   $nm2 = $mnlist + 1;
                $nddate = '01-'.$nm2.'-'.$yr2;
-               $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
+               $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, 0, $val);
                $line1 .= '<td>'.$mn1.'</td>';
                
           }
           $stdate = '01-06-'.$yrnum;
           $nddate = '01-06-'.$yr2;
-          $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate);
+          $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, 0, $val);
           $line1 .= '<td>'.$mn1.'</td>';
 
           $content = $content .$line1.'</tr><tr><td colspan = "14">&nbsp;</td></tr>';
@@ -100,19 +101,19 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     } else {
                         $nddate = '01-01-'.$yr2;
                     }
-                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
                for ($mnlist = 1; $mnlist < 6; $mnlist ++) {
           	        $stdate = '01-'.$mnlist.'-'.$yr2;
               	     $nm2 = $mnlist + 1;
                     $nddate = '01-'.$nm2.'-'.$yr2;
-                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
                $stdate = '01-06-'.$yrnum;
                $nddate = '01-06-'.$yr2;
-               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                $line1 .= '<td>'.$mn1.'</td>';
                
                $content = $content .$line1.'</tr>';            
@@ -129,19 +130,19 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
                     } else {
                         $nddate = '01-01-'.$yr2;
                     }
-                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
                for ($mnlist = 1; $mnlist < 6; $mnlist ++) {
           	        $stdate = '01-'.$mnlist.'-'.$yr2;
               	     $nm2 = $mnlist + 1;
                     $nddate = '01-'.$nm2.'-'.$yr2;
-                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+                    $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                     $line1 .= '<td>'.$mn1.'</td>';
                }
                $stdate = '01-06-'.$yrnum;
                $nddate = '01-06-'.$yr2;
-               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate);
+               $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val);
                $line1 .= '<td>'.$mn1.'</td>';
 
                $content = $content .$line1.'</tr>';            
@@ -155,12 +156,40 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
           $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
           $name = 'Feedback_by_month_'.$yrnum.'.pdf';
           $doc->Output($name);
-
-        //  echo $content;
           exit();                                      
           break;
         case "2":
           $header = get_string('report2', $plugin);
+          $portfieldid = get_config($plugin, 'portfoliofield');
+          $data = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
+          $content = '<h1><p>'.$header.'</p></h1><br>';
+          $x = json_decode($data);
+          $opts = $x->options;
+          $options_old = preg_split("/\s*\n\s*/", $opts);
+          $x = 1;
+          $content .= '<table style="width:100%;" border="1" cellspacing="0" cellpadding="4"><tr><th></th>';
+          $tablestart = '';
+          foreach($options_old as $val) {
+          	 $tablestart .='<th style="background-color:#ccf5ff">'.$val.'</th>';
+          }
+       	 $tablestart .='<th style="background-color:#ccf5ff">Grand Total</th>';
+          
+          $content .= $tablestart.'</tr>';
+          $line1 = '<tr><td>Number of Survey Responses</td>';
+          $yr2 = $yrnum + 1;
+          $stdate = '01-06-'.$yrnum;
+          $nddate = '01-06-'.$yr2;
+          $x = 0;
+          foreach($options_old as $val) {
+          	   $x = $x + 1;
+               $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $x, $val);
+               $line1 .= '<td>'.$mn1.'</td>';
+          }
+          $x = '0';  
+          $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $x, '');
+          $line1 .= '<td>'.$mn1.'</td></tr>';
+          $content .= $line1;
+          echo $content;          
           break;
        case "3":
           $header = get_string('report3', $plugin);
@@ -169,43 +198,15 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $partner) {
 }
 // Function to return the % of question
 
-function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
+function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio, $portdisplay) {
    global $DB;
    $paramsql = array();
    $paramsext = array();
-   //select * from mdl_questionnaire_quest_choice where content = 'I am satisfied with the overall quality of this course.';
-//select * from mdl_questionnaire_question  quest 
-//join mdl_questionnaire_quest_choice qc on qc.question_id = quest.id
-//where qc.content = 'I am satisfied with the overall quality of this course.'
-//and quest.name = 'course_ratings'
-
-
-//select quest.id questid, qc.id choiceid 
-//from mdl_questionnaire_question  quest 
-//join mdl_questionnaire_quest_choice qc on qc.question_id = quest.id
-//join mdl_questionnaire_response qr
-//where qc.content = 'I am satisfied with the overall quality of this course.'
-//and quest.name = 'course_ratings'
-
-//select quest.id questid, qc.id choiceid 
-//from mdl_questionnaire_question  quest 
-//join mdl_questionnaire_quest_choice qc on qc.question_id = quest.id
-//where qc.content = 'I am satisfied with the overall quality of this course.'
-//and quest.name = 'course_ratings'
-
-// $totresql  = "SELECT count(rankvalue) ";
-//                $fromressql = " FROM {questionnaire_response_rank} mr ";
-//                $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
-//                $paramsql = array();
-//                if ($stdate > 0) {
-//                     $fromressql = $fromressql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
-//  
-//                   $whereressql = $whereressql . ' AND qr.submitted >= :stdate'
- $fromressql = "" ;
- $whereressql = " ";
- $where1 = " ";
- $whereext = " ";
- switch ($qnum) {
+   $fromressql = "" ;
+   $whereressql = " ";
+   $where1 = " ";
+   $whereext = " ";
+   switch ($qnum) {
       case "0" :
         $mdlsql = "WHERE content = 'I am satisfied with the overall quality of this course.'";
         $nonmdl = "WHERE  1 = 1";
@@ -273,6 +274,11 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
        $where1 = $where1 . " AND coursedate < :endtd";
        $paramsext['endtd'] = $ndt;
    }
+   if ($portfolio > '0') {
+       $whereext = $whereext . " AND ( port1name = :port1name or port2name = :port2name)";
+       $paramsext['port1name'] = $portdisplay;
+       $paramsext['port2name'] = $portdisplay;
+   }   
    
    // Get the total responses.
    $sqlext = "SELECT COUNT(ts.courseid) cdtot
@@ -281,12 +287,16 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
    $sqlnonmoodle = $DB->get_record_sql($sqlext, $paramsext);
    $cntnonmoodle = $sqlnonmoodle->cdtot;
    $sqlmoodle = " SELECT COUNT(qr.id) crid 
-                         FROM {questionnaire_response} qr 
-                         JOIN {questionnaire} q on q.id = qr.questionnaireid
-                        WHERE q.name = 'End-of-Course Survey' 
-                          AND qr.complete = 'y'
-                          AND qr.submitted >= :stdate 
-                          AND qr.submitted < :nddate";
+                    FROM {questionnaire_response} qr 
+                    JOIN {questionnaire} q on q.id = qr.questionnaireid ";
+   if ($portfolio > '0') {
+       $sqlmoodle = $sqlmoodle ." JOIN {customfield_data} cd on cd.instanceid = q.course and cd.value=".$portfolio;     
+   }                
+   $sqlmoodle = $sqlmoodle. " WHERE q.name = 'End-of-Course Survey' 
+                     AND qr.complete = 'y'
+                     AND qr.submitted >= :stdate 
+                     AND qr.submitted < :nddate";
+   	                      
    $sqlrecmoodle = $DB->get_record_sql($sqlmoodle, $paramsql);
 
    $cntmoodle = $sqlrecmoodle->crid;
@@ -297,15 +307,21 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate) {
        $val = $cntmoodle + $cntnonmoodle;
        if ($qnum < 100 )  {  	
            $sqlmoodle = " select count(rankvalue) crid
-                            from {questionnaire_quest_choice} qc
-                            join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
-                            join {questionnaire_response} q on q.id = qr.response_id 
-                            and qc.id = qr.choice_id
-                            AND q.submitted >= :stdate 
-                           AND q.submitted < :nddate";
-            if ($qnum != 8) {
+                          from {questionnaire_quest_choice} qc
+                          join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
+                          join {questionnaire_response} q on q.id = qr.response_id";
+           if ($portfolio > '0') {
+               $sqlmoodle = $sqlmoodle ." JOIN {questionnaire} qu on qu.id = q.questionnaireid 
+                                          JOIN {customfield_data} cd on cd.instanceid = qu.course
+                                          AND cd.value=".$portfolio;
+           }
+           $sqlmoodle = $sqlmoodle ."               
+                          and qc.id = qr.choice_id
+                          AND q.submitted >= :stdate 
+                          AND q.submitted < :nddate";
+           if ($qnum != 8) {
                 $sqlmoodle = $sqlmoodle . " AND (rankvalue = 4 or rankvalue = 5) ";          
-            } else {
+           } else {
                 $sqlmoodle2 = $sqlmoodle . " AND (rankvalue < 9 ) ";                  
                 $sqlmoodle = $sqlmoodle . " AND (rankvalue = 9 or rankvalue = 10) ";                  
             }
