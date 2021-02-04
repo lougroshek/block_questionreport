@@ -23,6 +23,7 @@ require_login();
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/feedbacklib.php');
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
+require_once($CFG->dirroot.'/blocks/questionreport/chartlib.php');
 
 $reportnum   = optional_param('reportnum', '0', PARAM_RAW);
 $yrnum       = optional_param('yrnum', '0', PARAM_RAW);
@@ -88,10 +89,10 @@ echo html_writer::label(get_string('feedbacktype', $plugin), false, array('class
 echo html_writer::select($reportlist,"reportnum",$reportnum, false);
 echo html_writer::label(get_string('year', $plugin), false, array('class' => 'accesshide'));
 echo html_writer::select($yrlist,"yrnum",$yrnum, false);
-$partnerlist = block_questionreport_get_partners_list();
+$portfoliolist = block_questionreport_get_portfolio_list();
 
-echo html_writer::label(get_string('partnerreport', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
+echo html_writer::label(get_string('portreport', $plugin), false, array('class' => 'accesshide'));
+echo html_writer::select($portfoliolist, "partner", $partner, get_string("all", $plugin));
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthereports', $plugin).'" />';
 echo '</form>';
 //$content = block_questionreport_genfeedback($reportnum, $yrnum, $partner);
