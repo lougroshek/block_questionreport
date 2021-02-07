@@ -1325,6 +1325,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $adminarray = explode(',',$adminvalue);
        // check to see if they are an admin.
        $adminuser = false;
+       $is_admin = block_questionreport_is_admin();
        if (!!$is_admin) {
            $adminuser = true;
        } else {
@@ -1476,8 +1477,15 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               } else {
               	   $font = '';
               }
-              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+    	        if ($adminuser && $choice->content == 'Recommend this course to a colleague or friend.') {
+                  $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+              } else {
+              	   if ($choice->content != 'Recommend this course to a colleague or friend.') {
+                      $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';              
+                  }
+              }
            }
+           
 
      } else {
        	$endloop = 8;
@@ -1525,12 +1533,13 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
        $html1 .= '</table>';
        $html = $html1;
+//       echo $html;
        $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
        $date = date('Y-m-d');
        $name = 'Evaluation-report-course-'.$cname.'-'.$date.'.pdf';
        $doc->Output($name);
 
-       $doc->Output();
+      // $doc->Output();
        exit();
   }
 }

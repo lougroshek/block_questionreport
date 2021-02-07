@@ -1152,7 +1152,7 @@ function block_questionreport_get_chartquestions($surveyid) {
     return $essaylist;
 }
 function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid, $action, $portfolio, $teacher, $courseid) {
-    global $DB, $COURSE, $CFG;
+    global $DB, $USER, $COURSE, $CFG;
     $plugin = 'block_questionreport';
     require_once($CFG->libdir . '/pdflib.php');
     if ($action == 'pdf') {
@@ -1320,6 +1320,32 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $partner = '';
        $partnerid = get_config($plugin, 'partnerfield');
  
+       // Check to see if the user is an admin.
+       $adminvalue = get_config($plugin, 'adminroles');
+       $adminarray = explode(',',$adminvalue);
+       // check to see if they are an admin.
+       $adminuser = false;
+       $is_admin = block_questionreport_is_admin();
+       if (!!$is_admin) {
+           $adminuser = true;
+       } else {
+           $context = context_course::instance($COURSE->id);
+           $roles = get_user_roles($context, $USER->id, true);
+           foreach ($adminarray as $val) {
+            	$sql = "SELECT * FROM {role_assignments} 
+       	            AS ra LEFT JOIN {user_enrolments}
+       	            AS ue ON ra.userid = ue.userid 
+        	            LEFT JOIN {role} AS r ON ra.roleid = r.id 
+        	            LEFT JOIN {context} AS c ON c.id = ra.contextid 
+        	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+        	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
+              $result = $DB->get_records_sql($sql, array( ''));
+              if ( $result ) {
+                   $adminuser = true;	
+              }
+        }      
+    }         
+
        if ($courseid > 0) {
            if ($ctype == 'M') {
                $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
@@ -1451,11 +1477,23 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               } else {
               	   $font = '';
               }
-              $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+    	        if ($adminuser && $choice->content == 'Recommend this course to a colleague or friend.') {
+                  $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
+              } else {
+              	   if ($choice->content != 'Recommend this course to a colleague or friend.') {
+                      $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';              
+                  }
+              }
            }
+           
 
      } else {
-         for ($x=1; $x< 9; $x++) {
+       	$endloop = 8;
+       	echo ' at ';
+	      if ($adminuser) {
+             $endloop = 9;	
+       	}
+         for ($x=1; $x< $endloop; $x++) {
           switch ($x) {
        	  case "1":
               $quest = "I am satisfied with the overall quality of this course.";
@@ -1496,12 +1534,13 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
        $html1 .= '</table>';
        $html = $html1;
-       $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+       echo $html;
+   //    $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
        $date = date('Y-m-d');
        $name = 'Evaluation-report-course-'.$cname.'-'.$date.'.pdf';
-       $doc->Output($name);
+     //  $doc->Output($name);
 
-       $doc->Output();
+      // $doc->Output();
        exit();
   }
 }
