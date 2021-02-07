@@ -682,6 +682,9 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             if ($respext->cdtot > 0) {
                 $sqlext = "SELECT COUNT(ts.courseid) cdgood
                            FROM {local_teaching_survey} ts";
+                if (!isset($cnt)) {
+                    $cnt = 1;                
+                }           
                 switch ($cnt) {
                 	 case "1":
                      $whereext = "where satisfied >=4";
@@ -949,7 +952,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                if (!$validteacher) {
                     $valid = false;
                }
-           }              
+           }
+           $qname = 'all';              
            $sid = $survey->instance;
            if (!$valid) {
                $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));

@@ -682,6 +682,9 @@ function block_questionreport_get_question_results_rank($ctype, $questionid, $ch
             if ($respext->cdtot > 0) {
                 $sqlext = "SELECT COUNT(ts.courseid) cdgood
                            FROM {local_teaching_survey} ts";
+                if (!isset($cnt)) {
+                    $cnt = 1;                
+                }           
                 switch ($cnt) {
                 	 case "1":
                      $whereext = "where satisfied >=4";
@@ -1443,7 +1446,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               if ($choice->id %2 == 0) {
     	             $font = ' style="background-color:#ebebeb;"';
               } else {
-              	   $font = 'style="font-size: 2.5em;"';
+              	   $font = '';
               }
               $html1 .= '<tr'.$font.'><td>'.$choice->content.'</td><td align="center" valign="middle">'.$course.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
            }

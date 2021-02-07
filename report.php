@@ -61,6 +61,7 @@ if ($action == 'pdf') {
 echo $OUTPUT->header();
 // Build up the filters
 $courselist = block_questionreport_get_courses();
+$portfieldid = get_config($plugin, 'portfoliofield');         
 echo html_writer::start_tag('h2');
 echo get_string('filters', $plugin);
 echo html_writer::end_tag('h2');
