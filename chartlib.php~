@@ -247,8 +247,11 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
            $x = json_decode($partnercontent);
            $opts = $x->options;
-           $options = preg_split("/\s*\n\s*/", $opts);
-           $portdisplay = $options[$pf];
+           if ($options[$pf]) {
+               $portdisplay = $options[$pf];
+           } else {
+              $portdisplay = $na;
+           }
        } else {
            $portdisplay = $na;
        }
@@ -269,7 +272,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
        // Course context.
        $context = context_course::instance($courseid);
        $contextid = $context->id;
-       $sqlteacher = "SELECT u.firstname, u.lastname, u.id
+       $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                        FROM {user} u
                        JOIN {role_assignments} ra on ra.userid = u.id
                         AND ra.contextid = :context
@@ -402,7 +405,6 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $x = 1;
          $options_old = preg_split("/\s*\n\s*/", $opts);
          foreach($options_old as $val) {
-            // $options[$x] = $val;
             if ($x == $portfolio) {
                 $portval = $val;
             }
@@ -484,8 +486,6 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            $portdisplay = '';
            $p1 = $result->port1name;
            $p2 = $result->port2name;
-         //  $portname1 = $DB->get_field('local_teaching_port', 'portname', array ('id' => $p1));
-         //  $portname2 = $DB->get_field('local_teaching_port', 'portname', array ('id' => $p2));
            if ($p1) {
                $portdisplay = $p1;           
            }

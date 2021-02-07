@@ -34,7 +34,7 @@ $plugin = 'block_questionreport';
 $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/adminreport.php');
 $PAGE->set_context(context_system::instance());
-$header = get_string('reportheader', $plugin);
+$header = 'Administrator Report';
 $PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->set_cacheable(true);

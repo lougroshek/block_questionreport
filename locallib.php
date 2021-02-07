@@ -1147,6 +1147,7 @@ function block_questionreport_get_chartquestions($surveyid) {
 }
 function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid, $action, $portfolio, $teacher, $courseid) {
     global $DB, $COURSE, $CFG;
+    $plugin = 'block_questionreport';
     require_once($CFG->libdir . '/pdflib.php');
     if ($action == 'pdf') {
         $html = '<table border="0" cellpadding="6">';
@@ -1269,11 +1270,39 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $doc->setFont('helvetica',' ', '4');
        $doc->SetFillColor(0,255,0);
        $doc->AddPage();
-       $filename = 'images/logo.png';
-       $ext = 'png';              
-       $imagesize = getimagesize($filename);
-       list($width, $height) = $imagesize;
-       $url = $CFG->wwwroot;  
+       $height = get_config($plugin, 'height_value');
+       $width = get_config($plugin, 'width_value');
+       
+//       $filename = get_config($plugin, 'logofile');
+//       $fparts = pathinfo($filename, $options = null);
+//var_dump($fparts);
+  //     $ext = $fparts['extension'];
+    //   echo 'ext '.$ext;
+     //  exit();
+       $fs = get_file_storage();
+       // Prepare file record object
+       //$fileinfo = self::get_certificate_image_fileinfo($this->context->id);
+       //$firstpageimagefile = $fs->get_file($fileinfo['contextid'], $fileinfo['component'], $fileinfo['filearea'],
+       //                                    $fileinfo['itemid'], $fileinfo['filepath'], $this->get_instance()->certificateimage);
+       // Read contents
+       //if ($firstpageimagefile) {
+       //    $temp_filename = $firstpageimagefile->copy_content_to_temp(self::CERTIFICATE_COMPONENT_NAME, 'first_image_');
+        //   $doc->Image($temp_filename, 0, 0, $width, $height);
+        //        @unlink($temp_filename);
+       // } else {
+       //         print_error(get_string('filenotfound', 'simplecertificate', $this->get_instance()->certificateimage));
+      // }
+       $ext = 'png';
+       $url = $CFG->wwwroot;
+       $size = getimagesize('images/logo.png');
+       $width = $size[0];
+       $height = $size[1];
+       //echo 'wd '.$width;
+       //echo ' hg '.$height;
+       $width = 0.2 * $width;
+       $height = 0.2 * $height;
+       
+       //exit();         
        $doc->Image('images/logo.png', '', '', $width, $height, $ext, $url, '', true, 150, '', false, false, 1, false, false, true);
 
        $doc->SetXY(5000, 70);       
@@ -1344,7 +1373,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
                   
        }       
-       $html1 = $htmlhead. '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="1" cellpadding="4">';
+       $html1 = $htmlhead. '<h1>Facilitation Summary (% Agree and Strongly Agree)</h1><br><table border="1" cellpadding="2">';
        $html1 .= '<tr><td></td><td align="center"><b>This Course</b></td><td align="center"><b>All Courses</b></td></tr>';
        if ($ctype == 'M') {
            $params = array();
@@ -1412,7 +1441,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
               $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
               $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
               if ($choice->id %2 == 0) {
-                  $font = ' style="background-color:#ebebeb;"';
+    	             $font = ' style="background-color:#ebebeb;"';
               } else {
               	   $font = '';
               }

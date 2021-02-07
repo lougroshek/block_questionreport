@@ -263,7 +263,6 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           	   $x = $x + 1;
                $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $x, $val, $port);
                $line1 .= '<td>'.$mn1.'</td>';
-               echo '<br> x '.$x;
           }
           $rows = $x;
           $x = '0';  

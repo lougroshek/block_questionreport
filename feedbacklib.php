@@ -237,6 +237,9 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           break;
        case "3":
           $header = get_string('report3', $plugin);
+          $content = ' not quite ready yet';
+          return $content;
+          exit();
           $portfieldid = get_config($plugin, 'portfoliofield');
           $data = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
           $content = '<h1><p>'.$header.'</p></h1><br>';

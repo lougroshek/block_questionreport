@@ -119,10 +119,6 @@ if ($action == 'csv') {
     echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
     echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
     echo "<input type=\"hidden\" name=\"sid\" value=\"1\" />\n";
-
-//    echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
-//    echo html_writer::select($surveylist,"sid",$sid, false);
-
     echo html_writer::label(get_string('coursedesc', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($courselist,"cid",$cid, false);
 

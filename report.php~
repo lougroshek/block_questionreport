@@ -38,6 +38,8 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_url('/blocks/questionreport/report.php');
 $PAGE->set_context(context_system::instance());
 $header = get_string('reportheader', $plugin);
+echo $header;
+//exit();
 $PAGE->set_title($header);
 $PAGE->set_heading($header);
 $PAGE->set_cacheable(true);
@@ -86,9 +88,7 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
-    	echo 'val '.$val;
-    	exit();
-       	$sql = "SELECT * FROM {role_assignments} 
+    	 	$sql = "SELECT * FROM {role_assignments} 
        	            AS ra LEFT JOIN {user_enrolments}
         	            AS ue ON ra.userid = ue.userid 
         	            LEFT JOIN {role} AS r ON ra.roleid = r.id 
