@@ -907,6 +907,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         // Get all the courses;
         $gtres = 0;
         $gttotres = 0;
+        $qname = 'all';
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
@@ -926,6 +927,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 	            }
 	        }
 	        if ($valid && $portfolio > "") {
+  	        	   $portfieldid = get_config($plugin, 'portfoliofield');
                $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course, 
                                               'fieldid' => $portfieldid));
                if ($courseport != $portfolio) {
@@ -952,7 +954,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                if (!$validteacher) {
                     $valid = false;
                }
-           }              
+           }
+           $qname = 'all';              
            $sid = $survey->instance;
            if (!$valid) {
                $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));

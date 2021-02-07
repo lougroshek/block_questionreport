@@ -907,6 +907,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         // Get all the courses;
         $gtres = 0;
         $gttotres = 0;
+        $qname = 'all';
         $sqlcourses = "SELECT m.course, m.id, m.instance
                           FROM {course_modules} m
                           JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
@@ -926,6 +927,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 	            }
 	        }
 	        if ($valid && $portfolio > "") {
+  	        	   $portfieldid = get_config($plugin, 'portfoliofield');
                $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course, 
                                               'fieldid' => $portfieldid));
                if ($courseport != $portfolio) {
@@ -1150,7 +1152,7 @@ function block_questionreport_get_chartquestions($surveyid) {
     return $essaylist;
 }
 function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid, $action, $portfolio, $teacher, $courseid) {
-    global $DB, $COURSE, $CFG;
+    global $DB, $USER, $COURSE, $CFG;
     $plugin = 'block_questionreport';
     require_once($CFG->libdir . '/pdflib.php');
     if ($action == 'pdf') {
@@ -1318,6 +1320,31 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
        $partner = '';
        $partnerid = get_config($plugin, 'partnerfield');
  
+       // Check to see if the user is an admin.
+       $adminvalue = get_config($plugin, 'adminroles');
+       $adminarray = explode(',',$adminvalue);
+       // check to see if they are an admin.
+       $adminuser = false;
+       if (!!$is_admin) {
+           $adminuser = true;
+       } else {
+           $context = context_course::instance($COURSE->id);
+           $roles = get_user_roles($context, $USER->id, true);
+           foreach ($adminarray as $val) {
+            	$sql = "SELECT * FROM {role_assignments} 
+       	            AS ra LEFT JOIN {user_enrolments}
+       	            AS ue ON ra.userid = ue.userid 
+        	            LEFT JOIN {role} AS r ON ra.roleid = r.id 
+        	            LEFT JOIN {context} AS c ON c.id = ra.contextid 
+        	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+        	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
+              $result = $DB->get_records_sql($sql, array( ''));
+              if ( $result ) {
+                   $adminuser = true;	
+              }
+        }      
+    }         
+
        if ($courseid > 0) {
            if ($ctype == 'M') {
                $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
@@ -1453,7 +1480,11 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
 
      } else {
-         for ($x=1; $x< 9; $x++) {
+       	$endloop = 8;
+	      if ($adminuser) {
+             $endloop = 9;	
+       	}
+         for ($x=1; $x< $endloop; $x++) {
           switch ($x) {
        	  case "1":
               $quest = "I am satisfied with the overall quality of this course.";
