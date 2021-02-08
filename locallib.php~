@@ -1489,7 +1489,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
      } else {
        	$endloop = 8;
-       	echo ' at ';
 	      if ($adminuser) {
              $endloop = 9;	
        	}
@@ -1534,11 +1533,11 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
        $html1 .= '</table>';
        $html = $html1;
-       echo $html;
-   //    $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
+//       echo $html;
+       $doc->writeHTML($html, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
        $date = date('Y-m-d');
        $name = 'Evaluation-report-course-'.$cname.'-'.$date.'.pdf';
-     //  $doc->Output($name);
+       $doc->Output($name);
 
       // $doc->Output();
        exit();
@@ -1548,7 +1547,9 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate, $action) {
     global $DB;
     $words = [];
-    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action));
+
+    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action,
+                                                              $portfolio, $teacher, $courseid));
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }

@@ -612,7 +612,7 @@ if ($questionid > 0 ) {
 	 if ($ctype <> 'M') {
         $surveyid = $courseid;
 	 }
-    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date, $action);
+    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date, $action, $portfolio, $teacher, $courseid);
     $default_font_size = 20; // Adjust for more words.
     $words = [];
     foreach ($wordcount as $wd) {
@@ -633,7 +633,7 @@ if ($questionid > 0 ) {
 $quote_data = new stdClass();
 // Array of text responses to render.
 if ($questionid > 0 ){
-    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher);
+    $quote_data->quotes = block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher, $courseid);
 }
 /*
 

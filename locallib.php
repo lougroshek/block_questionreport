@@ -1547,7 +1547,11 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate, $action) {
     global $DB;
     $words = [];
-    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action));
+//function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, 
+//$surveyid, $action, $portfolio, $teacher, $courseid) {
+
+    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action,
+                                                              $portfolio, $teacher, $courseid));
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }
