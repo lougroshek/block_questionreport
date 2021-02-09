@@ -99,7 +99,19 @@ if (!!$is_admin) {
  	       if ( $result ) {
               $adminuser = true;	
         }
-   }		
+   }
+   // check the system roles.
+   if (!$adminuser) {
+        $systemcontext = context_system::instance();
+        $roles = get_user_roles($systemcontext, $USER->id, true);
+        foreach ($adminarray as $val) {
+            foreach ($roles as $rl) {
+                if ( $rl->roleid == $val ) {
+                    $adminuser = true;
+                }
+            }
+        }
+	 }	
 
 }
 if ($adminuser) {
@@ -261,7 +273,7 @@ if ($ctype == "M") {
         if ($valid and $teacher > "") {
             $context = context_course::instance($survey->course);
             $contextid = $context->id;
-            $sqlteacher = "SELECT u.firstname, u.lastname, u.id
+            $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                            FROM {user} u
                            JOIN {role_assignments} ra on ra.userid = u.id
                            AND   ra.contextid = :context
@@ -484,6 +496,18 @@ if (!!$is_admin) {
          if ( $result ) {
                $adminuser = true;	
          }
+      }
+      // check the system roles.
+      if (!$adminuser) {
+          $systemcontext = context_system::instance();
+          $roles = get_user_roles($systemcontext, $USER->id, true);
+          foreach ($adminarray as $val) {
+             foreach ($roles as $rl) {
+                 if ( $rl->roleid == $val ) {
+                      $adminuser = true;
+                 }
+              }
+           }
       }    
 }         
  

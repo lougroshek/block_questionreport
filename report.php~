@@ -99,7 +99,20 @@ if (!!$is_admin) {
  	       if ( $result ) {
               $adminuser = true;	
         }
-   }		
+   }
+   // check the system roles.
+   if (!$adminuser) {
+        $systemcontext = context_system::instance();
+        $roles = get_user_roles($systemcontext, $USER->id, true);
+        foreach ($adminarray as $val) {
+            foreach ($roles as $rl) {
+                if ( $rl->roleid == $val ) {
+                    $adminuser = true;
+                }
+            
+          }
+        }
+	 }	
 
 }
 if ($adminuser) {
@@ -261,7 +274,7 @@ if ($ctype == "M") {
         if ($valid and $teacher > "") {
             $context = context_course::instance($survey->course);
             $contextid = $context->id;
-            $sqlteacher = "SELECT u.firstname, u.lastname, u.id
+            $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                            FROM {user} u
                            JOIN {role_assignments} ra on ra.userid = u.id
                            AND   ra.contextid = :context
@@ -612,7 +625,7 @@ if ($questionid > 0 ) {
 	 if ($ctype <> 'M') {
         $surveyid = $courseid;
 	 }
-    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date, $action);
+    $wordcount = block_questionreport_get_words($ctype, $surveyid, $questionid, $start_date, $end_date, $action, $portfolio, $teacher, $courseid);
     $default_font_size = 20; // Adjust for more words.
     $words = [];
     foreach ($wordcount as $wd) {

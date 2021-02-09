@@ -115,6 +115,19 @@ function block_questionreport_get_evaluations() {
                 $adminuser = true;
             }
         }
+        // check the system roles.
+        if (!$adminuser) {
+            $systemcontext = context_system::instance();
+            $roles = get_user_roles($systemcontext, $USER->id, true);
+            foreach ($adminarray as $val) {
+                foreach ($roles as $rl) {
+                    if ( $rl->roleid == $val ) {
+                        $adminuser = true;
+                    }
+                }
+            }
+        }
+
     }
     if ($adminuser) {
         $data->role = 'admin';
@@ -565,7 +578,7 @@ $partner, $portfolio, $teacher) {
             if ($valid and $teacher > "") {
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                $sqlteacher = "SELECT u.firstname, u.lastname, u.id
+                $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                 FROM {user} u
                 JOIN {role_assignments} ra on ra.userid = u.id
                 AND   ra.contextid = :context
@@ -677,7 +690,7 @@ $partner, $portfolio, $teacher) {
         }
         $sqlext = $sqlext .' '.$whereext;
         $respext = $DB->get_record_sql($sqlext, $paramsext);
-
+        $where1 = '';
         $gtres = $gtres + $respext->cdtot;
         if ($respext->cdtot > 0) {
             $sqlext = "SELECT COUNT(ts.courseid) cdgood
@@ -909,11 +922,11 @@ $nddate, $partner, $portfolio, $teacher) {
         $gttotres = 0;
         $qname = 'all';
         $sqlcourses = "SELECT m.course, m.id, m.instance
-        FROM {course_modules} m
-        JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
-        WHERE m.module = ".$moduleid. "
-        AND ti.tagid = ".$tagid . "
-        AND m.deletioninprogress = 0";
+                       FROM {course_modules} m
+                       JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
+                       WHERE m.module = ".$moduleid. "
+                         AND ti.tagid = ".$tagid . "
+                         AND m.deletioninprogress = 0";
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
@@ -937,11 +950,11 @@ $nddate, $partner, $portfolio, $teacher) {
             if ($valid and $teacher > "") {
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                $sqlteacher = "SELECT u.firstname, u.lastname, u.id
-                FROM {user} u
-                JOIN {role_assignments} ra on ra.userid = u.id
-                AND   ra.contextid = :context
-                AND roleid in (".$roles.")";
+                $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+                               FROM {user} u
+                               JOIN {role_assignments} ra on ra.userid = u.id
+                               AND   ra.contextid = :context
+                               AND roleid in (".$roles.")";
                 $paramteacher = array ('context' => $contextid);
                 $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                 $tlist = '';
@@ -1118,7 +1131,18 @@ function block_questionreport_get_essay($ctype, $surveyid) {
         $essaylist[6] = 'Why did you choose this rating?';
         $essaylist[7] = 'Do you have additional comments about  this course?';
     }
-    $essaylist[10] = 'All';
+/*
+    $essaylist[10] = 'I am satisfied with the overall quality of this course.';
+    $essaylist[11] = 'The topics for this course were relevant for my role.';
+    $essaylist[12] = 'The independent online work activities were well-designed to help me meet the learning targets.';
+    $essaylist[13] = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
+    $essaylist[14] = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
+    $essaylist[15] = 'This course helped me navigate remote and/or hybrid learning during COVID-19';
+    $essaylist[16] = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
+    $essaylist[17] = 'Recommend this course to a colleague or friend.';
+    
+    $essaylist[100] = 'All';
+    */
     return $essaylist;
 }
 
@@ -1350,13 +1374,26 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                     $adminuser = true;
                 }
             }
+           // check the system roles.
+           if (!$adminuser) {
+                $systemcontext = context_system::instance();
+                $roles = get_user_roles($systemcontext, $USER->id, true);
+                foreach ($adminarray as $val) {
+                   foreach ($roles as $rl) {
+                      if ( $rl->roleid == $val ) {
+                          $adminuser = true;
+                      }
+                  }
+               }
+           }
+
         }
 
         if ($courseid > 0) {
             if ($ctype == 'M') {
                 $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
                 $htmlhead = '<h1 style="font-size:20px;">'.$cname.'</h1><br>';
-                $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
+                $role = $DB->get_record('role', array('shortname' => 'leadfacilitator'));
                 $context = context_course::instance($courseid);
                 $tlist = get_role_users($role->id, $context);
                 $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators</h2>';
@@ -1556,10 +1593,10 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
     }
 }
 
-function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate, $action) {
+function block_questionreport_get_words($ctype, $surveyid, $questionid, $stdate, $nddate, $action, $portfolio, $teacher, $courseid) {
     global $DB;
     $words = [];
-    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action));
+    array_push($words, block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, 0, $surveyid, $action, $portfolio, $teacher, $courseid));
     $popwords = calculate_word_popularity($words, 4);
     return $popwords;
 }
