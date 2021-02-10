@@ -274,8 +274,6 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           $content .= $line1;
          
           $content .= '<tr><td colspan = "'.$rows.'">&nbsp;</td></tr>';
-echo $content;
-exit();    
           $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
           for ($ql = 1; $ql < 9; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
@@ -484,7 +482,7 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
                                  AND (rankvalue = 4 or rankvalue = 5)
                                  AND qr.submitted >= :stdate 
                                  AND qr.submitted < :nddate";
-                         
+                          
                }
         }                           
         $sqlmoodle = $sqlmoodle ." ".$mdlsql;

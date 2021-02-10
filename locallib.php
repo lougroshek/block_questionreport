@@ -1131,18 +1131,8 @@ function block_questionreport_get_essay($ctype, $surveyid) {
         $essaylist[6] = 'Why did you choose this rating?';
         $essaylist[7] = 'Do you have additional comments about  this course?';
     }
-/*
-    $essaylist[10] = 'I am satisfied with the overall quality of this course.';
-    $essaylist[11] = 'The topics for this course were relevant for my role.';
-    $essaylist[12] = 'The independent online work activities were well-designed to help me meet the learning targets.';
-    $essaylist[13] = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
-    $essaylist[14] = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
-    $essaylist[15] = 'This course helped me navigate remote and/or hybrid learning during COVID-19';
-    $essaylist[16] = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
-    $essaylist[17] = 'Recommend this course to a colleague or friend.';
+    $essaylist[10] = 'All';
     
-    $essaylist[100] = 'All';
-    */
     return $essaylist;
 }
 

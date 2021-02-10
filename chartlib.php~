@@ -118,9 +118,70 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
     $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
 
     // Get the name of the question.
-    $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
-    $nquestionid = $questionid;
+    if ($questionid < 10 or $questionid > 20) {
+        $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
+        $nquestionid = $questionid;
+    } else {
+    	  $nquestionid = $questionid;
+    	  $choiceid = -1;
+        $questionid = 0; 
+        $qname = 'course_ratings';
+        $sqladmin = "select qr.id, rankvalue response , qu.course courseid, content, q.submitted
+                      from {questionnaire_quest_choice} qc 
+                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id 
+                      join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id 
+                      JOIN {questionnaire} qu on qu.id = q.questionnaireid
+                      where content = '";    	  
+        switch($nquestionid) {
+        	  case '10':
+             $nqname = 'I am satisfied with the overall quality of this course.';
+        	    break;
+        	  case '11' :    
+        	    $nqname = 'The topics for this course were relevant for my role.';
+             break;
+           case '12':  
+             $nqname = 'The independent online work activities were well-designed to help me meet the learning targets.';
+             break;
+           case '13' :      
+             $nqname = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
+             break;
+           case '14':  
+             $nqname = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
+             break;
+          case '15' :       
+            $nqname = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
+            break;
+          case '16':       
+            $nqname = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
+            break;
+          case '17':  
+            $nqname = 'Recommend this course to a colleague or friend.';
+            break;
+         case '18':
+            $nqname = 'facilitator_rate_content';
+            $sqladmin = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                           FROM {questionnaire_response_rank} mr 
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+                           JOIN {questionnaire} qu on qu.id = qr.questionnaireid
+                          WHERE qq.name = '".$nqname;
+             $nqname = "";                  
+                  
+            break;
+         case '19':   
+            $nqname = 'facilitator_rate_community';
+            $sqladmin = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                           FROM {questionnaire_response_rank} mr 
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+                           JOIN {questionnaire} qu on qu.id = qr.questionnaireid
+                          WHERE qq.name = '".$nqname;
+             $nqname = "";                  
+            break;
+          }
+          $sqladmin = $sqladmin .$nqname."'";
     
+    } 
     if ($ctype == 'M' or $questionid > 20)  {
         // Get the question id for Non Moodle courses;
        switch($qname) {
@@ -145,7 +206,6 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
        	case 'why_NPS':
        	  $nquestionid = "6";
        	  break;
-
        }	              
     }
     $orderby = "ORDER BY ID";
@@ -158,15 +218,17 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                       WHERE qq.name = :qname and qr.complete = 'y'";
           $paramsql = array('qname' => $qname);
     } else {
-          $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qr.userid, qs.courseid, qr.submitted
-                         FROM {questionnaire_response_rank} mr
-                         JOIN {questionnaire_question} qq on qq.id = mr.question_id
-                         JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
-                         JOIN {questionnaire_response} qr on qr.id = mr.response_id
-                        WHERE mr.question_id = :questionid
-                          AND qr.complete = 'y'
-                          AND choice_id = :choiceid";
-          $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid);
+    	    if ($choiceid > 1 ) { 
+              $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qr.userid, qs.courseid, qr.submitted
+                            FROM {questionnaire_response_rank} mr
+                            JOIN {questionnaire_question} qq on qq.id = mr.question_id
+                            JOIN {questionnaire_survey} qs on qs.id = qq.surveyid
+                            JOIN {questionnaire_response} qr on qr.id = mr.response_id
+                           WHERE mr.question_id = :questionid
+                            AND qr.complete = 'y'
+                            AND choice_id = :choiceid";
+            $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid);
+         }         
     }
     if ($questionid == '10') {
         $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qr.userid, qt.response, qr.submitted, qs.courseid, qq.content, qq.name
@@ -188,10 +250,15 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['nddate'] = $ndt;
     }
     if ($cid > 0) {
-        $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
+    	  if ($choiceid > -1) {
+             $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
+        } else {
+             $sqladmin = $sqladmin . ' AND qu.course = :courseid';        
+        }     
         $paramsql['courseid'] = $cid;
     }
     $sqladmin = $sqladmin. ' '.$orderby;
+    echo $sqladmin;
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -247,7 +314,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            $partnercontent = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
            $x = json_decode($partnercontent);
            $opts = $x->options;
-           if ($options[$pf]) {
+           if (isset($options[$pf])) {
                $portdisplay = $options[$pf];
            } else {
               $portdisplay = $na;
@@ -296,7 +363,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
            }
        }
        if ($valid) {
-           if ($choiceid == 0) {
+           if ($choiceid == 0 or $choiceid < 0)  {
                $quest = $result->content;
            }
            $quest = strip_tags($quest);
@@ -411,7 +478,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
             $x = $x + 1;    
          }
      }
- 
+        $sql = "Select * ";
         switch($nquestionid) {
            case "1":
               $sql = "SELECT uidsurvey, coursedate, courseid, district, port1name, port2name, teacher1id, teacher2id, learning response ";
@@ -775,6 +842,44 @@ function block_questionreport_get_all_questions($surveyid) {
            $essaylist[$field->id] = $display;
         }
     }
+    return $essaylist;
+}
+function block_questionreport_display_all_questions($ctype, $surveyid) {
+    global $DB, $COURSE;
+    $plugin = 'block_questionreport';
+    $essaylist = array();
+    $essaylist[0] = get_string('none', $plugin);
+    if ($ctype == "M") {
+        $customfields = $DB->get_records('questionnaire_question', array('type_id' => '3', 'surveyid' => $surveyid));
+        foreach ($customfields as $field) {
+            $content = $field->content;
+            $display = strip_tags($content);
+            $display = trim($display);
+            $essaylist[$field->id] = $display;
+        }
+    } else {
+        $essaylist[1] = 'What is the learning from this course that you are most excited about trying out?';
+        $essaylist[2] = 'How, if in any way, this course helped you prepare for school opening after COVID-19?';
+        $essaylist[3] = 'Overall, what went well in this course?';
+        $essaylist[4] = 'Which activities best supported your learning in this course?';
+        $essaylist[5] = 'What could have improved your experience in this course?';
+        $essaylist[6] = 'Why did you choose this rating?';
+        $essaylist[7] = 'Do you have additional comments about  this course?';
+    }
+
+    $essaylist[10] = 'I am satisfied with the overall quality of this course.';
+    $essaylist[11] = 'The topics for this course were relevant for my role.';
+    $essaylist[12] = 'The independent online work activities were well-designed to help me meet the learning targets.';
+    $essaylist[13] = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
+    $essaylist[14] = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
+    $essaylist[15] = 'This course helped me navigate remote and/or hybrid learning during COVID-19';
+    $essaylist[16] = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
+    $essaylist[17] = 'Recommend this course to a colleague or friend.';
+    $essaylist[18] = 'He/she/they facilitated the content clearly.';
+    $essaylist[19] = 'He/she/they effectively built a community of learners.';
+        
+    $essaylist[100] = 'All';
+    
     return $essaylist;
 }
 //ALTER TABLE mdl_local_teaching_survey

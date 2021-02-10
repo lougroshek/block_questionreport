@@ -144,7 +144,7 @@ if ($action == 'csv') {
     echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
-    $questionlist = block_questionreport_get_essay($ctype, $surveyid);
+    $questionlist = block_questionreport_display_all_questions($ctype, $surveyid);
 
     echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
     echo html_writer::select($questionlist,"question",$questionid, false);

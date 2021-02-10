@@ -1131,6 +1131,7 @@ function block_questionreport_get_essay($ctype, $surveyid) {
         $essaylist[6] = 'Why did you choose this rating?';
         $essaylist[7] = 'Do you have additional comments about  this course?';
     }
+/*
     $essaylist[10] = 'I am satisfied with the overall quality of this course.';
     $essaylist[11] = 'The topics for this course were relevant for my role.';
     $essaylist[12] = 'The independent online work activities were well-designed to help me meet the learning targets.';
@@ -1141,6 +1142,7 @@ function block_questionreport_get_essay($ctype, $surveyid) {
     $essaylist[17] = 'Recommend this course to a colleague or friend.';
     
     $essaylist[100] = 'All';
+    */
     return $essaylist;
 }
 
