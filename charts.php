@@ -107,7 +107,7 @@ if ($chart == 'Bar3') {
 if ($chart == 'Bar4') {
     $checked4 = 'checked';
 }
-echo '<input type="radio" id="chart" name="chart" value="Bar1" '.$checked1. ' />Bar Chart of Partner Sites<br>';
+echo '<input type="radio" id="chart" name="chart" value="Bar1" '.$checked1. ' />Bar Chart: Percent of reponses 4 and 5 by Partner Site<br>';
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthechart', $plugin).'" />';
 echo '</form>';
 echo html_writer::end_tag('div');

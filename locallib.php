@@ -1386,12 +1386,19 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 $role = $DB->get_record('role', array('shortname' => 'leadfacilitator'));
                 $context = context_course::instance($courseid);
                 $tlist = get_role_users($role->id, $context);
+                // Write list of facilitators included in this report.
                 $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators</h2>';
-                $htmlhead = $htmlhead . '<ul>';
-                foreach ($tlist as $teachernames) {
-                    $htmlhead = $htmlhead . '<li style="font-size:8px;">'.fullname($teachernames).'</li>';
+                $htmlhead = $htmlhead . '<p style="font-size:8px;">';
+                $is_first = true;
+                foreach ($tlist as $key => $value) {
+                  if (!!$is_first) {
+                    $htmlhead = $htmlhead . fullname($value);
+                    $is_first = false;
+                  } else {
+                    $htmlhead = $htmlhead . ', ' . fullname($value);
+                  }
                 }
-                $htmlhead = $htmlhead . '</ul>';
+                $htmlhead = $htmlhead . '</p>';
                 // Partner.
                 $partnervalue = $DB->get_field('customfield_data', 'intvalue', array ('fieldid' => $partnerid, 'instanceid' => $courseid));
                 if ($partnervalue) {
