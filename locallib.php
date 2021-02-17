@@ -550,12 +550,24 @@ $partner, $portfolio, $teacher) {
             $portfieldid = get_config($plugin, 'portfoliofield');
             $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
         }
+        $coursfilter = '0';
+        $filtertype = '0';
+        if ($cid <> '0') {
+            $filtertype = substr($cid, 0, 1);
+            $coursefilter = substr($cid, 2);
+        }
         $sqlcourses = "SELECT m.course, m.id, m.instance
-        FROM {course_modules} m
-        JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
-        WHERE m.module = ".$moduleid. "
-        AND ti.tagid = ".$tagid . "
-        AND m.deletioninprogress = 0";
+                         FROM {course_modules} m
+                         JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
+                        WHERE m.module = ".$moduleid. "
+                          AND ti.tagid = ".$tagid . "
+                          AND m.deletioninprogress = 0";
+        if ($filtertype == 'M' and $coursefilter > '0') {
+            $sqlcourses = $sqlcourses ." AND m.course = ".$coursefilter;      
+        } 
+        if ($filtertype == 'A' ) {
+            $sqlcourses = $sqlcourses ." AND 2 = 4";      
+        }                 
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
@@ -579,10 +591,10 @@ $partner, $portfolio, $teacher) {
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
                 $sqlteacher = "SELECT u.id, u.firstname, u.lastname
-                FROM {user} u
-                JOIN {role_assignments} ra on ra.userid = u.id
-                AND   ra.contextid = :context
-                AND roleid in (".$roles.")";
+                                 FROM {user} u
+                                 JOIN {role_assignments} ra on ra.userid = u.id
+                                  AND   ra.contextid = :context
+                                  AND roleid in (".$roles.")";
                 $paramteacher = array ('context' => $contextid);
                 $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                 $tlist = '';
@@ -758,6 +770,13 @@ $partner, $portfolio, $teacher) {
                 $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
                 $where1 = $where1 . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
             }
+            if ($filtertype == 'A' and $coursefilter > '0') {
+                $whereext = $whereext ." AND ts.courseid = ".$coursefilter;      
+            } 
+            if ($filtertype == 'M' ) {
+                $whereext = $whereext ." AND 2 = 4";      
+            }                 
+   
             $sqlext = $sqlext .' '.$whereext;
             $respext = $DB->get_record_sql($sqlext, $paramsext);
             if ($cnt <> 8) {
@@ -921,12 +940,24 @@ $nddate, $partner, $portfolio, $teacher) {
         $gtres = 0;
         $gttotres = 0;
         $qname = 'all';
+        $coursfilter = '0';
+        $filtertype = '0';
+        if ($courseid <> '0') {
+            $filtertype = substr($courseid, 0, 1);
+            $coursefilter = substr($courseid, 2);
+        }
         $sqlcourses = "SELECT m.course, m.id, m.instance
                        FROM {course_modules} m
                        JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
                        WHERE m.module = ".$moduleid. "
                          AND ti.tagid = ".$tagid . "
                          AND m.deletioninprogress = 0";
+        if ($filtertype == 'M' and $coursefilter > '0') {
+            $sqlcourses = $sqlcourses .' AND m.course ='.$coursefilter;         
+        }
+        if ($filtertype == 'A') {
+            $sqlcourses = $sqlcourses .' AND 2 = 3';        
+        }
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
@@ -1046,9 +1077,17 @@ $nddate, $partner, $portfolio, $teacher) {
             $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
         }
 
-        $sqlext = $sqlext .' '.$whereext;
-        $respext = $DB->get_record_sql($sqlext, $paramsext);
+        if ($filtertype == 'A' and $coursefilter > '0') {
+            $whereext = $whereext .' AND ts.courseid ='.$coursefilter;         
+        }
+        if ($filtertype == 'M') {
+            $whereext = $whereext .' AND 2 = 3';        
+        }
 
+        $sqlext = $sqlext .' '.$whereext;
+
+        $respext = $DB->get_record_sql($sqlext, $paramsext);
+        
         $gtres = $gtres + $respext->cdtot;
         if ($respext->cdtot > 0) {
             if ($ctype == 'M') {
@@ -1098,6 +1137,7 @@ $nddate, $partner, $portfolio, $teacher) {
         }
         if ($gtres > 0) {
             if ($gttotres > 0) {
+            	echo '<br> tot rest '.$gttotres;
                 $percent = ($gttotres / $gtres) * 100;
                 $retval = round($percent, 0)."(%)";
             } else {

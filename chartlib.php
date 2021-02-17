@@ -99,6 +99,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         return $content;
         exit();
     }
+    $paramsql = array();
     $content = array();
      // Get teachers separated by roles.
     $roles = get_config('block_questionreport', 'roles');
@@ -265,6 +266,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['courseid'] = $cid;
     }
     $sqladmin = $sqladmin. ' '.$orderby;
+    
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;

@@ -109,8 +109,7 @@ if (!!$is_admin) {
                 if ( $rl->roleid == $val ) {
                     $adminuser = true;
                 }
-            
-          }
+            }
         }
 	 }	
 
@@ -191,6 +190,7 @@ if ($ctype == "M") {
          exit();
      }
      $surveyid = $surveys->instance;
+echo '<br> main '.$sqlcourse;
 
      // Get the survey results from this course.
      $displayedteachers = array();
@@ -497,6 +497,18 @@ if (!!$is_admin) {
          if ( $result ) {
                $adminuser = true;	
          }
+      }
+      // check the system roles.
+      if (!$adminuser) {
+          $systemcontext = context_system::instance();
+          $roles = get_user_roles($systemcontext, $USER->id, true);
+          foreach ($adminarray as $val) {
+             foreach ($roles as $rl) {
+                 if ( $rl->roleid == $val ) {
+                      $adminuser = true;
+                 }
+              }
+           }
       }    
 }         
  

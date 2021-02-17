@@ -99,6 +99,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         return $content;
         exit();
     }
+    $paramsql = array();
     $content = array();
      // Get teachers separated by roles.
     $roles = get_config('block_questionreport', 'roles');
@@ -265,6 +266,8 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['courseid'] = $cid;
     }
     $sqladmin = $sqladmin. ' '.$orderby;
+    echo $sqladmin;
+    
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -550,7 +553,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                            JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
                            JOIN {questionnaire_response} qr on qr.id = mr.response_id 
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
-                          WHERE qq.name = '".$nqname. " AND userid = ".$user ." AND  qu.course = ".$qid;
+                          WHERE qq.name = '".$nqname. "' AND userid = ".$user ." AND  qu.course = ".$qid;
                 
                    $res15 = $DB->get_records_sql($sqlnew, array());
                    foreach($res15 as $res) {
@@ -564,7 +567,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                            JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
                            JOIN {questionnaire_response} qr on qr.id = mr.response_id 
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
-                          WHERE qq.name = '".$nqname. " AND userid = ".$user ." AND  qu.course = ".$qid;
+                          WHERE qq.name = '".$nqname. "' AND userid = ".$user ." AND  qu.course = ".$qid;
 
                    $res16 = $DB->get_records_sql($sqlnew, array());
                    foreach($res7 as $res) {
