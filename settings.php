@@ -79,6 +79,7 @@ if ($ADMIN->fulltree) {
     $settings->add($setting); 
     
     // logo Image file
+/*
     $name = get_string('logofile', 'block_questionreport');
     $title = get_string('logofile','block_questionreport');
     $description = get_string('logo_desc', 'block_questionreport');
@@ -94,6 +95,6 @@ if ($ADMIN->fulltree) {
          'block_questionreport/height_value',get_string('height', 'block_questionreport'),
           get_string('height_desc', 'block_questionreport'),'200', PARAM_RAW ));
       
-
+*/
 }
 

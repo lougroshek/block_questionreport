@@ -83,7 +83,7 @@ if ($ADMIN->fulltree) {
     $title = get_string('logofile','block_questionreport');
     $description = get_string('logo_desc', 'block_questionreport');
     $setting = new admin_setting_configstoredfile('block_questionreport/logofile', $title, $description, 'preset', 0,
-        array('maxfiles' => 1, 'accepted_types' => array('.png, .img')));
+        array('maxfiles' => 1, 'accepted_types' => array('.png, .img, jpg')));
     $settings->add($setting);
     
     $settings->add(new admin_setting_configtext(
