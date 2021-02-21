@@ -88,6 +88,7 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
+    	
     	 	$sql = "SELECT * FROM {role_assignments} 
        	            AS ra LEFT JOIN {user_enrolments}
         	            AS ue ON ra.userid = ue.userid 
@@ -97,8 +98,10 @@ if (!!$is_admin) {
         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
  	       $result = $DB->get_records_sql($sql, array( ''));
  	       if ( $result ) {
-              $adminuser = true;	
+ 	       	echo 'admin '.$val;
+//              $adminuser = true;	
         }
+        
    }
    // check the system roles.
    if (!$adminuser) {
@@ -251,7 +254,13 @@ if ($ctype == "M") {
          $wheretot = $wheretot . " AND submitted <= :endtd";
          $paramstot['endtd'] = $endtd;
      }
-
+     $slf = strlen($teacher);
+     if ($slf == 0) {
+         $lf = block_questionreport_checklf();
+         if ($lf) {
+             $teacher = $USER->id;         
+         }
+     }    
      $surveys = $DB->get_records_sql($sqlcourses);
      foreach($surveys as $survey) {
 	      $valid = false;
@@ -271,22 +280,23 @@ if ($ctype == "M") {
             }	          
         }
         if ($valid and $teacher > "") {
+            $validteacher = false;
             $context = context_course::instance($survey->course);
             $contextid = $context->id;
-            $sqlteacher = "SELECT u.id, u.firstname, u.lastname
-                           FROM {user} u
-                           JOIN {role_assignments} ra on ra.userid = u.id
-                           AND   ra.contextid = :context
-                           AND roleid in (".$roles.")";
-            $paramteacher = array ('context' => $contextid);
-            $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
-            $tlist = '';
-            $validteacher = false;
-            foreach($teacherlist as $te) {
-              if ($te->id == $teacher) {
-                   $validteacher = true;
-               }
-            }
+                 $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+                                 FROM {user} u
+                                 JOIN {role_assignments} ra on ra.userid = u.id
+                                 AND   ra.contextid = :context
+                                 AND roleid in ('".$roles."')";
+                 $paramteacher = array ('context' => $contextid);
+                 $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+                 $tlist = '';
+                 foreach($teacherlist as $te) {
+                    if ($te->id == $teacher) {
+                        $validteacher = true;
+                    }
+                }
+                
             if (!$validteacher) {
                  $valid = false;
             }
