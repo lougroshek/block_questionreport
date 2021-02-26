@@ -636,17 +636,17 @@ $partner, $portfolio, $teacher) {
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                var_dump($roles) ;
+                var_dump($roles);
                 exit();
                 foreach($roles as $rl) {
-                	  $ri = $rl->roleid;
-                    $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+                	 $rlrole = $rl->role;
+                   $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                                     FROM {user} u
                                     JOIN {role_assignments} ra on ra.userid = u.id
                                      AND   ra.contextid = :context
-                                      AND roleid = ".$ri;
-                    $paramteacher = array ('context' => $contextid);
-                    $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+                                     AND roleid = ".$rlrole;
+                   $paramteacher = array ('context' => $contextid);
+                   $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                     $tlist = '';
                     foreach($teacherlist as $te) {
                        if ($te->id == $teacher) {

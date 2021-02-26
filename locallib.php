@@ -636,20 +636,22 @@ $partner, $portfolio, $teacher) {
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+                foreach($roles as $rl) {
+                	 $rlrole = $rl->roleid;
+                   $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                                     FROM {user} u
                                     JOIN {role_assignments} ra on ra.userid = u.id
                                      AND   ra.contextid = :context
-                                     AND roleid in ('".$roles."')";
-                    $paramteacher = array ('context' => $contextid);
-                    $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+                                     AND roleid = ".$rlrole;
+                   $paramteacher = array ('context' => $contextid);
+                   $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                     $tlist = '';
                     foreach($teacherlist as $te) {
                        if ($te->id == $teacher) {
                            $validteacher = true;
                        }
                    }
-                
+                }
                 if (!$validteacher) {
                     $valid = false;
                 }
