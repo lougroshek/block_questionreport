@@ -1589,12 +1589,17 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 $htmlhead = $htmlhead . '<p style="font-size:8px;">';
                 $is_first = true;
                 foreach ($tlist as $key => $value) {
-                  if (!!$is_first) {
-                    $htmlhead = $htmlhead . fullname($value);
-                    $is_first = false;
-                  } else {
-                    $htmlhead = $htmlhead . ', ' . fullname($value);
-                  }
+                	 if ($value == $USER->id) {
+                        $htmlhead = $htmlhead . fullname($value);
+                        break;               	 
+                	 } else {
+                        if (!!$is_first) {
+                            $htmlhead = $htmlhead . fullname($value);
+                            $is_first = false;
+                        } else {
+                            $htmlhead = $htmlhead . ', ' . fullname($value);
+                        }
+                   }
                 }
                 $htmlhead = $htmlhead . '</p>';
                 // Partner.
