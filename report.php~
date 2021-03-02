@@ -535,13 +535,13 @@ if ($ctype == 'M') {
         $choicecnt = $choicecnt + 1;
         $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
                                                                  $end_date, $partner, $portfolio, $teacher);
-echo ' <br> ctype '. $ctype;
-echo '<br> qid '. $qid;
-echo '<br> choiceid '. $choiceid;
-echo '<br> coursefilter '. $coursefilter;
+//echo ' <br> ctype '. $ctype;
+//echo '<br> qid '. $qid;
+//echo '<br> choiceid '. $choiceid;
+//echo '<br> coursefilter '. $coursefilter;
        
 //echo 'at all 2 '.$coursefilter;
-exit(); 
+//exit(); 
         $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
                                                               $end_date, $partner, $portfolio, $teacher);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
@@ -564,6 +564,7 @@ exit();
                                                                     $end_date, $partner, $portfolio, $teacher);
            $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
                                                                   $end_date, $partner, $portfolio, $teacher);
+echo '<br> all is '.$all;    
            $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
            $obj->all = $all;
            array_push($data->session, $obj);

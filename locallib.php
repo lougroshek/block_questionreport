@@ -728,7 +728,7 @@ $partner, $portfolio, $teacher) {
             }
         }
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
-        FROM {local_teaching_survey} ts";
+                   FROM {local_teaching_survey} ts";
         $whereext = "WHERE 1 = 1";
         $paramsext = array();
         if ($stdate > 0) {
@@ -754,6 +754,8 @@ $partner, $portfolio, $teacher) {
         if ($filtertype == 'M' ) {
              $whereext = $whereext ." AND 2 = 4";      
         }   
+       // echo $sqlext;
+        
         $sqlext = $sqlext .' '.$whereext;
         $respext = $DB->get_record_sql($sqlext, $paramsext);
         $where1 = '';
@@ -826,9 +828,11 @@ $partner, $portfolio, $teacher) {
             }
             if ($filtertype == 'A' and $coursefilter > '0') {
                 $whereext = $whereext ." AND ts.courseid = ".$coursefilter;      
+                $where1 = $where1 ." AND ts.courseid = ".$coursefilter;       
             } 
             if ($filtertype == 'M' ) {
-                $whereext = $whereext ." AND 2 = 4";      
+                $whereext = $whereext ." AND 2 = 4";
+                $where1 = $where1 ." AND 2 = 4";      
             }                 
    
             $sqlext = $sqlext .' '.$whereext;

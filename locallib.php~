@@ -728,7 +728,7 @@ $partner, $portfolio, $teacher) {
             }
         }
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
-        FROM {local_teaching_survey} ts";
+                   FROM {local_teaching_survey} ts";
         $whereext = "WHERE 1 = 1";
         $paramsext = array();
         if ($stdate > 0) {
@@ -748,6 +748,14 @@ $partner, $portfolio, $teacher) {
         if ($teacher > " ") {
             $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
         }
+        if ($filtertype == 'A' and $coursefilter > '0') {
+            $whereext = $whereext ." AND ts.courseid = ".$coursefilter;      
+        } 
+        if ($filtertype == 'M' ) {
+             $whereext = $whereext ." AND 2 = 4";      
+        }   
+       // echo $sqlext;
+        
         $sqlext = $sqlext .' '.$whereext;
         $respext = $DB->get_record_sql($sqlext, $paramsext);
         $where1 = '';
@@ -1770,7 +1778,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                     break;
                 }
                 $course = block_questionreport_get_question_results_rank($ctype, $x, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
-                $all = block_questionreport_get_question_results_rank($ctype, $x, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+                $all = block_questionreport_get_question_results_rank($ctype, $x, $x, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
 
                 if ($x % 2 == 0) {
                     $font = ' style="background-color:#ebebeb;"';
