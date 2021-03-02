@@ -523,8 +523,10 @@ if (!!$is_admin) {
  
 $data->session = [];
 if ($ctype == 'M') {
-    $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));    
     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
+    $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
+    
     $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
     $choicecnt = 0;
     
@@ -534,16 +536,9 @@ if ($ctype == 'M') {
         $choiceid = $choice->id;
         $choicecnt = $choicecnt + 1;
         $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
-                                                                 $end_date, $partner, $portfolio, $teacher);
-//echo ' <br> ctype '. $ctype;
-//echo '<br> qid '. $qid;
-//echo '<br> choiceid '. $choiceid;
-//echo '<br> coursefilter '. $coursefilter;
-       
-//echo 'at all 2 '.$coursefilter;
-//exit(); 
+                                                                 $end_date, $partner, $portfolio, $teacher, $qname);
         $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
-                                                              $end_date, $partner, $portfolio, $teacher);
+                                                              $end_date, $partner, $portfolio, $teacher, $qname);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
         $obj->all = $all;
         array_push($data->session, $obj);
@@ -554,17 +549,16 @@ if ($ctype == 'M') {
         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid, 'type_id' => '8'));
         $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
         $choicecnt = 0;
-        
         foreach ($choices as $choice) {
            $obj = new stdClass;
            $obj->question = $choice->content;
            $choiceid = $choice->id;
+           echo '<br> choice id '.$choiceid;
            $choicecnt = $choicecnt + 1;
            $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
-                                                                    $end_date, $partner, $portfolio, $teacher);
+                                                                    $end_date, $partner, $portfolio, $teacher, 'NPS');
            $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
-                                                                  $end_date, $partner, $portfolio, $teacher);
-echo '<br> all is '.$all;    
+                                                                  $end_date, $partner, $portfolio, $teacher,'NPS');
            $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
            $obj->all = $all;
            array_push($data->session, $obj);

@@ -367,7 +367,7 @@ function block_questionreport_get_partners_list() {
 
 }
 function block_questionreport_get_question_results_rank($ctype, $questionid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $stdate, $nddate,
-$partner, $portfolio, $teacher) {
+$partner, $portfolio, $teacher, $qname) {
     // Return the percentage of questions answered with a rank 4, 5;
     // questionid  question #
     // choice id is the choice id for a specific survey. For all courses then which choice option.
@@ -567,7 +567,7 @@ $partner, $portfolio, $teacher) {
         } 
         if ($filtertype == 'A' ) {
             $sqlcourses = $sqlcourses ." AND 2 = 4";      
-        }                 
+        }
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
@@ -848,13 +848,15 @@ $partner, $portfolio, $teacher) {
                 $gtnpr = $gtnpr + $totnpr;
             }
         }
-
+        $qname = trim($qname);
+        echo '<br> qname '.$qname .' gtres '.$gtres;
         if ($gtres > 0) {
             if ($gttotres > 0) {
-                if ($cnt <> 8) {
+                if ($qname  <> 'NPS') {
                     $percent = ($gttotres / $gtres) * 100;
                     $retval = round($percent, 0)."(%)";
                 } else {
+echo ' in part 2 ';
                     $percent = ($gttotres / $gtres) * 100;
                     $percent2 = ($gtnpr / $gtres) * 100;
                     $percent = $percent - $percent2;
