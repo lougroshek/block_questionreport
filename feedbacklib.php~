@@ -576,11 +576,8 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
         if ($val > 0) {
             if ($qnum <> 8 ) {
                 $totgood = $ans1 + $ans2;
+                $val = ($totgood / $val) * 100;
                 $ret = round($val, 0)."(%)";
-                if ($qnum == 100) {
-                   echo 'ret '.$ret;
-                   exit();                
-                }
             } else {
                 $ans1 = $ans1 + $ans2;
                 $ans1a = $ans1a + $ans2a;

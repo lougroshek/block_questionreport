@@ -55,7 +55,7 @@ if ($ctype == "M") {
     global $COURSE;
 }
 if ($action == 'pdf') {
-    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, 0, $surveyid, $action, $portfolio, $teacher, $courseid);
+    block_questionreport_get_essay_results($ctype, $questionid, $start_date, $end_date, $coursefilter, $surveyid, $action, $portfolio, $teacher, $courseid);
     exit();
 }
 echo $OUTPUT->header();
@@ -258,7 +258,7 @@ if ($ctype == "M") {
      if ($slf == 0) {
          $lf = block_questionreport_checklf();
          if ($lf) {
-             $teacher = $USER;         
+             $teacher = $USER->id;         
          }
      }    
      $surveys = $DB->get_records_sql($sqlcourses);
@@ -527,6 +527,7 @@ if ($ctype == 'M') {
     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
     $choicecnt = 0;
+    
     foreach ($choices as $choice) {
         $obj = new stdClass;
         $obj->question = $choice->content;
@@ -534,6 +535,13 @@ if ($ctype == 'M') {
         $choicecnt = $choicecnt + 1;
         $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $courseid, $surveyid, $moduleid, $tagid, $start_date, 
                                                                  $end_date, $partner, $portfolio, $teacher);
+echo ' <br> ctype '. $ctype;
+echo '<br> qid '. $qid;
+echo '<br> choiceid '. $choiceid;
+echo '<br> coursefilter '. $coursefilter;
+       
+//echo 'at all 2 '.$coursefilter;
+exit(); 
         $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $coursefilter, 0, $moduleid, $tagid, $start_date,
                                                               $end_date, $partner, $portfolio, $teacher);
         $obj->course = $course; // TODO: Derek: Pass the actual choice values for course and all here.
@@ -546,6 +554,7 @@ if ($ctype == 'M') {
         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid, 'type_id' => '8'));
         $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
         $choicecnt = 0;
+        
         foreach ($choices as $choice) {
            $obj = new stdClass;
            $obj->question = $choice->content;
@@ -617,6 +626,7 @@ $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />
 $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
 $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
 $content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
+$content .= "<input type=\"hidden\" name=\"coursefilter\" value=\"$coursefilter\" />\n";
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
 $content .= '</form>';
 

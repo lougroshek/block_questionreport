@@ -1575,25 +1575,31 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
            }
 
         }
-
         if ($courseid > 0) {
             if ($ctype == 'M') {
                 $cname = $DB->get_field('course','fullname', array ('id' => $courseid));
                 $htmlhead = '<h1 style="font-size:20px;">'.$cname.'</h1><br>';
                 $role = $DB->get_record('role', array('shortname' => 'leadfacilitator'));
                 $context = context_course::instance($courseid);
+               // echo ' context '.$context;
+                
                 $tlist = get_role_users($role->id, $context);
                 // Write list of facilitators included in this report.
-                $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators</h2>';
+                $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators:</h2>';
                 $htmlhead = $htmlhead . '<p style="font-size:8px;">';
                 $is_first = true;
                 foreach ($tlist as $key => $value) {
-                  if (!!$is_first) {
-                    $htmlhead = $htmlhead . fullname($value);
-                    $is_first = false;
-                  } else {
-                    $htmlhead = $htmlhead . ', ' . fullname($value);
-                  }
+                	 if ($value == $USER->id) {
+                        $htmlhead = $htmlhead . fullname($value);
+                        break;               	 
+                	 } else {
+                        if (!!$is_first) {
+                            $htmlhead = $htmlhead . fullname($value);
+                            $is_first = false;
+                        } else {
+                            $htmlhead = $htmlhead . ', ' . fullname($value);
+                        }
+                   }
                 }
                 $htmlhead = $htmlhead . '</p>';
                 // Partner.
@@ -1647,6 +1653,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
         $html1 = $htmlhead . '<br /><h2 style="font-size:12px;margin-top:24px;">Facilitation Summary (% Agree and Strongly Agree)</h2>';
         $html1 .= '<table border="0.25" cellpadding="4">';
         $html1 .= '<tr><th></th><th align="center" style="font-weight:bold;font-size:8px;">This Course</th><th align="center" style="font-weight:bold;font-size:8px;">All Courses</th></tr>';
+
         if ($ctype == 'M') {
             $params = array();
             $courseid = $DB->get_field('questionnaire_survey','courseid', array('id' => $surveyid));
@@ -1666,10 +1673,10 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 //               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
                 // Course
                 $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, '0', '0');
-                $all = block_questionreport_get_question_results($ctype, $pnum, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $all = block_questionreport_get_question_results($ctype, $pnum, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
                 $html1 .= '<tr' .$font.'><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
             }
-        } else {
+         } else {
             for($x =0; $x <=1; $x++) {
                 if ($x == 0) {
                     $font = ' style="background-color:#ebebeb;font-size:8px;"';
@@ -1679,7 +1686,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                     $qcontent = "He/she/they effectively built a community of learners. ";
                 }
                 $cr = block_questionreport_get_question_results($ctype, $x, $surveyid, 1, $moduleid, $tagid, $stdate, $nddate, $partner);
-                $all = block_questionreport_get_question_results($ctype, $x, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
+                $all = block_questionreport_get_question_results($ctype, $x, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner);
                 $html1 .= '<tr' .$font.'><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
             }
         }
@@ -1698,7 +1705,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 $choiceid = $choice->id;
                 $choicecnt = $choicecnt + 1;
                 $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
-                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
                 if ($choice->id %2 == 0) {
                     $font = ' style="background-color:#ebebeb;font-size:8px;"';
                 } else {
@@ -1714,7 +1721,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 $choiceid = $choice->id;
                 $choicecnt = $choicecnt + 1;
                 $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
-                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, 0, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
                 if ($choice->id %2 == 0) {
                     $font = ' style="background-color:#ebebeb;font-size:8px;"';
                 } else {

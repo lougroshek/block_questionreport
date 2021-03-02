@@ -259,7 +259,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           $nddate = '01-06-'.$yr2;
           $x = 0;
           $rows = 0;
-/*         
+         
           foreach($options as $val) {
           	   $x = $x + 1;
                $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $port, $val, $x);
@@ -301,8 +301,6 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
                $content = $content .$line1.'</tr>';            
           }
           $content = $content.'</table>';
- echo $content;
- exit();          
         	 $doc = new pdf;
           $doc->setPrintFooter(false);
           $doc->setFont('helvetica',' ', '4');
@@ -311,7 +309,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           $doc->writeHTML($content, $linebreak = true, $fill = false, $reseth = true, $cell = false, $align = '');
           $name = 'Participant Feedback by partner site for'.$yrnum.'.pdf';
           $doc->Output($name);
-
+          exit();
           break; 
      }         
 }
