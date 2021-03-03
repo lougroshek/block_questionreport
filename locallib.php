@@ -457,7 +457,7 @@ $partner, $portfolio, $teacher, $qname) {
             }
         } else {
             $sqlext = "SELECT COUNT(ts.courseid) cdtot
-            FROM {local_teaching_survey} ts";
+                       FROM {local_teaching_survey} ts";
             $whereext = "WHERE 1 = 1";
             $paramsext = array();
             if ($stdate > 0) {
@@ -633,11 +633,13 @@ $partner, $portfolio, $teacher, $qname) {
               }
             }  
             if ($valid and $teacher > "") {
+
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                foreach($roles as $rl) {
-                	 $rlrole = $rl->roleid;
+                $roles = get_user_roles($context, $USER->id, true);
+                 foreach($roles as $rl) {
+              	   $rlrole = $rl->roleid;
                    $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                                     FROM {user} u
                                     JOIN {role_assignments} ra on ra.userid = u.id
@@ -701,22 +703,28 @@ $partner, $portfolio, $teacher, $qname) {
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
-
             if($totres > 0) {
                 $gtres = $gtres + $totres;
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
                 $wheregoodsql = "WHERE mr.question_id = ".$qid ." AND choice_id =".$chid." AND (rankvalue = 4 or rankvalue = 5) ";
+                $wherenps = '';
+                if ($qname == 'NPS') {
+                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 9 or rankvalue = 10) ";
+                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 9 ) ";
+                }
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
                     $wheregoodsql = $wheregoodsql . ' AND qr.submitted >= :stdate';
+                    $wherenps = $wherenps . ' AND qr.submitted >= :stdate';
                     $std = strtotime($stdate);
                     $paramsql['stdate'] = $std;
                 }
                 if ($nddate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr2 on qr2.id = mr.response_id';
                     $wheregoodsql = $wheregoodsql . ' AND qr2.submitted <= :nddate';
+                    $wherenps = $wherenps . ' AND qr2.submitted <= :nddate';
                     $ndt = strtotime($nddate);
                     $paramsql['nddate'] = $ndt;
                 }
@@ -724,6 +732,10 @@ $partner, $portfolio, $teacher, $qname) {
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     $gttotres = $gttotres + $totgood;
+                    if ($qname == 'NPS') {
+                        $totnpr = $totgoodql . ' '.$fromgoodsql.' '.$wherenps;
+                        $gtnpr = $DB->count_records_sql($totnpr, $paramsql);
+                    }
                 }
             }
         }
@@ -837,7 +849,7 @@ $partner, $portfolio, $teacher, $qname) {
    
             $sqlext = $sqlext .' '.$whereext;
             $respext = $DB->get_record_sql($sqlext, $paramsext);
-            if ($cnt <> 8) {
+            if ($qname <> 'NPS') {
                 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
             } else {
@@ -849,14 +861,12 @@ $partner, $portfolio, $teacher, $qname) {
             }
         }
         $qname = trim($qname);
-        echo '<br> qname '.$qname .' gtres '.$gtres;
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 if ($qname  <> 'NPS') {
                     $percent = ($gttotres / $gtres) * 100;
                     $retval = round($percent, 0)."(%)";
                 } else {
-echo ' in part 2 ';
                     $percent = ($gttotres / $gtres) * 100;
                     $percent2 = ($gtnpr / $gtres) * 100;
                     $percent = $percent - $percent2;
@@ -1006,6 +1016,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             $filtertype = substr($courseid, 0, 1);
             $coursefilter = substr($courseid, 2);
         }
+
         $sqlcourses = "SELECT m.course, m.id, m.instance
                        FROM {course_modules} m
                        JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
@@ -1014,12 +1025,12 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                          AND m.deletioninprogress = 0";
         // Check to see if the user is a lead facilator.
         $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
-        $lf = false;                         
+        $lf = false;
         if ($filtertype == 'M' and $coursefilter > '0') {
-            $sqlcourses = $sqlcourses .' AND m.course ='.$coursefilter;         
+            $sqlcourses = $sqlcourses .' AND m.course ='.$coursefilter;
         }
         if ($filtertype == 'A') {
-            $sqlcourses = $sqlcourses .' AND 2 = 3';        
+            $sqlcourses = $sqlcourses .' AND 2 = 3';
         }
         if ($coursefilter == '0') {
         	   // Check to see if the user is an admin.
@@ -1060,7 +1071,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
              }
           }
           if (!$adminuser) {
-          	   $lf = true;
+               $lf = true;
                $sqllf = "SELECT mc.instanceid
                         FROM {role_assignments} ra
                         JOIN {context} mc ON mc.id = ra.contextid
@@ -1085,15 +1096,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
-            $valid = false;
-            if (is_siteadmin() ) {
-                $valid = true;
-            } else {
-                $context = context_course::instance($survey->course);
-                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                    $valid = true;
-                }
-            }
+            $valid = true;
             if ($valid && $portfolio > "") {
                 $portfieldid = get_config($plugin, 'portfoliofield');
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
@@ -1132,6 +1135,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             if (!$valid) {
                 $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
             }
+
             $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
             if (empty($questionid) or !$valid) {
                 $totres = 0;
@@ -1158,10 +1162,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 if ($lf) {
-                	  $totres = 0;
-                	  $ui = $USER->id;
-                	  $resp = $DB->get_records_sql($totgoodsql, $paramsql);
-                	  foreach($resp as $res) {
+               	    $totres = 0;
+                    $ui = $USER->id;
+                    $resp = $DB->get_records_sql($totgoodsql, $paramsql);
+                    foreach($resp as $res) {
                        $rv = $res->rankvalue;
                        $respondid = $res->response_id;
                        // Check to see the if its for the lead facilitator.
@@ -1599,12 +1603,13 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 // Write list of facilitators included in this report.
                 $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators:</h2>';
                 $htmlhead = $htmlhead . '<p style="font-size:8px;">';
+                $base = $htmlhead;
                 $is_first = true;
                 foreach ($tlist as $key => $value) {
-                	 if ($value == $USER->id) {
-                        $htmlhead = $htmlhead . fullname($value);
-                        break;               	 
-                	 } else {
+                   if ($value->id == $USER->id) {
+                        $htmlhead = $base . fullname($value);
+                        break;
+                  } else {
                         if (!!$is_first) {
                             $htmlhead = $htmlhead . fullname($value);
                             $is_first = false;
@@ -1713,11 +1718,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
             $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
             $choicecnt = 0;
+            $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
             foreach ($choices as $choice) {
                 $choiceid = $choice->id;
                 $choicecnt = $choicecnt + 1;
-                $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
-                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher, $qname);
+                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher, $qname);
                 if ($choice->id %2 == 0) {
                     $font = ' style="background-color:#ebebeb;font-size:8px;"';
                 } else {
@@ -1732,8 +1738,8 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             foreach ($choices as $choice) {
                 $choiceid = $choice->id;
                 $choicecnt = $choicecnt + 1;
-                $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
-                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $course = block_questionreport_get_question_results_rank($ctype, $qid, $choiceid, $surveyid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher, 'NPS');
+                $all = block_questionreport_get_question_results_rank($ctype, $qid, $choicecnt, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher, 'NPS');
                 if ($choice->id %2 == 0) {
                     $font = ' style="background-color:#ebebeb;font-size:8px;"';
                 } else {
