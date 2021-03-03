@@ -853,6 +853,7 @@ $partner, $portfolio, $teacher, $qname) {
                 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
             } else {
+             	 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
                 $sqlnpr = $sqlext .' '.$where1;
                 $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
@@ -895,6 +896,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
     global $DB, $USER, $COURSE;
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
+    if ($position == 0) {
+        $qname = 'facilitator_rate_content';    
+    } else {
+        $qname = 'facilitator_rate_community';    
+    }
     $partnersql = '';
     if ($partner > '') {
         $comparevalue = $DB->sql_compare_text($partner);
@@ -959,7 +965,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         } else {
-            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $surveyid, 'type_id' => 11));
+            $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
             $fromressql = " FROM {questionnaire_response_rank} mr ";
             $whereressql = "WHERE mr.question_id = ".$questionid ;
@@ -1009,7 +1015,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         // Get all the courses;
         $gtres = 0;
         $gttotres = 0;
-        $qname = 'all';
+  //      $qname = 'all';
         $coursefilter = '0';
         $filtertype = '0';
         if ($courseid <> '0') {
@@ -1130,17 +1136,13 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $valid = false;
                 }
             }
-            $qname = 'all';
+//            $qname = 'all';
             $sid = $survey->instance;
-            if (!$valid) {
-                $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
-            }
 
-            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
+            $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid));
             if (empty($questionid) or !$valid) {
                 $totres = 0;
             } else {
-                $qname = $DB->get_field('questionnaire_question', 'name', array('position' => $position, 'surveyid' => $sid, 'type_id' => 11));
                 $totresql  = "SELECT count(rankvalue) ";
                 if ($lf) {
                     $totresql  = "SELECT * ";

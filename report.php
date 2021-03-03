@@ -447,16 +447,21 @@ echo '<br><b>Selected Course : </b><i>'. $cname. '</i>';
 $data->facilitator = [];
 if ($ctype == 'M') {
     $params = array();
-    $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
-    $records = $DB->get_record_sql($sql, $params);
-    $stp = $records->mp;
+   // $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
+   // $records = $DB->get_record_sql($sql, $params);
+   // $stp = $records->mp;
     for ($x = 0; $x <= 1; $x++) {
-	     $pnum = $stp + $x;
+	   //   $pnum = $stp + $x;
          // Question
-         $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
+         if ($x == 0) {
+             $qname = 'facilitator_rate_content';         
+         } else {
+             $qname = 'facilitator_rate_community';         
+         }
+         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => $qname, 'surveyid' => $surveyid, 'type_id' => '11'));
          // Course
-         $course = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner,$portfolio, $teacher);
-         $all = block_questionreport_get_question_results($ctype, $pnum, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
+         $course = block_questionreport_get_question_results($ctype, $x, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner,$portfolio, $teacher);
+         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
          // Build object from data and assign it to the $data object passed to the template.
          $obj = new stdClass();
          $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
