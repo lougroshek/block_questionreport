@@ -626,6 +626,7 @@ $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
 $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
 $content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
 $content .= "<input type=\"hidden\" name=\"coursefilter\" value=\"$coursefilter\" />\n";
+$content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
 $content .= '</form>';
 

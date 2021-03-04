@@ -627,17 +627,16 @@ $partner, $portfolio, $teacher, $qname) {
                     }
                  }
               }
-              if (!$adminuser) {
+             if (!$adminuser) {
           	      $lf = true;
-          	      $teacher = $USER->id;
+          	      $teacher = $teacher;
               }
-            }  
+            }
             if ($valid and $teacher > "") {
-
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
-                $roles = get_user_roles($context, $USER->id, true);
+                 $roles = get_user_roles($context, $teacher, true);
                  foreach($roles as $rl) {
               	   $rlrole = $rl->roleid;
                    $sqlteacher = "SELECT u.id, u.firstname, u.lastname
@@ -655,6 +654,7 @@ $partner, $portfolio, $teacher, $qname) {
                    }
                 }
                 if (!$validteacher) {
+                	echo ' xxx not valid ';
                     $valid = false;
                 }
             }
@@ -1015,7 +1015,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         // Get all the courses;
         $gtres = 0;
         $gttotres = 0;
-  //      $qname = 'all';
         $coursefilter = '0';
         $filtertype = '0';
         if ($courseid <> '0') {
@@ -1098,7 +1097,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
         $context = context_course::instance($COURSE->id);
         $roles = get_user_roles($context, $USER->id, true);
-
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
@@ -1115,6 +1113,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
                 $validteacher = false;
+                $roles = get_user_roles($context, $teacher, true);
+                
                 foreach($roles as $rllist) { 
                      $rid = $rllist->roleid;    
                      $sqlteacher = "SELECT u.id, u.firstname, u.lastname
@@ -1125,7 +1125,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                      $paramteacher = array ('context' => $contextid);
                      $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                      $tlist = '';
-                     $validteacher = false;
                      foreach($teacherlist as $te) {
                       if ($te->id == $teacher) {
                           $validteacher = true;
@@ -1136,7 +1135,6 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $valid = false;
                 }
             }
-//            $qname = 'all';
             $sid = $survey->instance;
 
             $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $sid));
@@ -1164,8 +1162,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 if ($lf) {
-               	    $totres = 0;
-                    $ui = $USER->id;
+              	     $totres = 0;
+                    $ui = $teacherid;
                     $resp = $DB->get_records_sql($totgoodsql, $paramsql);
                     foreach($resp as $res) {
                        $rv = $res->rankvalue;
@@ -1687,12 +1685,12 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                     $font = ' style="font-size:8px;"';
                     $qcontent = "He/she/they effectively built a community of learners. ";
                 }
-                $pnum = $stp + $x;
+             //   $pnum = $stp + $x;
                 // Question
                 //               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
                 // Course
-                $cr = block_questionreport_get_question_results($ctype, $pnum, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, '0', '0');
-                $all = block_questionreport_get_question_results($ctype, $pnum, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
+                $cr = block_questionreport_get_question_results($ctype, $x, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, '0', '0');
+                $all = block_questionreport_get_question_results($ctype, $x, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
                 $html1 .= '<tr' .$font.'><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
             }
          } else {

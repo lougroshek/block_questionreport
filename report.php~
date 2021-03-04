@@ -453,7 +453,12 @@ if ($ctype == 'M') {
     for ($x = 0; $x <= 1; $x++) {
 	   //   $pnum = $stp + $x;
          // Question
-         $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
+         if ($x == 0) {
+             $qname = 'facilitator_rate_content';         
+         } else {
+             $qname = 'facilitator_rate_community';         
+         }
+         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => $qname, 'surveyid' => $surveyid, 'type_id' => '11'));
          // Course
          $course = block_questionreport_get_question_results($ctype, $x, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner,$portfolio, $teacher);
          $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
