@@ -1162,8 +1162,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 if ($lf) {
-              	     $totres = 0;
-                    $ui = $teacherid;
+              	    $totres = 0;
+                    $ui = $teacher;
                     $resp = $DB->get_records_sql($totgoodsql, $paramsql);
                     foreach($resp as $res) {
                        $rv = $res->rankvalue;

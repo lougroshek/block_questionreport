@@ -851,3 +851,14 @@ Error code: codingerror
 * line 1617 of /blocks/questionreport/locallib.php: call to default_error_handler()
 * line 58 of /blocks/questionreport/report.php: call to block_questionreport_get_essay_results()
 
+[05-Mar-2021 09:55:43 America/New_York] PHP Notice:  Undefined variable: teacherid in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1166
+[05-Mar-2021 09:56:15 America/New_York] PHP Notice:  Undefined variable: teacherid in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1166
+[05-Mar-2021 09:56:15 America/New_York] Default exception handler: Exception - TCPDF ERROR: Some data has already been output to browser, can't send PDF file Debug: 
+Error code: generalexceptionmessage
+* line 2950 of /lib/tcpdf/tcpdf.php: Exception thrown
+* line 7659 of /lib/tcpdf/tcpdf.php: call to TCPDF->Error()
+* line 190 of /lib/pdflib.php: call to TCPDF->Output()
+* line 1808 of /blocks/questionreport/locallib.php: call to pdf->Output()
+* line 58 of /blocks/questionreport/report.php: call to block_questionreport_get_essay_results()
+
+[05-Mar-2021 14:37:43 America/New_York] PHP Notice:  Undefined variable: teacherid in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1166
