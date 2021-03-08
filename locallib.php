@@ -563,10 +563,10 @@ $partner, $portfolio, $teacher, $qname) {
                           AND ti.tagid = ".$tagid . "
                           AND m.deletioninprogress = 0";
         if ($filtertype == 'M' and $coursefilter > '0') {
-            $sqlcourses = $sqlcourses ." AND m.course = ".$coursefilter;      
-        } 
+            $sqlcourses = $sqlcourses ." AND m.course = ".$coursefilter;
+        }
         if ($filtertype == 'A' ) {
-            $sqlcourses = $sqlcourses ." AND 2 = 4";      
+            $sqlcourses = $sqlcourses ." AND 2 = 4";
         }
         $surveys = $DB->get_records_sql($sqlcourses);
         foreach($surveys as $survey) {
@@ -602,16 +602,16 @@ $partner, $portfolio, $teacher, $qname) {
                     $context = context_course::instance($COURSE->id);
                     $roles = get_user_roles($context, $USER->id, true);
                     foreach ($adminarray as $val) {
-                   	    $sqladmin = "SELECT * FROM {role_assignments} 
+                   	    $sqladmin = "SELECT * FROM {role_assignments}
        	                             AS ra LEFT JOIN {user_enrolments}
-       	                             AS ue ON ra.userid = ue.userid 
-        	                            LEFT JOIN {role} AS r ON ra.roleid = r.id 
-        	                            LEFT JOIN {context} AS c ON c.id = ra.contextid 
-        	                            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+       	                             AS ue ON ra.userid = ue.userid
+        	                            LEFT JOIN {role} AS r ON ra.roleid = r.id
+        	                            LEFT JOIN {context} AS c ON c.id = ra.contextid
+        	                            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
         	                            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
                          $radmin = $DB->get_records_sql($sqladmin, array( ''));
                          if ( $radmin ) {
-                             $adminuser = true;	
+                             $adminuser = true;
                          }
                     }
                     // check the system roles.
@@ -637,6 +637,7 @@ $partner, $portfolio, $teacher, $qname) {
                 $context = context_course::instance($survey->course);
                 $contextid = $context->id;
                  $roles = get_user_roles($context, $teacher, true);
+                //  echo '$roles, ', $roles;
                  foreach($roles as $rl) {
               	   $rlrole = $rl->roleid;
                    $sqlteacher = "SELECT u.id, u.firstname, u.lastname
@@ -654,7 +655,6 @@ $partner, $portfolio, $teacher, $qname) {
                    }
                 }
                 if (!$validteacher) {
-                	echo ' xxx not valid ';
                     $valid = false;
                 }
             }
@@ -761,13 +761,13 @@ $partner, $portfolio, $teacher, $qname) {
             $whereext = $whereext . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
         }
         if ($filtertype == 'A' and $coursefilter > '0') {
-            $whereext = $whereext ." AND ts.courseid = ".$coursefilter;      
-        } 
+            $whereext = $whereext ." AND ts.courseid = ".$coursefilter;
+        }
         if ($filtertype == 'M' ) {
-             $whereext = $whereext ." AND 2 = 4";      
-        }   
+             $whereext = $whereext ." AND 2 = 4";
+        }
        // echo $sqlext;
-        
+
         $sqlext = $sqlext .' '.$whereext;
         $respext = $DB->get_record_sql($sqlext, $paramsext);
         $where1 = '';
@@ -839,14 +839,14 @@ $partner, $portfolio, $teacher, $qname) {
                 $where1 = $where1 . " AND (teacher1id = ".$teacher. " or teacher2id = ".$teacher ." )" ;
             }
             if ($filtertype == 'A' and $coursefilter > '0') {
-                $whereext = $whereext ." AND ts.courseid = ".$coursefilter;      
-                $where1 = $where1 ." AND ts.courseid = ".$coursefilter;       
-            } 
+                $whereext = $whereext ." AND ts.courseid = ".$coursefilter;
+                $where1 = $where1 ." AND ts.courseid = ".$coursefilter;
+            }
             if ($filtertype == 'M' ) {
                 $whereext = $whereext ." AND 2 = 4";
-                $where1 = $where1 ." AND 2 = 4";      
-            }                 
-   
+                $where1 = $where1 ." AND 2 = 4";
+            }
+
             $sqlext = $sqlext .' '.$whereext;
             $respext = $DB->get_record_sql($sqlext, $paramsext);
             if ($qname <> 'NPS') {
@@ -897,9 +897,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
     if ($position == 0) {
-        $qname = 'facilitator_rate_content';    
+        $qname = 'facilitator_rate_content';
     } else {
-        $qname = 'facilitator_rate_community';    
+        $qname = 'facilitator_rate_community';
     }
     $partnersql = '';
     if ($partner > '') {
@@ -1050,16 +1050,16 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $context = context_course::instance($COURSE->id);
                 $roles = get_user_roles($context, $USER->id, true);
                 foreach ($adminarray as $val) {
-                   	$sqladmin = "SELECT * FROM {role_assignments} 
+                   	$sqladmin = "SELECT * FROM {role_assignments}
        	                        AS ra LEFT JOIN {user_enrolments}
-       	                        AS ue ON ra.userid = ue.userid 
-        	                      LEFT JOIN {role} AS r ON ra.roleid = r.id 
-        	                      LEFT JOIN {context} AS c ON c.id = ra.contextid 
-        	                      LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+       	                        AS ue ON ra.userid = ue.userid
+        	                      LEFT JOIN {role} AS r ON ra.roleid = r.id
+        	                      LEFT JOIN {context} AS c ON c.id = ra.contextid
+        	                      LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
         	                      WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
                     $radmin = $DB->get_records_sql($sqladmin, array( ''));
                     if ( $radmin ) {
-                         $adminuser = true;	
+                         $adminuser = true;
                     }
                 }
                 // check the system roles.
@@ -1086,12 +1086,12 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                $cnt = 0;
                foreach($clist as $cl) {
                   if ($cnt == 0) {
-                      $cs = $cl->instanceid;               
+                      $cs = $cl->instanceid;
                   } else {
-                      $cs = $cs.','.$cl->instanceid;               
+                      $cs = $cs.','.$cl->instanceid;
                   }
-                  $cnt = $cnt + 1;          
-              }            
+                  $cnt = $cnt + 1;
+              }
               $sqlcourses = $sqlcourses ." AND m.course in ('".$cs."')";
            }
         }
@@ -1114,9 +1114,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $contextid = $context->id;
                 $validteacher = false;
                 $roles = get_user_roles($context, $teacher, true);
-                
-                foreach($roles as $rllist) { 
-                     $rid = $rllist->roleid;    
+
+                foreach($roles as $rllist) {
+                     $rid = $rllist->roleid;
                      $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                                     FROM {user} u
                                     JOIN {role_assignments} ra on ra.userid = u.id
@@ -1173,10 +1173,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                        $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
                                  'userid'=> $studentid));
                        if ($qi) {
-                          $totres = $totres + 1;                       
-                       }                                                
+                          $totres = $totres + 1;
+                       }
                 	  }
-                }  else {             
+                }  else {
                   $totres = $DB->count_records_sql($totgoodsql, $paramsql);
                 }
             }
@@ -1184,7 +1184,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $gtres = $gtres + $totres;
                 if ($lf) {
                     $totresql  = "SELECT * ";
-                } else {	
+                } else {
                     $totgoodsql  = "SELECT count(rankvalue) ";
                 }
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
@@ -1202,7 +1202,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $ndt = strtotime($nddate);
                     $paramsql['nddate'] = $ndt;
                 }
-                
+
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
                 if ($lf) {
                 	  $totgood = 0;
@@ -1216,11 +1216,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                        $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
                                  'userid'=> $studentid));
                        if ($qi) {
-                          $totgood = $totgood + 1;                       
-                       }                                                
+                          $totgood = $totgood + 1;
+                       }
                 	  }
 
-                } else {	
+                } else {
                    $totgood = $DB->count_records_sql($totsql, $paramsql);
                 }
                 if ($totgood > 0) {
@@ -1252,16 +1252,16 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
 
         if ($filtertype == 'A' and $coursefilter > '0') {
-            $whereext = $whereext .' AND ts.courseid ='.$coursefilter;         
+            $whereext = $whereext .' AND ts.courseid ='.$coursefilter;
         }
         if ($filtertype == 'M') {
-            $whereext = $whereext .' AND 2 = 3';        
+            $whereext = $whereext .' AND 2 = 3';
         }
 
         $sqlext = $sqlext .' '.$whereext;
 
         $respext = $DB->get_record_sql($sqlext, $paramsext);
-        
+
         $gtres = $gtres + $respext->cdtot;
         if ($respext->cdtot > 0) {
             if ($ctype == 'M') {
@@ -1345,7 +1345,7 @@ function block_questionreport_get_essay($ctype, $surveyid) {
         $essaylist[7] = 'Do you have additional comments about  this course?';
     }
     $essaylist[10] = 'All';
-    
+
     return $essaylist;
 }
 
@@ -1598,7 +1598,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                 $role = $DB->get_record('role', array('shortname' => 'leadfacilitator'));
                 $context = context_course::instance($courseid);
                // echo ' context '.$context;
-                
+
                 $tlist = get_role_users($role->id, $context);
                 // Write list of facilitators included in this report.
                 $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators:</h2>';
@@ -2043,16 +2043,16 @@ function block_questionreport_checklf() {
          $context = context_course::instance($COURSE->id);
          $roles = get_user_roles($context, $USER->id, true);
          foreach ($adminarray as $val) {
-       	    $sqladmin = "SELECT * FROM {role_assignments} 
+       	    $sqladmin = "SELECT * FROM {role_assignments}
                              AS ra LEFT JOIN {user_enrolments}
-                             AS ue ON ra.userid = ue.userid 
-                          LEFT JOIN {role} AS r ON ra.roleid = r.id 
-                          LEFT JOIN {context} AS c ON c.id = ra.contextid 
-                          LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id 
+                             AS ue ON ra.userid = ue.userid
+                          LEFT JOIN {role} AS r ON ra.roleid = r.id
+                          LEFT JOIN {context} AS c ON c.id = ra.contextid
+                          LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
                           WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
               $radmin = $DB->get_records_sql($sqladmin, array( ''));
               if ( $radmin ) {
-                   $adminuser = true;	
+                   $adminuser = true;
               }
          }
          // check the system roles.
@@ -2072,5 +2072,5 @@ function block_questionreport_checklf() {
          $lf = true;
      }
      return $lf;
-}  
+}
 

@@ -98,7 +98,7 @@ if (!!$is_admin) {
         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
  	       $result = $DB->get_records_sql($sql, array( ''));
  	       if ( $result ) {
- 	       	echo 'admin '.$val;
+// 	       	echo 'admin '.$val;
 //              $adminuser = true;	
         }
         
@@ -258,9 +258,9 @@ if ($ctype == "M") {
      if ($slf == 0) {
          $lf = block_questionreport_checklf();
          if ($lf) {
-             $teacher = $USER->id;         
+             $teacher = $USER->id;
          }
-     }    
+     }
      $surveys = $DB->get_records_sql($sqlcourses);
      foreach($surveys as $survey) {
 	      $valid = false;
@@ -277,7 +277,7 @@ if ($ctype == "M") {
                                          'fieldid' => $portfieldid));
             if ($courseport != $portfolio) {
                 $valid = false;                 
-            }	          
+            }
         }
         if ($valid and $teacher > "") {
             $validteacher = false;
@@ -568,7 +568,6 @@ if ($ctype == 'M') {
            array_push($data->session, $obj);
        }
     }
-    
 } else {
 	$endloop = 8;
 	if ($adminuser) {
