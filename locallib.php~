@@ -555,7 +555,7 @@ $partner, $portfolio, $teacher, $qname) {
         $gtres = 0;
         $gttotres = 0;
         $gtnpr = 0;
-        if ($portfolio > "") {
+        if ($portfolio > "" && $portfolio > 0) {
             $portfieldid = get_config($plugin, 'portfoliofield');
             $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
         }
@@ -589,7 +589,7 @@ $partner, $portfolio, $teacher, $qname) {
                     $valid = true;
                 }
             }
-            if ($valid && $portfolio > "") {
+            if ($valid && $portfolio > "" && $portfolio > '0')  {
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                 'fieldid' => $portfieldid));
                 if ($courseport != $portfolio) {

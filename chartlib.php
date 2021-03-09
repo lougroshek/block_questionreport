@@ -349,19 +349,20 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
        // Course context.
        $context = context_course::instance($courseid);
        $contextid = $context->id;
-       $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+       $sqlteacher = "SELECT ra.id, u.id userid, u.firstname, u.lastname
                        FROM {user} u
                        JOIN {role_assignments} ra on ra.userid = u.id
                         AND ra.contextid = :context
                         AND roleid in (".$roles.")";
        $paramteacher = array ('context' => $contextid);
        $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+       
        $tlist = '';
        foreach($teacherlist as $te) {
             $tlist = $tlist .$te->firstname .' - '. $te->lastname;
             // Check for the valid teacher .
             if ($teachercheck) {
-               if ($te->id == $teacher) {
+               if ($te->userid == $teacher) {
                    $validteacher = true;
                }
             }
@@ -707,7 +708,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $paramsql['nddate'] = $ndt;
      }
      if ($teacher > 1) {
-         $sql = $sql. " AND (teacherid1= :teacher1) OR (teacherid2= :teacher2)";
+         $sql = $sql. " AND (teacher1id= :teacher1) OR (teacher1id= :teacher2)";
          $paramsql['teacher1'] = $teacher;
          $paramsql['teacher2'] = $teacher;
      }

@@ -266,7 +266,6 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['courseid'] = $cid;
     }
     $sqladmin = $sqladmin. ' '.$orderby;
-    echo $sqladmin;
     
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
@@ -708,7 +707,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          $paramsql['nddate'] = $ndt;
      }
      if ($teacher > 1) {
-         $sql = $sql. " AND (teacherid1= :teacher1) OR (teacherid2= :teacher2)";
+         $sql = $sql. " AND (teacher1id= :teacher1) OR (teacher1id= :teacher2)";
          $paramsql['teacher1'] = $teacher;
          $paramsql['teacher2'] = $teacher;
      }

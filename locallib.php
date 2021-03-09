@@ -1612,7 +1612,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
 
                 $tlist = get_role_users($role->id, $context);
                 // Write list of facilitators included in this report.
-                $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators:</h2>';
+                $htmlhead = $htmlhead .'<h2 style="font-size:12px;">Facilitators</h2>';
                 $htmlhead = $htmlhead . '<p style="font-size:8px;">';
                 $base = $htmlhead;
                 $is_first = true;
