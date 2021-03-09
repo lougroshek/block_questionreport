@@ -128,7 +128,7 @@ if ($adminuser) {
 } else {
 	 $def = 0;
     echo "<input type=\"hidden\" name=\"portfolio\" value=\"$def\" />\n";
-    echo "<input type=\"hidden\" name=\"teacher\" value=\"$def\" />\n";
+    echo "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
 
 }
 // Date select.
@@ -262,6 +262,7 @@ if ($ctype == "M") {
          }
      }
      $surveys = $DB->get_records_sql($sqlcourses);
+     
      foreach($surveys as $survey) {
 	      $valid = false;
 	      if (is_siteadmin() ) {
@@ -272,7 +273,7 @@ if ($ctype == "M") {
                  $valid = true;
 	          }
 	     }
-	     if ($valid && $portfolio > "") {
+	     if ($valid && $portfolio > "" && $portfolio > '0') {
             $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course, 
                                          'fieldid' => $portfieldid));
             if ($courseport != $portfolio) {

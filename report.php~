@@ -98,7 +98,7 @@ if (!!$is_admin) {
         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;	 
  	       $result = $DB->get_records_sql($sql, array( ''));
  	       if ( $result ) {
- 	       	echo 'admin '.$val;
+// 	       	echo 'admin '.$val;
 //              $adminuser = true;	
         }
         
@@ -128,7 +128,7 @@ if ($adminuser) {
 } else {
 	 $def = 0;
     echo "<input type=\"hidden\" name=\"portfolio\" value=\"$def\" />\n";
-    echo "<input type=\"hidden\" name=\"teacher\" value=\"$def\" />\n";
+    echo "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
 
 }
 // Date select.
@@ -258,10 +258,12 @@ if ($ctype == "M") {
      if ($slf == 0) {
          $lf = block_questionreport_checklf();
          if ($lf) {
-             $teacher = $USER->id;         
+             $teacher = $USER->id;
          }
-     }    
+     }
      $surveys = $DB->get_records_sql($sqlcourses);
+     echo '<br> '.$sqlcourses;
+     
      foreach($surveys as $survey) {
 	      $valid = false;
 	      if (is_siteadmin() ) {
@@ -272,12 +274,12 @@ if ($ctype == "M") {
                  $valid = true;
 	          }
 	     }
-	     if ($valid && $portfolio > "") {
+	     if ($valid && $portfolio > "" && $portfolio > '0') {
             $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course, 
                                          'fieldid' => $portfieldid));
             if ($courseport != $portfolio) {
                 $valid = false;                 
-            }	          
+            }
         }
         if ($valid and $teacher > "") {
             $validteacher = false;
@@ -568,7 +570,6 @@ if ($ctype == 'M') {
            array_push($data->session, $obj);
        }
     }
-    
 } else {
 	$endloop = 8;
 	if ($adminuser) {
@@ -626,6 +627,7 @@ $content .= "<input type=\"hidden\" name=\"end_date\" value=\"$end_date\" />\n";
 $content .= "<input type=\"hidden\" name=\"question\" value=\"$questionid\" />\n";
 $content .= "<input type=\"hidden\" name=\"surveyid\" value=\"$surveyid\" />\n";
 $content .= "<input type=\"hidden\" name=\"coursefilter\" value=\"$coursefilter\" />\n";
+$content .= "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
 $content .= '<input class="btn btn-primary btn-submit" type="submit" value="'.get_string('pdfquestion', $plugin).'" />';
 $content .= '</form>';
 

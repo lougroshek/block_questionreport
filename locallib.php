@@ -287,12 +287,16 @@ function block_questionreport_get_choice_all($choicename) {
 
 function block_questionreport_get_courses() {
     global $DB, $USER;
+    $is_admin = block_questionreport_is_admin();
+
     $plugin = 'block_questionreport';
     $courselist = array();
     $courselist[0] = get_string('allcourses', $plugin);
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
+    $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
+
     $sqlcourse = "SELECT m.course, c.id, c.fullname
     FROM {course_modules} m
     JOIN {tag_instance} ti on ti.itemid = m.id
@@ -305,13 +309,16 @@ function block_questionreport_get_courses() {
     $coursenames = $DB->get_records_sql($sqlcourse);
     foreach ($coursenames as $coursecert) {
         $valid = false;
-        if (is_siteadmin() ) {
+        if ($is_admin) {
             $valid = true;
         } else {
             $context = context_course::instance($coursecert->id);
-            if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                $valid = true;
-            }
+            $roles = get_user_roles($context, $USER->id, true);
+            foreach ($roles as $val) { 
+               if ($val->roleid == $lfroleid) {
+                   $valid = true;               
+               }
+            }     
         }
         if ($valid) {
             $cid = "M-".$coursecert->id;
@@ -319,14 +326,16 @@ function block_questionreport_get_courses() {
             $courselist[$cid] = $cname;
         }
     }
-    // Get the non moodle courses;
-    $dbman = $DB->get_manager();
-    if ($dbman->table_exists('local_teaching_course')) {
-        $altcourses = $DB->get_records('local_teaching_course');
-        foreach($altcourses as $alt) {
-            $cid = "A-".$alt->id;
-            $cname = "A-".$alt->coursename;
-            $courselist[$cid] = $cname;
+    if ($is_admin) {
+        // Get the non moodle courses;
+        $dbman = $DB->get_manager();
+        if ($dbman->table_exists('local_teaching_course')) {
+            $altcourses = $DB->get_records('local_teaching_course');
+            foreach($altcourses as $alt) {
+               $cid = "A-".$alt->id;
+               $cname = "A-".$alt->coursename;
+               $courselist[$cid] = $cname;
+            }
         }
     }
     return $courselist;
@@ -546,7 +555,7 @@ $partner, $portfolio, $teacher, $qname) {
         $gtres = 0;
         $gttotres = 0;
         $gtnpr = 0;
-        if ($portfolio > "") {
+        if ($portfolio > "" && $portfolio > 0) {
             $portfieldid = get_config($plugin, 'portfoliofield');
             $portid = $DB->get_field('customfield_field', 'configdata', array('id' => $portfieldid));
         }
@@ -580,7 +589,7 @@ $partner, $portfolio, $teacher, $qname) {
                     $valid = true;
                 }
             }
-            if ($valid && $portfolio > "") {
+            if ($valid && $portfolio > "" && $portfolio > '0')  {
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                 'fieldid' => $portfieldid));
                 if ($courseport != $portfolio) {
@@ -627,7 +636,7 @@ $partner, $portfolio, $teacher, $qname) {
                     }
                  }
               }
-             if (!$adminuser) {
+              if (!$adminuser) {
           	      $lf = true;
           	      $teacher = $teacher;
               }
@@ -1101,7 +1110,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         foreach($surveys as $survey) {
             // Check to see if the user has rights.
             $valid = true;
-            if ($valid && $portfolio > "") {
+            if ($valid && $portfolio > "" && $portfolio > '0') {
                 $portfieldid = get_config($plugin, 'portfoliofield');
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                 'fieldid' => $portfieldid));
@@ -1126,10 +1135,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                      $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
                      $tlist = '';
                      foreach($teacherlist as $te) {
-                      if ($te->id == $teacher) {
-                          $validteacher = true;
-                      }
-                   }
+                        if ($te->id == $teacher) {
+                            $validteacher = true;
+                        }
+                     }
                 }
                 if (!$validteacher) {
                     $valid = false;
@@ -1162,24 +1171,26 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
                 if ($lf) {
-              	    $totres = 0;
+              	     $totres = 0;
                     $ui = $teacher;
                     $resp = $DB->get_records_sql($totgoodsql, $paramsql);
                     foreach($resp as $res) {
                        $rv = $res->rankvalue;
                        $respondid = $res->response_id;
                        // Check to see the if its for the lead facilitator.
+                       
                        $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
                        $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
                                  'userid'=> $studentid));
                        if ($qi) {
-                          $totres = $totres + 1;
+                           $totres = $totres + 1;
                        }
                 	  }
                 }  else {
                   $totres = $DB->count_records_sql($totgoodsql, $paramsql);
                 }
             }
+            
             if($totres > 0) {
                 $gtres = $gtres + $totres;
                 if ($lf) {
