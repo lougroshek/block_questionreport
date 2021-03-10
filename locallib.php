@@ -976,6 +976,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         } else {
             $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
+            if ($teacher > 0) {
+                $totresql = "SELECT * ";
+            }
             $fromressql = " FROM {questionnaire_response_rank} mr ";
             $whereressql = "WHERE mr.question_id = ".$questionid ;
             $paramsql = array();
@@ -992,9 +995,31 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $paramsql['nddate'] = $ndt;
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
-            $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+
+            if ($teacher > 0) {
+                $totres = 0;
+                $ui = $teacher;
+                $resp = $DB->get_records_sql($totgoodsql, $paramsql);
+                foreach($resp as $res) {
+                   $rv = $res->rankvalue;
+                   $respondid = $res->response_id;
+                   // Check to see the if its for the lead facilitator.
+                   $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
+                   $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
+                                 'userid'=> $studentid));
+                   if ($qi) {
+                        $totres = $totres + 1;
+                   }
+                }
+            }  else {
+                $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+            }
+
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
+                if ($teacher > 0) {
+                    $totgoodsql = "SELECT * ";
+                }
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
                 $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) ";
                 $paramsql = array();
@@ -1011,7 +1036,24 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $paramsql['nddate'] = $ndt;
                 }
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
-                $totgood = $DB->count_records_sql($totsql, $paramsql);
+                if ($teacher > 0) {
+                    $totgood = 0;
+                    $ui = $teacher;
+              	    $resp = $DB->get_records_sql($totsql, $paramsql);
+                    foreach($resp as $res) {
+                       $rv = $res->rankvalue;
+                       $respondid = $res->response_id;
+                       // Check to see the if its for the lead facilitator.
+                       $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
+                       $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
+                                 'userid'=> $studentid));
+                       if ($qi) {
+                          $totgood = $totgood + 1;
+                       }
+                   }
+                } else {
+                    $totgood = $DB->count_records_sql($totsql, $paramsql);
+                }
                 if ($totgood > 0) {
                     $percent = ($totgood / $totres) * 100;
                     $retval = round($percent, 0)."(%)";
@@ -1095,13 +1137,13 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                $cnt = 0;
                foreach($clist as $cl) {
                   if ($cnt == 0) {
-                      $cs = $cl->instanceid;
+                      $cs = "'".$cl->instanceid."'";
                   } else {
-                      $cs = $cs.','.$cl->instanceid;
+                      $cs = $cs.",'".$cl->instanceid."'";
                   }
                   $cnt = $cnt + 1;
               }
-              $sqlcourses = $sqlcourses ." AND m.course in ('".$cs."')";
+              $sqlcourses = $sqlcourses ." AND m.course in (".$cs.")";
            }
         }
         $context = context_course::instance($COURSE->id);
@@ -1151,7 +1193,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $totres = 0;
             } else {
                 $totresql  = "SELECT count(rankvalue) ";
-                if ($lf) {
+                if ($teacher > 0) {
                     $totresql  = "SELECT * ";
                 }
                 $fromressql = " FROM {questionnaire_response_rank} mr ";
@@ -1170,15 +1212,14 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $paramsql['nddate'] = $ndt;
                 }
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
-                if ($lf) {
-              	     $totres = 0;
+                if ($teacher > 0) {
+             	    $totres = 0;
                     $ui = $teacher;
                     $resp = $DB->get_records_sql($totgoodsql, $paramsql);
                     foreach($resp as $res) {
                        $rv = $res->rankvalue;
                        $respondid = $res->response_id;
                        // Check to see the if its for the lead facilitator.
-                       
                        $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
                        $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
                                  'userid'=> $studentid));
@@ -1190,11 +1231,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                   $totres = $DB->count_records_sql($totgoodsql, $paramsql);
                 }
             }
-            
+
             if($totres > 0) {
                 $gtres = $gtres + $totres;
                 if ($lf) {
-                    $totresql  = "SELECT * ";
+                    $totgoodsql  = "SELECT * ";
                 } else {
                     $totgoodsql  = "SELECT count(rankvalue) ";
                 }
@@ -1216,10 +1257,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
                 if ($lf) {
-                	  $totgood = 0;
-                	  $ui = $USER->id;
-                	  $resp = $DB->get_records_sql($totgoodsql, $paramsql);
-                	  foreach($resp as $res) {
+               	    $totgood = 0;
+                    $ui = $teacher;
+                    $resp = $DB->get_records_sql($totsql, $paramsql);
+                    foreach($resp as $res) {
                        $rv = $res->rankvalue;
                        $respondid = $res->response_id;
                        // Check to see the if its for the lead facilitator.
@@ -1229,8 +1270,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                        if ($qi) {
                           $totgood = $totgood + 1;
                        }
-                	  }
-
+                   }
                 } else {
                    $totgood = $DB->count_records_sql($totsql, $paramsql);
                 }
@@ -1239,6 +1279,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         }
+//xxxx
         // Add in the non moodle courses.
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
         FROM {local_teaching_survey} ts";

@@ -880,3 +880,46 @@ Error code: generalexceptionmessage
 
 [07-Mar-2021 08:04:56 America/New_York] PHP Notice:  Array to string conversion in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 640
 [07-Mar-2021 08:08:07 America/New_York] PHP Notice:  Array to string conversion in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 650
+[09-Mar-2021 19:53:33 America/New_York] PHP Notice:  Undefined property: stdClass::$rankvalue in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1002
+[09-Mar-2021 19:53:33 America/New_York] PHP Notice:  Undefined property: stdClass::$response_id in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1003
+[09-Mar-2021 19:53:33 America/New_York] PHP Notice:  Undefined property: stdClass::$rankvalue in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1002
+[09-Mar-2021 19:53:33 America/New_York] PHP Notice:  Undefined property: stdClass::$response_id in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1003
+[09-Mar-2021 19:56:02 America/New_York] PHP Notice:  Undefined property: stdClass::$rankvalue in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1002
+[09-Mar-2021 19:56:02 America/New_York] PHP Notice:  Undefined property: stdClass::$response_id in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1003
+[09-Mar-2021 19:56:02 America/New_York] PHP Notice:  Undefined property: stdClass::$rankvalue in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1002
+[09-Mar-2021 19:56:02 America/New_York] PHP Notice:  Undefined property: stdClass::$response_id in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1003
+[09-Mar-2021 20:04:53 America/New_York] Default exception handler: Error reading from database Debug: No tables used
+SELECT * 
+[array (
+)]
+Error code: dmlreadexception
+* line 486 of /lib/dml/moodle_database.php: dml_read_exception thrown
+* line 1273 of /lib/dml/mysqli_native_moodle_database.php: call to moodle_database->query_end()
+* line 1040 of /blocks/questionreport/locallib.php: call to mysqli_native_moodle_database->get_records_sql()
+* line 464 of /blocks/questionreport/report.php: call to block_questionreport_get_question_results()
+
+[09-Mar-2021 20:08:01 America/New_York] PHP Notice:  Undefined variable: totgood in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1049
+[09-Mar-2021 20:08:01 America/New_York] PHP Notice:  Undefined variable: teacherid in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1260
+[09-Mar-2021 20:08:01 America/New_York] PHP Notice:  Undefined variable: totgood in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1049
+[09-Mar-2021 20:08:01 America/New_York] PHP Notice:  Undefined variable: teacherid in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1260
+[09-Mar-2021 20:09:14 America/New_York] PHP Notice:  Undefined variable: totgood in /home/customer/www/teachinglab.org/public_html/moodletest/blocks/questionreport/locallib.php on line 1049
+[09-Mar-2021 20:23:56 America/New_York] Default exception handler: Error reading from database Debug: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'FROM mdl_questionnaire_response_rank mr  WHERE mr.question_id = 443 AND (rankval' at line 1
+SELECT *   FROM mdl_questionnaire_response_rank mr  WHERE mr.question_id = 443  FROM mdl_questionnaire_response_rank mr  WHERE mr.question_id = 443 AND (rankvalue = 4 or rankvalue = 5) 
+[array (
+)]
+Error code: dmlreadexception
+* line 486 of /lib/dml/moodle_database.php: dml_read_exception thrown
+* line 1273 of /lib/dml/mysqli_native_moodle_database.php: call to moodle_database->query_end()
+* line 1267 of /blocks/questionreport/locallib.php: call to mysqli_native_moodle_database->get_records_sql()
+* line 465 of /blocks/questionreport/report.php: call to block_questionreport_get_question_results()
+
+[09-Mar-2021 20:25:16 America/New_York] Default exception handler: Error reading from database Debug: No tables used
+SELECT * 
+[array (
+)]
+Error code: dmlreadexception
+* line 486 of /lib/dml/moodle_database.php: dml_read_exception thrown
+* line 1273 of /lib/dml/mysqli_native_moodle_database.php: call to moodle_database->query_end()
+* line 1267 of /blocks/questionreport/locallib.php: call to mysqli_native_moodle_database->get_records_sql()
+* line 465 of /blocks/questionreport/report.php: call to block_questionreport_get_question_results()
+
