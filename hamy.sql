@@ -90,6 +90,54 @@ LOCK TABLES `mdl_local_teaching_course` WRITE;
 INSERT INTO `mdl_local_teaching_course` VALUES (43,'Accelerating Learning in Math'),(44,'Guidebooks Unit Unpacking'),(45,'EL Bootcamp: Modules (K-8)'),(46,'Nebraska IM-PL Fellowship Virtual Series'),(47,'Guidebooks Diverse Learners Teacher Bootcamp'),(48,'Guidebooks Diverse Learners Cycle: Vocabulary'),(49,'EL Bootcamp: Skills (K-2)'),(50,'Guidebooks Diverse Learners Leader Bootcamp'),(51,'Guidebooks Diverse Learners Cycle: Fluency'),(52,'Guidebooks Diverse Learners: BootCamp: Writing'),(53,'Guidebooks High School Bootcamp'),(54,'EL Bootcamp: ALL Block (3-5)'),(55,'EL Inquiry Cycle 1: Speaking & Listening (K-8)'),(56,'EL School Leaders Module 1'),(57,'EL School Leaders Module 2'),(58,'EL School Leaders Module 3'),(59,'EL Skills Inquiry Cycle 1: Data Informed Instruction (K-2)'),(60,'ELA Curriculum Flexible Day 2'),(61,'ELA Curriculum Flexible: Day 3 Launch of Text Complexity Cycle'),(62,'ELA Curriculum Flexible: Day 4 Observing and Coaching Grounded in the IPG'),(63,'ELA Curriculum Flexible: Day 5 Close of Text Complexity Cycle'),(64,'ELA Curriculum Flexible: Day 5 Close of Text Complexity Cycle\"'),(65,'ELA Curriculum Flexible: Day 6 Launch of Evidence Based Writing Cycle'),(66,'EngageNY 6-12 Bootcamp'),(67,'EngageNY K-5 Inquiry Cycle I: Eliciting Student Thinking'),(68,'Guidebooks Abbreviated Bootcamp'),(69,'Guidebooks High School Cycle: CM4-5'),(70,'Guidebooks Steering Committee'),(71,'Illustrative Mathematics Bootcamp'),(72,'IM Inquiry Cycle I: Eliciting Student Thinking'),(73,'IM Inquiry Cycle III: Facilitating Math Discourse'),(74,'IM Lab Leaders Session 3'),(75,'IM School Leaders Module 3'),(76,'Math Curriculum Flexible Day 1'),(77,'Math Curriculum Flexible Day 2'),(78,'Math Curriculum Flexible: Day 3 Eliciting Student Thinking through Questioning Inquiry Cycle 1 Open'),(79,'Math Curriculum Flexible: Day 4 Observing and Coaching Grounded in the IPG'),(80,'Math Curriculum Flexible: Day 5 Eliciting Student Thinking through Questioning Inquiry Cycle 1 Close'),(81,'Math Curriculum Flexible: Day 6 Making Math Visible Inquiry Cycle 2 Open'),(82,'WI Statewide HQPL Fellowship Meeting 2'),(83,'WI Statewide HQPL Fellowship Meeting 4'),(84,'Zearn Summer Learning Recovery Series');
 /*!40000 ALTER TABLE `mdl_local_teaching_course` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `mdl_local_teaching_port`
+--
+
+DROP TABLE IF EXISTS `mdl_local_teaching_port`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mdl_local_teaching_port` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '	',
+  `portname` varchar(254) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mdl_local_teaching_port`
+--
+
+LOCK TABLES `mdl_local_teaching_port` WRITE;
+/*!40000 ALTER TABLE `mdl_local_teaching_port` DISABLE KEYS */;
+INSERT INTO `mdl_local_teaching_port` VALUES (19,'Math: IM'),(20,'ELA: Guidebooks'),(21,'ELA: EL'),(22,'State-level'),(23,'ELA: Flexible'),(24,'Math: Eureka/EngageNY'),(25,'Math: Flexible'),(26,'Math: Zearn');
+/*!40000 ALTER TABLE `mdl_local_teaching_port` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mdl_local_teaching_teacher`
+--
+
+DROP TABLE IF EXISTS `mdl_local_teaching_teacher`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `mdl_local_teaching_teacher` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `teachername` varchar(254) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mdl_local_teaching_teacher`
+--
+
+LOCK TABLES `mdl_local_teaching_teacher` WRITE;
+/*!40000 ALTER TABLE `mdl_local_teaching_teacher` DISABLE KEYS */;
+INSERT INTO `mdl_local_teaching_teacher` VALUES (39,'Evan Rushton'),(40,'Tiayana Marks'),(41,'Tamala Wiley'),(42,'Jalinda Soto'),(43,'Lauren Myer'),(44,'Mandi Van Dellen'),(45,'Kristen Briggs'),(46,'Justin Endicott'),(47,'Tara McDonald'),(48,'Adrienne Williams'),(49,'Mandy Flora'),(50,'Liza Zarifi'),(51,'Holli Fears'),(52,'Ryan Mateo Sharnbroich'),(53,'Spencer Russell'),(54,'Ryan Colon'),(55,'Andrea Fitzgerald'),(56,'Lindsay Romano'),(57,'Katie Endicott'),(58,'Anita Walls'),(59,'Christi Denning'),(60,'John Silverthorne'),(61,'Zoe Rind'),(62,'Brad Haggerty'),(63,'Lindsey Tomlinson'),(64,'Stacy Weldon'),(65,'Adrianne Sublett'),(66,'Cara Grom'),(67,'Vaishali Joshi'),(68,'Meredith Starks'),(69,'Erin Abraham'),(70,'Stephanie Carpenter'),(71,'Addie Kelley'),(72,'Sarah Tierney'),(73,'Rod Naquin'),(74,'Nicole Marshall'),(75,'Amy Youngblood'),(76,'LaToya Byrd');
+/*!40000 ALTER TABLE `mdl_local_teaching_teacher` ENABLE KEYS */;
+UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -100,4 +148,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-02-07 18:26:54
+-- Dump completed on 2021-03-11  0:42:32
