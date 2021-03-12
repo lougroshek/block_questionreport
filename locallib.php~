@@ -67,7 +67,29 @@ function block_questionreport_is_teacher() {
 
 function block_questionreport_is_admin() {
     global $USER;
-    return is_siteadmin($USER);
+    
+    $plugin = 'block_questionreport';
+    $adminvalue = get_config($plugin, 'adminroles');
+    $adminarray = explode(',',$adminvalue);
+
+    $adminuser = false;
+    if (is_siteadmin($USER)) {
+        $adminuser = true;    
+    }
+       // check the system roles.
+    if (!$adminuser) {
+        $systemcontext = context_system::instance();
+        $roles = get_user_roles($systemcontext, $USER->id, true);
+        foreach ($adminarray as $val) {
+            foreach ($roles as $rl) {
+                if ( $rl->roleid == $val ) {
+                    $adminuser = true;
+                }
+            }
+        }
+	 }	
+
+    return $adminuser;
 }
 
 function block_questionreport_get_evaluations() {
@@ -83,8 +105,6 @@ function block_questionreport_get_evaluations() {
     $is_admin = block_questionreport_is_admin();
     $is_teacher = block_questionreport_is_teacher();
     if (!$is_admin && !$is_teacher ) {
-    	echo 'no ';
-    	exit();
        return '';
        exit();    
     }
@@ -319,11 +339,11 @@ function block_questionreport_get_courses() {
         } else {
             $context = context_course::instance($coursecert->id);
             $roles = get_user_roles($context, $USER->id, true);
-            foreach ($roles as $val) { 
+            foreach ($roles as $val) {
                if ($val->roleid == $lfroleid) {
-                   $valid = true;               
+                   $valid = true;
                }
-            }     
+            }
         }
         if ($valid) {
             $cid = "M-".$coursecert->id;
@@ -1556,6 +1576,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
         return $return;
     } else {
         $doc = new pdf;
+        $doc->setPrintHeader(false);
         $doc->setPrintFooter(false);
         $doc->setFont('helvetica',' ', '4');
         $doc->SetFillColor(0,255,0);

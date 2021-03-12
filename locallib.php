@@ -67,7 +67,31 @@ function block_questionreport_is_teacher() {
 
 function block_questionreport_is_admin() {
     global $USER;
-    return is_siteadmin($USER);
+    
+    $plugin = 'block_questionreport';
+    $adminvalue = get_config($plugin, 'adminroles');
+    $adminarray = explode(',',$adminvalue);
+
+var_dump($adminarray);
+exit();
+    $adminuser = false;
+    if (is_siteadmin($USER)) {
+        $adminuser = true;    
+    }
+    // check the system roles.
+    if (!$adminuser) {
+        $systemcontext = context_system::instance();
+        $roles = get_user_roles($systemcontext, $USER->id, true);
+        foreach ($adminarray as $val) {
+            foreach ($roles as $rl) {
+                if ( $rl->roleid == $val ) {
+                    $adminuser = true;
+                }
+            }
+        }
+	 }	
+
+    return $adminuser;
 }
 
 function block_questionreport_get_evaluations() {
