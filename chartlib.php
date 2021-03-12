@@ -114,7 +114,9 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
     $allquest = "0";
     if ($questionid == 100) {
         $allquest = "1";
-    } 
+    }
+  //  echo 'all quest '.$allquest;
+  //  exit(); 
     $plugin = 'block_questionreport';
     $na = get_string('none', $plugin);
     $fieldid = get_config($plugin, 'partnerfield');
@@ -274,7 +276,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $display = false;
     }
     $maxdisplay = 10;
-    $allquest = 0;
+//    $allquest = 0;
     // Non Moodle courses
     if ($questionid == 100) {
         $allquest = "1";
@@ -548,7 +550,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    $r14 =  str_replace("&nbsp;", '', trim(strip_tags($r14)));
 
                    $nqname = 'facilitator_rate_content';
-                   $sqlnew = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                   $sqlnew = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
                            FROM {questionnaire_response_rank} mr 
                            JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
                            JOIN {questionnaire_response} qr on qr.id = mr.response_id 
@@ -562,7 +564,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    $r15 =  str_replace("&nbsp;", '', trim(strip_tags($r15)));
 
                    $nqname = 'facilitator_rate_community';
-                   $sqlnew = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                   $sqlnew = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
                            FROM {questionnaire_response_rank} mr 
                            JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
                            JOIN {questionnaire_response} qr on qr.id = mr.response_id 

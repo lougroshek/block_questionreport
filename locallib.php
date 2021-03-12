@@ -82,7 +82,10 @@ function block_questionreport_get_evaluations() {
     // Is the user a teacher or an admin?
     $is_admin = block_questionreport_is_admin();
     $is_teacher = block_questionreport_is_teacher();
-
+    if (!$is_admin && !$is_teacher ) {
+       return '';
+       exit();    
+    }
     // Add buttons object.
     $data->buttons = new stdClass();
     // Build reports button object.
