@@ -317,11 +317,11 @@ function block_questionreport_get_courses() {
         } else {
             $context = context_course::instance($coursecert->id);
             $roles = get_user_roles($context, $USER->id, true);
-            foreach ($roles as $val) { 
+            foreach ($roles as $val) {
                if ($val->roleid == $lfroleid) {
-                   $valid = true;               
+                   $valid = true;
                }
-            }     
+            }
         }
         if ($valid) {
             $cid = "M-".$coursecert->id;
@@ -1554,6 +1554,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
         return $return;
     } else {
         $doc = new pdf;
+        $doc->setPrintHeader(false);
         $doc->setPrintFooter(false);
         $doc->setFont('helvetica',' ', '4');
         $doc->SetFillColor(0,255,0);
