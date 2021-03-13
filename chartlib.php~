@@ -564,7 +564,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    $r15 =  str_replace("&nbsp;", '', trim(strip_tags($r15)));
 
                    $nqname = 'facilitator_rate_community';
-                   $sqlnew = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                   $sqlnew = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
                            FROM {questionnaire_response_rank} mr 
                            JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
                            JOIN {questionnaire_response} qr on qr.id = mr.response_id 

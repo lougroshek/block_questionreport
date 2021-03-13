@@ -62,6 +62,7 @@ function block_questionreport_get_teachers_list() {
            $teacherlist[$alt->id] = $alt->teachername;
         }
     }
+    asort($teacherlist);
     return $teacherlist;
 }
 

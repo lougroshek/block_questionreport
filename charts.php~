@@ -52,7 +52,7 @@ echo $OUTPUT->header();
 
 global $COURSE;
 $courselist = block_questionreport_get_courses();
-$surveylist = array("1" => "End of Course Survey");
+$surveylist = array("1" => "End of Course Survey", "2" => "Diagnostic Survey");
 $tagvalue = get_config($plugin, 'tag_value');
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
