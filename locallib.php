@@ -71,9 +71,6 @@ function block_questionreport_is_admin() {
     $plugin = 'block_questionreport';
     $adminvalue = get_config($plugin, 'adminroles');
     $adminarray = explode(',',$adminvalue);
-
-var_dump($adminarray);
-exit();
     $adminuser = false;
     if (is_siteadmin($USER)) {
         $adminuser = true;    
