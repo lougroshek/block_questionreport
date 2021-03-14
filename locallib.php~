@@ -71,9 +71,6 @@ function block_questionreport_is_admin() {
     $plugin = 'block_questionreport';
     $adminvalue = get_config($plugin, 'adminroles');
     $adminarray = explode(',',$adminvalue);
-
-var_dump($adminarray);
-exit();
     $adminuser = false;
     if (is_siteadmin($USER)) {
         $adminuser = true;    
@@ -459,7 +456,6 @@ $partner, $portfolio, $teacher, $qname) {
                 } else {
                     $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 }
-                //                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
@@ -948,6 +944,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $roles = get_config('block_questionreport', 'roles');
         $teacherroles = explode(',', $roles);
     }
+
     if ($surveyid > 0) {
         // Get the question id;
         if ($ctype <> 'M') {
@@ -1001,7 +998,23 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         } else {
-            $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
+           // see if the user is a lead facilitator
+           $lf = false;
+           $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
+           $context = context_course::instance($courseid);
+           $sqllf = "SELECT * FROM {role_assignments}
+                             AS ra LEFT JOIN {user_enrolments}
+                             AS ue ON ra.userid = ue.userid
+                          LEFT JOIN {role} AS r ON ra.roleid = r.id
+                          LEFT JOIN {context} AS c ON c.id = ra.contextid
+                          LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
+                          WHERE r.id= ".$lfroleid." AND ue.userid = ".$USER->id. " AND e.courseid = ".$courseid;
+            $lfuser = $DB->get_records_sql($sqllf, array( ''));
+        	   if ($lfuser) {
+                $lf = true;
+                $teacher = $USER->id;        	   
+        	   }
+        	   $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
             if ($teacher > 0) {
                 $totresql = "SELECT * ";
@@ -1026,22 +1039,36 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             if ($teacher > 0) {
                 $totres = 0;
                 $ui = $teacher;
-                $resp = $DB->get_records_sql($totgoodsql, $paramsql);
-                foreach($resp as $res) {
-                   $rv = $res->rankvalue;
-                   $respondid = $res->response_id;
+                $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and userid = ".$ui;
+                $resp = $DB->get_record_sql($respsql, array(''));
+                $totres = $resp->cntid;
+                 
+               // $resp = $DB->get_records_sql($totgoodsql, $paramsql);
+              //  echo '<br> totgoodsql '.$totgoodsql;
+              //  echo '<br> teacher '.$teacher;  
+              //  foreach($resp as $res) {
+                //   $rv = $res->rankvalue;
+//                   echo '<br> checking - teacher '.$teacher. ' question '.$questionid;
+                 //  $respondid = $res->response_id;
+                 //  $insid = $res->id;
                    // Check to see the if its for the lead facilitator.
-                   $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
-                   $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
-                                 'userid'=> $studentid));
-                   if ($qi) {
-                        $totres = $totres + 1;
-                   }
-                }
+//                   echo '<br> response id '.$respondid;
+                  // $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
+//                   echo '<br> student id '.$studentid .' id '.$insid;
+                  // $qi = $DB->get_field('questionnaire_quest_ins', 'staffid', array('id' => $insid));
+                   
+                  // $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
+ //                                'userid'=> $studentid));
+//                   echo '<br> id '.$qi . ' teacher '.$teacher. ' ins id '.$insid;              
+                  // if ($qi == $teacher) {
+//                   if ($qi) {
+                  //      $totres = $totres + 1;
+                  // }
+                //}
             }  else {
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
-
+echo '<br> tot res '.$totres;
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 if ($teacher > 0) {
