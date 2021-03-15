@@ -67,13 +67,13 @@ function block_questionreport_is_teacher() {
 
 function block_questionreport_is_admin() {
     global $USER;
-    
+
     $plugin = 'block_questionreport';
     $adminvalue = get_config($plugin, 'adminroles');
     $adminarray = explode(',',$adminvalue);
     $adminuser = false;
     if (is_siteadmin($USER)) {
-        $adminuser = true;    
+        $adminuser = true;
     }
     // check the system roles.
     if (!$adminuser) {
@@ -86,7 +86,7 @@ function block_questionreport_is_admin() {
                 }
             }
         }
-	 }	
+	 }
 
     return $adminuser;
 }
@@ -105,7 +105,7 @@ function block_questionreport_get_evaluations() {
     $is_teacher = block_questionreport_is_teacher();
     if (!$is_admin && !$is_teacher ) {
        return '';
-       exit();    
+       exit();
     }
     // Add buttons object.
     $data->buttons = new stdClass();
@@ -399,6 +399,10 @@ function block_questionreport_get_partners_list() {
     return $options;
 
 }
+
+/**
+ * Handles the session responses *only*
+ */
 function block_questionreport_get_question_results_rank($ctype, $questionid, $choiceid, $cid, $surveyid, $moduleid, $tagid, $stdate, $nddate,
 $partner, $portfolio, $teacher, $qname) {
     // Return the percentage of questions answered with a rank 4, 5;
@@ -411,6 +415,7 @@ $partner, $portfolio, $teacher, $qname) {
     // nddate end date for the surveys (0 if not used)
     // partner partner - blank if not used.
     global $DB, $USER, $COURSE;
+    // echo '$questionid = '.$questionid;
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
     $partnersql = '';
@@ -446,7 +451,9 @@ $partner, $portfolio, $teacher, $qname) {
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
             $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+            // echo '$totres ='.$totres;
             $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
+            // echo '$qname ='.$qname;
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
@@ -478,7 +485,8 @@ $partner, $portfolio, $teacher, $qname) {
                         $totnpr = $DB->count_records_sql($totnpr, $paramsql);
                         $percent2 = ($totnpr / $totres) * 100;
                         $percent = $percent - $percent2;
-                        $retval = round($percent, 0)."(%)";
+                        // $retval = round($percent, 0)."(%)";
+                        $retval = round($percent, 0) < 0 ? "0%" : round($percent, 0)."(%)";
                     } else {
                         $percent = ($totgood / $totres) * 100;
                         $retval = round($percent, 0)."(%)";
@@ -915,8 +923,11 @@ $partner, $portfolio, $teacher, $qname) {
     return $retval;
 
 }
-function block_questionreport_get_question_results($ctype, $position, $courseid, $surveyid, $moduleid, $tagid, $stdate,
-                                                   $nddate, $partner, $portfolio, $teacher) {
+
+/**
+ * Handles the facilitator questions *only*
+ */
+function block_questionreport_get_question_results($ctype, $position, $courseid, $surveyid, $moduleid, $tagid, $stdate,$nddate, $partner, $portfolio, $teacher) {
     // Return the percentage of questions answered with a rank 4, 5;
     // position is the question #
     // cid is the current course, if its 0 then its all courses;
@@ -945,8 +956,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $teacherroles = explode(',', $roles);
     }
 
+    // There's a survey ID, that means we are getting results for 1 survey.
     if ($surveyid > 0) {
         // Get the question id;
+        // If the course isn't a Moodle course...
         if ($ctype <> 'M') {
             $sqlext = "SELECT COUNT(ts.courseid) cdtot
             FROM {local_teaching_survey} ts";
@@ -998,7 +1011,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         } else {
+          // If the course *is* a Moodle course,
            // see if the user is a lead facilitator
+          //  echo "the course is a moodle course ".$retval;
            $lf = false;
            $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
            $context = context_course::instance($courseid);
@@ -1009,11 +1024,13 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                           LEFT JOIN {context} AS c ON c.id = ra.contextid
                           LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
                           WHERE r.id= ".$lfroleid." AND ue.userid = ".$USER->id. " AND e.courseid = ".$courseid;
-            $lfuser = $DB->get_records_sql($sqllf, array( ''));
+            $lfuser = $DB->get_records_sql($sqllf, array(''));
+            // echo '$lfuser'.print_r($lfuser);
         	   if ($lfuser) {
                 $lf = true;
-                $teacher = $USER->id;        	   
+                $teacher = $USER->id;
         	   }
+            //  echo '$teacher = '.$teacher;
         	   $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
             if ($teacher > 0) {
@@ -1035,17 +1052,23 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $paramsql['nddate'] = $ndt;
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
-
+            // echo 'end of is moodle course section: $retval = '.$retval;
             if ($teacher > 0) {
+              // echo 'end of is moodle course section: $retval = '.$retval;
+              // echo '$teacher > 0'.$teacher;
+              // echo '$questionid > 0'.$questionid;
                 $totres = 0;
                 $ui = $teacher;
-                $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and userid = ".$ui;
+                // $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and userid = ".$ui;
+                $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and staffid = ".$ui;
+                // echo '$respsql = '.$respsql;
                 $resp = $DB->get_record_sql($respsql, array(''));
+                // echo '$resp = '.print_r($resp);
                 $totres = $resp->cntid;
-                 
+
                // $resp = $DB->get_records_sql($totgoodsql, $paramsql);
               //  echo '<br> totgoodsql '.$totgoodsql;
-              //  echo '<br> teacher '.$teacher;  
+              //  echo '<br> teacher '.$teacher;
               //  foreach($resp as $res) {
                 //   $rv = $res->rankvalue;
 //                   echo '<br> checking - teacher '.$teacher. ' question '.$questionid;
@@ -1056,10 +1079,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                   // $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
 //                   echo '<br> student id '.$studentid .' id '.$insid;
                   // $qi = $DB->get_field('questionnaire_quest_ins', 'staffid', array('id' => $insid));
-                   
+
                   // $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
  //                                'userid'=> $studentid));
-//                   echo '<br> id '.$qi . ' teacher '.$teacher. ' ins id '.$insid;              
+//                   echo '<br> id '.$qi . ' teacher '.$teacher. ' ins id '.$insid;
                   // if ($qi == $teacher) {
 //                   if ($qi) {
                   //      $totres = $totres + 1;
@@ -1068,8 +1091,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             }  else {
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
-//echo '<br> tot res '.$totres;
+            // echo '<br> tot res '.$totres;
             if ($totres > 0) {
+              // echo 'end of is moodle course section: $retval = '.$retval;
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 if ($teacher > 0) {
                     $totgoodsql = "SELECT * ";
@@ -1090,6 +1114,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $paramsql['nddate'] = $ndt;
                 }
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+                // echo 'end of is moodle course section: $retval = '.$retval;
                 if ($teacher > 0) {
                     $totgood = 0;
                     $ui = $teacher;
@@ -1108,12 +1133,14 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 } else {
                     $totgood = $DB->count_records_sql($totsql, $paramsql);
                 }
+                // echo 'end of is moodle course section: $retval = '.$retval;
                 if ($totgood > 0) {
                     $percent = ($totgood / $totres) * 100;
                     $retval = round($percent, 0)."(%)";
                 } else {
                     $retval = "0(%)";
                 }
+                // echo 'end of is moodle course section: $retval = '.$retval;
             }
         }
     } else  {
