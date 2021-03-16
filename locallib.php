@@ -67,13 +67,12 @@ function block_questionreport_is_teacher() {
 
 function block_questionreport_is_admin() {
     global $USER;
-    
     $plugin = 'block_questionreport';
     $adminvalue = get_config($plugin, 'adminroles');
     $adminarray = explode(',',$adminvalue);
     $adminuser = false;
     if (is_siteadmin($USER)) {
-        $adminuser = true;    
+        $adminuser = true;
     }
     // check the system roles.
     if (!$adminuser) {
@@ -82,11 +81,11 @@ function block_questionreport_is_admin() {
         foreach ($adminarray as $val) {
             foreach ($roles as $rl) {
                 if ( $rl->roleid == $val ) {
-                    $adminuser = true;
+                     $adminuser = true;
                 }
             }
         }
-	 }	
+    }
 
     return $adminuser;
 }
@@ -105,7 +104,7 @@ function block_questionreport_get_evaluations() {
     $is_teacher = block_questionreport_is_teacher();
     if (!$is_admin && !$is_teacher ) {
        return '';
-       exit();    
+       exit();
     }
     // Add buttons object.
     $data->buttons = new stdClass();
@@ -127,13 +126,12 @@ function block_questionreport_get_evaluations() {
         $context = context_course::instance($COURSE->id);
         $roles = get_user_roles($context, $USER->id, true);
         foreach ($adminarray as $val) {
-            $sql = "SELECT * FROM {role_assignments}
-            AS ra LEFT JOIN {user_enrolments}
-            AS ue ON ra.userid = ue.userid
-            LEFT JOIN {role} AS r ON ra.roleid = r.id
-            LEFT JOIN {context} AS c ON c.id = ra.contextid
-            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
-            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
+            $sql = "SELECT * FROM {role_assignments} AS ra
+                      LEFT JOIN {user_enrolments} AS ue ON ra.userid = ue.userid
+                      LEFT JOIN {role} AS r ON ra.roleid = r.id
+                      LEFT JOIN {context} AS c ON c.id = ra.contextid
+                      LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
+                      WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
             $result = $DB->get_records_sql($sql, array( ''));
             if ( $result ) {
                 $adminuser = true;
@@ -202,9 +200,9 @@ function block_questionreport_get_evaluations() {
     if ($cnt == '-') {
         $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
         $totresql = "SELECT count(*) crnt
-        FROM {questionnaire_response_rank} mr
-        JOIN {questionnaire_response} qr on qr.id = mr.response_id
-        AND mr.question_id = ".$questionid;
+                     FROM {questionnaire_response_rank} mr
+                     JOIN {questionnaire_response} qr on qr.id = mr.response_id
+                     AND mr.question_id = ".$questionid;
         // $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));
         $totres = $DB->get_record_sql($totresql);
         if ($totres->crnt > 0) {
@@ -240,8 +238,6 @@ function block_questionreport_get_evaluations() {
         } else {
             $commq->stat = $cnt2;
         }
-        // echo '<p>$commq</p>';
-        // print_r($commq);
     }
     // Insert data into object if content responses exist.
     if (!!$has_responses_contentq) {
@@ -322,13 +318,13 @@ function block_questionreport_get_courses() {
     $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
 
     $sqlcourse = "SELECT m.course, c.id, c.fullname
-    FROM {course_modules} m
-    JOIN {tag_instance} ti on ti.itemid = m.id
-    JOIN {course} c on c.id = m.course
-    WHERE m.module = ".$moduleid. "
-    AND ti.tagid = ".$tagid . "
-    AND m.deletioninprogress = 0
-    AND c.visible = 1";
+                  FROM {course_modules} m
+                  JOIN {tag_instance} ti on ti.itemid = m.id
+                  JOIN {course} c on c.id = m.course
+                  WHERE m.module = ".$moduleid. "
+                  AND ti.tagid = ".$tagid . "
+                  AND m.deletioninprogress = 0
+                  AND c.visible = 1";
 
     $coursenames = $DB->get_records_sql($sqlcourse);
     foreach ($coursenames as $coursecert) {
@@ -456,7 +452,6 @@ $partner, $portfolio, $teacher, $qname) {
                 } else {
                     $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 }
-                //                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
@@ -945,6 +940,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $roles = get_config('block_questionreport', 'roles');
         $teacherroles = explode(',', $roles);
     }
+
     if ($surveyid > 0) {
         // Get the question id;
         if ($ctype <> 'M') {
@@ -998,6 +994,22 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         } else {
+           // see if the user is a lead facilitator
+           $lf = false;
+           $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
+           $context = context_course::instance($courseid);
+           $sqllf = "SELECT * FROM {role_assignments}
+                             AS ra LEFT JOIN {user_enrolments}
+                             AS ue ON ra.userid = ue.userid
+                          LEFT JOIN {role} AS r ON ra.roleid = r.id
+                          LEFT JOIN {context} AS c ON c.id = ra.contextid
+                          LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
+                          WHERE r.id= ".$lfroleid." AND ue.userid = ".$USER->id. " AND e.courseid = ".$courseid;
+            $lfuser = $DB->get_records_sql($sqllf, array( ''));
+            if ($lfuser) {
+                $lf = true;
+                $teacher = $USER->id;
+            }
             $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
             if ($teacher > 0) {
@@ -1023,22 +1035,12 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             if ($teacher > 0) {
                 $totres = 0;
                 $ui = $teacher;
-                $resp = $DB->get_records_sql($totgoodsql, $paramsql);
-                foreach($resp as $res) {
-                   $rv = $res->rankvalue;
-                   $respondid = $res->response_id;
-                   // Check to see the if its for the lead facilitator.
-                   $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
-                   $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
-                                 'userid'=> $studentid));
-                   if ($qi) {
-                        $totres = $totres + 1;
-                   }
-                }
+                $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and userid = ".$ui;
+                $resp = $DB->get_record_sql($respsql, array(''));
+                $totres = $resp->cntid;
             }  else {
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
-
             if ($totres > 0) {
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 if ($teacher > 0) {
@@ -1443,16 +1445,7 @@ function block_questionreport_get_chartquestions($surveyid) {
             $essaylist[$fid] = $display;
         }
     }
-    /*
-    $customfields = $DB->get_records('questionnaire_question', array('type_id' => '11', 'surveyid' => $surveyid));
-    foreach ($customfields as $field) {
-    $content = $field->content;
-    $display = strip_tags($content);
-    $display = trim($display);
-    $essaylist[$field->id] = $display;
-}
-*/
-return $essaylist;
+    return $essaylist;
 }
 function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $nddate, $limit, $surveyid, $action, $portfolio, $teacher, $courseid) {
     global $DB, $USER, $COURSE, $CFG;
@@ -1762,10 +1755,6 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
                     $font = ' style="font-size:8px;"';
                     $qcontent = "He/she/they effectively built a community of learners. ";
                 }
-             //   $pnum = $stp + $x;
-                // Question
-                //               $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => $pnum, 'surveyid' => $surveyid, 'type_id' => '11'));
-                // Course
                 $cr = block_questionreport_get_question_results($ctype, $x, $courseid, $surveyid, $moduleid, $tagid, $stdate, $nddate, $partner, '0', '0');
                 $all = block_questionreport_get_question_results($ctype, $x, $limit, 0, $moduleid, $tagid, $stdate, $nddate, $partner, $portfolio, $teacher);
                 $html1 .= '<tr' .$font.'><td>'.$qcontent.'</td><td align="center" valign="middle">'.$cr.'</td><td align="center" valign="middle">'.$all.'</td></tr>';
