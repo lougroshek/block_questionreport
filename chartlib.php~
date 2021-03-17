@@ -62,7 +62,27 @@ function block_questionreport_get_teachers_list() {
            $teacherlist[$alt->id] = $alt->teachername;
         }
     }
-    return $teacherlist;
+    // flip the last name / first name then sort.
+    $newlist = array();
+    foreach($teacherlist as $key=>$value) {
+       $name = explode(' ', $value);
+       var_dump($name);
+       exit();
+       $newname = $name[1]. ' '.$name[0];
+       $newlist[$key] = $newname;
+           
+    }
+    asort($newlist);
+    // flip them back to display properly.
+    
+    $sortlist = array();
+    foreach($newlist as $key=>$value) {
+       $name = explode(' ', $value);
+       $newname = $name[1]. ' '.$name[0];
+       $sortlist[$key] = $newname;    
+    }
+   
+    return $sortlist;
 }
 
 function block_questionreport_get_allessay() {

@@ -88,6 +88,8 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
+    	   $lval = strlen($val);
+    	   if ($lval > 0 ) {
     	 	$sql = "SELECT * FROM {role_assignments}
        	            AS ra LEFT JOIN {user_enrolments}
         	            AS ue ON ra.userid = ue.userid
@@ -109,7 +111,7 @@ if (!!$is_admin) {
             }
         }
   }
-
+}
 }
 if ($adminuser) {
     $portfoliolist = block_questionreport_get_portfolio_list();
@@ -490,7 +492,9 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
-      	$sql = "SELECT * FROM {role_assignments}
+    	   $lval = strlen($val);
+    	   if ($lval > 0) {
+    	        	$sql = "SELECT * FROM {role_assignments}
        	            AS ra LEFT JOIN {user_enrolments}
        	            AS ue ON ra.userid = ue.userid
         	            LEFT JOIN {role} AS r ON ra.roleid = r.id
@@ -502,6 +506,7 @@ if (!!$is_admin) {
               $adminuser = true;
          }
       }
+   }
       // check the system roles.
       if (!$adminuser) {
           $systemcontext = context_system::instance();

@@ -19,6 +19,7 @@
 -- Table structure for table `mdl_local_teaching_survey`
 --
 
+use m39;
 DROP TABLE IF EXISTS `mdl_local_teaching_survey`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
