@@ -63,11 +63,10 @@ $string['surveyresp'] = 'Number of survey responses';
 $string['reports'] = 'Access Survey Reports';
 $string['adminreports'] = 'Access Admin Reports';
 $string['charts'] = 'Access Charts';
-$string['nocoursevals'] = '<p>
-No course evaluations have been completed for this course.
+$string['nocoursevals'] = '<p>There are no survey questions related to your facilitation in this course available at this time. Either no course evaluations have been completed for this course, your you were not enrolled in a lead facilitator role when they were completed.
 </p>
 <p>
-To access results from previously courses, select <strong>Access Data</strong>.
+To access results from previously courses, select <strong>Access Survey Reports</strong>.
 </p>';
 $string['reportheader'] = 'Questionnaire Report Data';
 $string['chartsheader'] = 'Survey Reports Block Charts';
@@ -83,6 +82,9 @@ $string['tagvalue_desc_diagnostic'] = 'Questionnaires must have this value in th
 $string['getthesurveys'] = 'Get the survey results';
 $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
+$string['table_header_facilitator_info'] = 'For these two questions, participants rank lead facilitators separately. When viewing as a lead facilitator, the "This Course" column displays your individual scores. When viewing with administrative access, the "This Course" column displays an average for all lead facilitators in the course.';
+$string['table_header_session_info'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators.';
+$string['word_cloud_info'] = 'The word cloud and text response list are composed of questions in which all lead facilitators are evaluated together.';
 
 // Initial view.
 $string['contentq_desc'] = 'He/She/They facilitated the content clearly.';

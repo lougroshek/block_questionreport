@@ -104,9 +104,9 @@ class block_questionreport extends block_base {
 
         // Get context.
         $this->content->text = block_questionreport_get_evaluations();
-        
-        return $this->content; 
-        
+
+        return $this->content;
+
     }
 
     /**

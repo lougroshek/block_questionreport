@@ -1,51 +1,51 @@
 .block_questionreport .teachers ul,
 .block_questionreport .teachers li {
-    list-style: none;
-    margin-left: 0;
-    padding-left: 0;
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
 }
 
 .block_questionreport .teachers li {
-    margin-bottom: 15px;
-    display: table;
-    width: 100%;
+  margin-bottom: 15px;
+  display: table;
+  width: 100%;
 }
 
 .block_questionreport .teachers .details {
-    display: table-cell;
-    line-height: 1;
-    vertical-align: top;
+  display: table-cell;
+  line-height: 1;
+  vertical-align: top;
 }
 
 .block_questionreport .teachers .image {
-    width: 45px;
-    display: table-cell;
-    vertical-align: top;
+  width: 45px;
+  display: table-cell;
+  vertical-align: top;
 }
 
 .block_questionreport .teachers .icons {
-    min-height: 22px;
-    padding-top: 3px;
+  min-height: 22px;
+  padding-top: 3px;
 }
 
 .block_questionreport .teachers .icons img,
 .block_questionreport .participants img {
-    margin-right: 10px;
+  margin-right: 10px;
 }
 
 .block_questionreport .content .teachers h3,
 .block_questionreport .content .participants h3 {
-    font-size: 1.143rem;
-    font-weight: bold;
+  font-size: 1.143rem;
+  font-weight: bold;
 }
 
 .block_questionreport .content .teachers .userpicture {
-    height: inherit;
-    width: inherit;
+  height: inherit;
+  width: inherit;
 }
 
 .block_questionreport .participants .hint {
-    font-size: 90%;
+  font-size: 90%;
 }
 
 /* For the initial view */
@@ -70,8 +70,8 @@
 .view-initial .response-comm .desc,
 .view-initial .response-content .stat,
 .view-initial .response-comm .stat {
-    display: block;
-    width: 100%;
+  display: block;
+  width: 100%;
 }
 
 .view-initial .response-content .desc,
@@ -95,7 +95,6 @@
   vertical-align: text-top;
 }
 
-  
 .view-initial a.btn {
   display: block;
   max-width: 70%;
@@ -106,12 +105,10 @@
   margin-top: 1rem;
 }
 
-
 /* End initial view */
 
 /* Custom quotes */
 .custom-quotes {
-  
 }
 
 .custom-quotes .quote {
@@ -121,7 +118,7 @@
 }
 
 .custom-quotes .text {
-  margin-left: 58px;  
+  margin-left: 58px;
   margin-bottom: 1rem;
   font-style: italic;
 }
@@ -130,17 +127,15 @@
   position: absolute;
   top: -36px;
   left: 12px;
-  content: '“';
+  content: "“";
   color: gray;
   font-size: 96px;
 }
 
-
 /* End custom quotes */
 
-
 /* Report tables */
-td.center, 
+td.center,
 th.center {
   text-align: center;
 }
@@ -176,7 +171,6 @@ table.table-adminreport tr th {
 }
 /* End report tables */
 
-
 .path-blocks-questionreport h2 {
   margin: 1rem 0;
 }
@@ -196,4 +190,9 @@ table.table-adminreport tr th {
   /* Fixup for scroll inside scroll issue */
   height: 100%;
   overflow-y: hidden;
+}
+
+/* Admin page */
+#page-admin-setting-blocksettingquestionreport form ul li label {
+  display: inline-block;
 }
