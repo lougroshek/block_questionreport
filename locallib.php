@@ -925,7 +925,7 @@ $partner, $portfolio, $teacher, $qname) {
 }
 
 /**
- * Handles the facilitator questions *only*
+ * Handles the facilitator questions *only*. What the fuck is this useless function name?
  */
 function block_questionreport_get_question_results($ctype, $position, $courseid, $surveyid, $moduleid, $tagid, $stdate,$nddate, $partner, $portfolio, $teacher) {
     // Return the percentage of questions answered with a rank 4, 5;
@@ -951,6 +951,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $comparevalue = $comparevalue + 1;
         $partnersql = 'JOIN {customfield_data} cd ON cd.instanceid = m.course AND cd.fieldid = '.$partnerid .' AND cd.value = '.$comparevalue;
     }
+    // $teacherroles;
     if ($teacher > "") {
         $roles = get_config('block_questionreport', 'roles');
         $teacherroles = explode(',', $roles);
@@ -1014,24 +1015,38 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
           // If the course *is* a Moodle course,
            // see if the user is a lead facilitator
           //  echo "the course is a moodle course ".$retval;
-           $lf = false;
-           $lfroleid = $DB->get_field('role','id', array('shortname' => 'leadfacilitator'));
-           $context = context_course::instance($courseid);
-           $sqllf = "SELECT * FROM {role_assignments}
-                             AS ra LEFT JOIN {user_enrolments}
-                             AS ue ON ra.userid = ue.userid
-                          LEFT JOIN {role} AS r ON ra.roleid = r.id
-                          LEFT JOIN {context} AS c ON c.id = ra.contextid
-                          LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
-                          WHERE r.id= ".$lfroleid." AND ue.userid = ".$USER->id. " AND e.courseid = ".$courseid;
-            $lfuser = $DB->get_records_sql($sqllf, array(''));
-            // echo '$lfuser'.print_r($lfuser);
-        	   if ($lfuser) {
-                $lf = true;
-                $teacher = $USER->id;
-        	   }
-            //  echo '$teacher = '.$teacher;
-        	   $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
+          $lf = false;
+           // TODO: We should be checking if the user has *any* of the role assignments
+           // in the `roles` setting for the block.
+          $course_context = context_course::instance($courseid); // get_context_instance(CONTEXT_COURSE, $courseid, true);
+          // echo '$course_context ='. print_r($course_context) . $course_context->id. '<br />';
+          $course_roles = get_user_roles($course_context, $USER->id, true);
+          $system_context = context_system::instance();// get_context_instance(CONTEXT_SYSTEM);
+          $system_roles = get_user_roles($system_context, $USER->id, true);
+          $lf_roles = get_config('block_questionreport', 'roles');
+          // echo '$course_roles ='. print_r($course_roles) . '<br />';
+          // echo '$system_roles ='. print_r($system_roles) . '<br />';
+          // echo '$lf_roles ='. $lf_roles . '<br />';
+          $user_roles = $result = array_merge($course_roles, $system_roles);
+          // echo '$user_roles ='. print_r($user_roles) . '<br />';
+          // echo '$teacherroles ='. print_r($teacherroles) . '<br />';
+          $lfuser = false;
+          foreach ($user_roles as $role) {
+            foreach ($teacherroles as $teacherrole) {
+              if ($role->roleid == $teacherrole) {
+                $lfuser = true;
+              }
+            }
+          }
+          // echo '$lfuser = '. $lfuser . '<br />';
+          if (!!$lfuser) {
+          //  echo 'lfuser is true';
+            $lf = true;
+            $teacher = $USER->id;
+          }
+          //  echo '$teacher = '.$teacher;
+            // echo '$surveyid = '. $surveyid . '<br />';
+        	  $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => $qname, 'surveyid' => $surveyid));
             $totresql  = "SELECT count(rankvalue) ";
             if ($teacher > 0) {
                 $totresql = "SELECT * ";
@@ -1052,42 +1067,46 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $paramsql['nddate'] = $ndt;
             }
             $totgoodsql = $totresql .' '.$fromressql. ' '.$whereressql;
+            // echo '$totgoodsql = '.$totgoodsql.'<br/>';
             // echo 'end of is moodle course section: $retval = '.$retval;
+            // If a lead fac, update total responses in a different way.
+            $choiceids = Array();
             if ($teacher > 0) {
               // echo 'end of is moodle course section: $retval = '.$retval;
-              // echo '$teacher > 0'.$teacher;
-              // echo '$questionid > 0'.$questionid;
+              // echo '$teacher > 0'.$teacher.'<br/>';
+              // echo '$questionid > 0'.$questionid.'<br/>';
                 $totres = 0;
                 $ui = $teacher;
                 // $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and userid = ".$ui;
                 $respsql = "SELECT count(id) cntid from {questionnaire_quest_ins} where question_id =".$questionid ." and staffid = ".$ui;
-                // echo '$respsql = '.$respsql;
+                // echo '$respsql = '.print_r($respsql).'<br/>';
                 $resp = $DB->get_record_sql($respsql, array(''));
-                // echo '$resp = '.print_r($resp);
+                // echo '$resp = '.print_r($resp).'<br/>';
                 $totres = $resp->cntid;
+                // echo '$totres = '.$totres.'<br/>';
 
-               // $resp = $DB->get_records_sql($totgoodsql, $paramsql);
-              //  echo '<br> totgoodsql '.$totgoodsql;
-              //  echo '<br> teacher '.$teacher;
-              //  foreach($resp as $res) {
-                //   $rv = $res->rankvalue;
-//                   echo '<br> checking - teacher '.$teacher. ' question '.$questionid;
-                 //  $respondid = $res->response_id;
-                 //  $insid = $res->id;
-                   // Check to see the if its for the lead facilitator.
-//                   echo '<br> response id '.$respondid;
-                  // $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
-//                   echo '<br> student id '.$studentid .' id '.$insid;
-                  // $qi = $DB->get_field('questionnaire_quest_ins', 'staffid', array('id' => $insid));
+                $student_roles = "5, 9";
 
-                  // $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
- //                                'userid'=> $studentid));
-//                   echo '<br> id '.$qi . ' teacher '.$teacher. ' ins id '.$insid;
-                  // if ($qi == $teacher) {
-//                   if ($qi) {
-                  //      $totres = $totres + 1;
-                  // }
-                //}
+                $studentids = $DB->get_records_sql("SELECT u.id
+                              FROM mdl_user u, mdl_role_assignments r
+                              WHERE u.id=r.userid
+                              AND r.contextid = {$course_context->id}
+                              AND r.roleid IN ({$student_roles})",array(''));
+                // echo '$studentids = '.print_r($studentids).'<br/>';
+
+                $studentids_str = implode(",", array_keys($studentids));
+                // echo '$studentids_str = '.$studentids_str.'<br/>';
+
+                $choiceids = $DB->get_records_sql("SELECT id
+                                                      FROM mdl_questionnaire_quest_ins
+                                                      WHERE question_id = {$questionid}
+                                                      AND userid IN ({$studentids_str})
+                                                      AND staffid = {$teacher}
+                                                      ",array(''));
+
+                // echo '$choiceids = '.print_r($choiceids).'<br/>';
+
+                $totres = count($choiceids);
             }  else {
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
@@ -1099,7 +1118,13 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $totgoodsql = "SELECT * ";
                 }
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
-                $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) ";
+                if ($teacher > 0) {
+                  // echo('$teacher > 0');
+                  $choiceid_str = implode(",", array_keys($choiceids));
+                  $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) AND mr.choice_id IN ({$choiceid_str})";
+                } else {
+                  $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND (rankvalue = 4 or rankvalue = 5) ";
+                }
                 $paramsql = array();
                 if ($stdate > 0) {
                     $fromgoodsql = $fromgoodsql .' JOIN {questionnaire_response} qr on qr.id = mr.response_id';
@@ -1116,20 +1141,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
                 // echo 'end of is moodle course section: $retval = '.$retval;
                 if ($teacher > 0) {
-                    $totgood = 0;
-                    $ui = $teacher;
-              	    $resp = $DB->get_records_sql($totsql, $paramsql);
-                    foreach($resp as $res) {
-                       $rv = $res->rankvalue;
-                       $respondid = $res->response_id;
-                       // Check to see the if its for the lead facilitator.
-                       $studentid = $DB->get_field('questionnaire_response', 'userid', array('id' => $respondid));
-                       $qi = $DB->get_field('questionnaire_quest_ins', 'id', array('question_id' => $questionid, 'staffid' => $ui,
-                                 'userid'=> $studentid));
-                       if ($qi) {
-                          $totgood = $totgood + 1;
-                       }
-                   }
+                  // echo('getting records count for lf: '. $totsql);
+                  $totgoodrecords = $DB->get_records_sql($totsql, $paramsql);
+                  // echo '$totgoodrecords = '.print_r($totgoodrecords).'<br/>';
+                  $totgood = count($totgoodrecords);// $DB->count_records_sql($totsql, $paramsql);
+                  // echo '$totgood = '.$totgood.'<br/>';
                 } else {
                     $totgood = $DB->count_records_sql($totsql, $paramsql);
                 }
