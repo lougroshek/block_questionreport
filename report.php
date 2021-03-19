@@ -78,20 +78,18 @@ echo html_writer::label(get_string('partnerfilter', $plugin), false, array('clas
 echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 // See if they are an admin.
 $adminvalue = get_config($plugin, 'adminroles');
-// Array of roles that can be a local admin.
 $adminarray = explode(',',$adminvalue);
 // check to see if they are an admin.
 $adminuser = false;
 $is_admin = block_questionreport_is_admin();
-// echo '$is_admin = '.$is_admin;
 if (!!$is_admin) {
     $adminuser = true;
 } else {
-  // Checking course roles? Why isn't this fucking done in the overall function?
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
-
+    	   $lval = strlen($val);
+    	   if ($lval > 0 ) {
     	 	$sql = "SELECT * FROM {role_assignments}
        	            AS ra LEFT JOIN {user_enrolments}
         	            AS ue ON ra.userid = ue.userid
@@ -100,11 +98,6 @@ if (!!$is_admin) {
         	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
  	       $result = $DB->get_records_sql($sql, array( ''));
- 	       if ( $result ) {
-// 	       	echo 'admin '.$val;
-//              $adminuser = true;
-        }
-
    }
    // check the system roles.
    if (!$adminuser) {
@@ -113,12 +106,12 @@ if (!!$is_admin) {
         foreach ($adminarray as $val) {
             foreach ($roles as $rl) {
                 if ( $rl->roleid == $val ) {
-                    $adminuser = true;
+                     $adminuser = true;
                 }
             }
         }
-	 }
-
+  }
+}
 }
 if ($adminuser) {
     $portfoliolist = block_questionreport_get_portfolio_list();
@@ -265,7 +258,6 @@ if ($ctype == "M") {
          }
      }
      $surveys = $DB->get_records_sql($sqlcourses);
-
      foreach($surveys as $survey) {
 	      $valid = false;
 	      if (is_siteadmin() ) {
@@ -287,26 +279,25 @@ if ($ctype == "M") {
             $validteacher = false;
             $context = context_course::instance($survey->course);
             $contextid = $context->id;
-                 $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+            $sqlteacher = "SELECT u.id, u.firstname, u.lastname
                                  FROM {user} u
                                  JOIN {role_assignments} ra on ra.userid = u.id
                                  AND   ra.contextid = :context
                                  AND roleid in ('".$roles."')";
-                 $paramteacher = array ('context' => $contextid);
-                 $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
-                 $tlist = '';
-                 foreach($teacherlist as $te) {
-                    if ($te->id == $teacher) {
-                        $validteacher = true;
-                    }
+            $paramteacher = array ('context' => $contextid);
+            $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+            $tlist = '';
+            foreach($teacherlist as $te) {
+                if ($te->id == $teacher) {
+                    $validteacher = true;
                 }
-
-            if (!$validteacher) {
-                 $valid = false;
             }
-        }
+           if (!$validteacher) {
+                $valid = false;
+           }
+       }
 
-	     if ($valid) {
+      if ($valid) {
             $sid = $survey->instance;
             $paramstot['questionnaireid'] = $sid;
             $sqlquestion = $sqltot . $fromtot . $wheretot;
@@ -451,9 +442,6 @@ echo '<br><b>Selected Course : </b><i>'. $cname. '</i>';
 $data->facilitator = [];
 if ($ctype == 'M') {
     $params = array();
-   // $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
-   // $records = $DB->get_record_sql($sql, $params);
-   // $stp = $records->mp;
     for ($x = 0; $x <= 1; $x++) {
 	   //   $pnum = $stp + $x;
          // Question
@@ -504,7 +492,9 @@ if (!!$is_admin) {
     $context = context_course::instance($COURSE->id);
     $roles = get_user_roles($context, $USER->id, true);
     foreach ($adminarray as $val) {
-      	$sql = "SELECT * FROM {role_assignments}
+    	   $lval = strlen($val);
+    	   if ($lval > 0) {
+    	        	$sql = "SELECT * FROM {role_assignments}
        	            AS ra LEFT JOIN {user_enrolments}
        	            AS ue ON ra.userid = ue.userid
         	            LEFT JOIN {role} AS r ON ra.roleid = r.id
@@ -513,9 +503,10 @@ if (!!$is_admin) {
         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
          $result = $DB->get_records_sql($sql, array( ''));
          if ( $result ) {
-               $adminuser = true;
+              $adminuser = true;
          }
       }
+   }
       // check the system roles.
       if (!$adminuser) {
           $systemcontext = context_system::instance();
@@ -535,10 +526,8 @@ if ($ctype == 'M') {
     $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $qcontent = $DB->get_field('questionnaire_question', 'content', array('position' => '1', 'surveyid' => $surveyid, 'type_id' => '8'));
     $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $qid));
-
     $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
     $choicecnt = 0;
-
     foreach ($choices as $choice) {
         $obj = new stdClass;
         $obj->question = $choice->content;
@@ -573,10 +562,10 @@ if ($ctype == 'M') {
        }
     }
 } else {
-	$endloop = 8;
-	if ($adminuser) {
+   $endloop = 8;
+   if ($adminuser) {
        $endloop = 9;
-	}
+   }
    for ($x=1; $x< $endloop; $x++) {
         $obj = new stdClass;
         switch ($x) {

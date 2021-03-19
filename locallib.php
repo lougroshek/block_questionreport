@@ -86,9 +86,8 @@ function block_questionreport_is_admin() {
                 }
             }
         }
-	 }
-
-    return $adminuser;
+   }
+   return $adminuser;
 }
 
 function block_questionreport_get_evaluations() {
@@ -127,17 +126,20 @@ function block_questionreport_get_evaluations() {
         $context = context_course::instance($COURSE->id);
         $roles = get_user_roles($context, $USER->id, true);
         foreach ($adminarray as $val) {
-            $sql = "SELECT * FROM {role_assignments}
-            AS ra LEFT JOIN {user_enrolments}
-            AS ue ON ra.userid = ue.userid
-            LEFT JOIN {role} AS r ON ra.roleid = r.id
-            LEFT JOIN {context} AS c ON c.id = ra.contextid
-            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
-            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
-            $result = $DB->get_records_sql($sql, array( ''));
-            if ( $result ) {
-                $adminuser = true;
-            }
+            $lval = strlen($val);
+            if ($lval > 0) {
+                $sql = "SELECT * FROM {role_assignments}
+                         AS ra LEFT JOIN {user_enrolments}
+                         AS ue ON ra.userid = ue.userid
+                         LEFT JOIN {role} AS r ON ra.roleid = r.id
+                         LEFT JOIN {context} AS c ON c.id = ra.contextid
+                         LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
+                         WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
+                $result = $DB->get_records_sql($sql, array( ''));
+                if ( $result ) {
+                     $adminuser = true;
+                }
+           }
         }
         // check the system roles.
         if (!$adminuser) {
@@ -178,15 +180,20 @@ function block_questionreport_get_evaluations() {
     // Get the tags list.
     $tagvalue = get_config($plugin, 'tag_value');
     $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
+    $ltagid = strlen($tagid);
+    if ($ltagid == 0) {
+        return 'no tags defined ';
+        exit();
+    }
     $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
     $cid = $COURSE->id;
     $sqlcourse = "SELECT m.course, m.id, m.instance
-    FROM {course_modules} m
-    JOIN {tag_instance} ti on ti.itemid = m.id
-    WHERE m.module = ".$moduleid. "
-    AND ti.tagid = ".$tagid . "
-    AND m.course = ".$cid . "
-    AND m.deletioninprogress = 0";
+                  FROM {course_modules} m
+                  JOIN {tag_instance} ti on ti.itemid = m.id
+                  WHERE m.module = ".$moduleid. "
+                  AND ti.tagid = ".$tagid . "
+                  AND m.course = ".$cid . "
+                  AND m.deletioninprogress = 0";
 
     $surveys = $DB->get_record_sql($sqlcourse);
     if (!$surveys) {
@@ -200,7 +207,7 @@ function block_questionreport_get_evaluations() {
     $stp = $records->mp;
     $cnt = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '', 0, 0);
     if ($cnt == '-') {
-        $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
+        $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => 'facilitator_rate_content', 'surveyid' => $surveyid));
         $totresql = "SELECT count(*) crnt
         FROM {questionnaire_response_rank} mr
         JOIN {questionnaire_response} qr on qr.id = mr.response_id
@@ -224,15 +231,15 @@ function block_questionreport_get_evaluations() {
         $stp = $stp + 1;
         $cnt2 = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '', 0, 0);
         if ($cnt2 == '-') {
-            $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
+            $questionid = $DB->get_field('questionnaire_question', 'id', array('name' => 'facilitator_rate_community', 'surveyid' => $surveyid));
             $totresql = "SELECT count(*) crnt
-            FROM {questionnaire_response_rank} mr
-            JOIN {questionnaire_response} qr on qr.id = mr.response_id
-            AND mr.question_id = ".$questionid;
+                            FROM {questionnaire_response_rank} mr
+                            JOIN {questionnaire_response} qr on qr.id = mr.response_id
+                            AND mr.question_id = ".$questionid;
 
             //  $totres = $DB->count_records('questionnaire_response_rank', array('question_id' => $questionid));
-            $totres = $DB->get_records_sql($totsql);
-            if ($totres->crnct > 0) {
+            $totressql = $DB->get_record_sql($totresql);
+            if ($totres->crnt > 0) {
                 $commq->stat = 0;
             } else {
                 $has_responses_commq = false;
@@ -1030,11 +1037,12 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
           $user_roles = $result = array_merge($course_roles, $system_roles);
           // echo '$user_roles ='. print_r($user_roles) . '<br />';
           // echo '$teacherroles ='. print_r($teacherroles) . '<br />';
+          $teacherroles = explode(',', $lf_roles);
           $lfuser = false;
           foreach ($user_roles as $role) {
             foreach ($teacherroles as $teacherrole) {
               if ($role->roleid == $teacherrole) {
-                $lfuser = true;
+                  $lfuser = true;
               }
             }
           }
@@ -1198,6 +1206,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 $context = context_course::instance($COURSE->id);
                 $roles = get_user_roles($context, $USER->id, true);
                 foreach ($adminarray as $val) {
+                   $lval = strlen($val);
+                   if ($lval > 0) {
                    	$sqladmin = "SELECT * FROM {role_assignments}
        	                        AS ra LEFT JOIN {user_enrolments}
        	                        AS ue ON ra.userid = ue.userid
@@ -1205,9 +1215,10 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         	                      LEFT JOIN {context} AS c ON c.id = ra.contextid
         	                      LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
         	                      WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
-                    $radmin = $DB->get_records_sql($sqladmin, array( ''));
-                    if ( $radmin ) {
-                         $adminuser = true;
+                         $radmin = $DB->get_records_sql($sqladmin, array( ''));
+                         if ( $radmin ) {
+                             $adminuser = true;
+                         }
                     }
                 }
                 // check the system roles.
@@ -2193,17 +2204,20 @@ function block_questionreport_checklf() {
          $context = context_course::instance($COURSE->id);
          $roles = get_user_roles($context, $USER->id, true);
          foreach ($adminarray as $val) {
-       	    $sqladmin = "SELECT * FROM {role_assignments}
+            $lval = strlen($val);
+            if ($lval > 0) {
+       	         $sqladmin = "SELECT * FROM {role_assignments}
                              AS ra LEFT JOIN {user_enrolments}
                              AS ue ON ra.userid = ue.userid
                           LEFT JOIN {role} AS r ON ra.roleid = r.id
                           LEFT JOIN {context} AS c ON c.id = ra.contextid
                           LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
                           WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
-              $radmin = $DB->get_records_sql($sqladmin, array( ''));
-              if ( $radmin ) {
-                   $adminuser = true;
-              }
+                 $radmin = $DB->get_records_sql($sqladmin, array( ''));
+                 if ( $radmin ) {
+                     $adminuser = true;
+                 }
+             }
          }
          // check the system roles.
          if (!$adminuser) {
