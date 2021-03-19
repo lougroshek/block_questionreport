@@ -1570,7 +1570,7 @@ function block_questionreport_get_essay_results($ctype, $questionid, $stdate, $n
             $html = $html .'<tr><td><b>Question: '.$quest.'</b></td></tr>';
         }
 
-        $sqlessay  = "SELECT qt.response, qt.id ";
+        $sqlessay  = "SELECT qt.id, qt.response ";
         $fromessaysql = " FROM {questionnaire_response_text} qt ";
         $whereessaysql = "WHERE qt.question_id = ".$questionid;
         $paramsql = array();
