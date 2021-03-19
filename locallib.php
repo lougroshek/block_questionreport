@@ -126,6 +126,27 @@ function block_questionreport_get_evaluations()
         return '';
         exit();
     }
+
+    // Check the course for a survey with the needed tags.
+    // If the tags aren't there, then exit.
+    // Get the tags list.
+    $tagvalue = get_config($plugin, 'tag_value');
+    $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
+    $moduleid = $DB->get_field('modules', 'id', array('name' => 'questionnaire'));
+    $cid = $COURSE->id;
+    $sqlcourse = "SELECT m.course, m.id, m.instance
+    FROM {course_modules} m
+    JOIN {tag_instance} ti on ti.itemid = m.id
+    WHERE m.module = ".$moduleid. "
+    AND ti.tagid = ".$tagid . "
+    AND m.course = ".$cid . "
+    AND m.deletioninprogress = 0";
+    // echo '$sqlcourse = '.$sqlcourse;
+    $surveys = $DB->get_record_sql($sqlcourse);
+    if (!$surveys) {
+        return '';
+        exit();
+    }
     // Add buttons object.
     $data->buttons = new stdClass();
     // Build reports button object.
