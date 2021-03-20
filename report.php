@@ -86,37 +86,40 @@ $is_admin = block_questionreport_is_admin();
 // echo '$is_admin = '.$is_admin;
 if (!!$is_admin) {
     $adminuser = true;
-} else {
-    // Checking course roles? Why isn't this fucking done in the overall function?
-    $context = context_course::instance($COURSE->id);
-    $roles = get_user_roles($context, $USER->id, true);
-    foreach ($adminarray as $val) {
-        $sql = "SELECT * FROM {role_assignments}
-       	            AS ra LEFT JOIN {user_enrolments}
-        	            AS ue ON ra.userid = ue.userid
-        	            LEFT JOIN {role} AS r ON ra.roleid = r.id
-        	            LEFT JOIN {context} AS c ON c.id = ra.contextid
-        	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
-        	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
-        $result = $DB->get_records_sql($sql, array( ''));
-        if ($result) {
-            // 	       	echo 'admin '.$val;
-//              $adminuser = true;
-        }
-    }
-    // check the system roles.
-    if (!$adminuser) {
-        $systemcontext = context_system::instance();
-        $roles = get_user_roles($systemcontext, $USER->id, true);
-        foreach ($adminarray as $val) {
-            foreach ($roles as $rl) {
-                if ($rl->roleid == $val) {
-                    $adminuser = true;
-                }
-            }
-        }
-    }
 }
+// else {
+//     // Checking course roles? Why isn't this fucking done in the overall function?
+//     $context = context_course::instance($COURSE->id);
+//     $roles = get_user_roles($context, $USER->id, true);
+//     foreach ($adminarray as $val) {
+//         $sql = "SELECT * FROM {role_assignments}
+//        	            AS ra LEFT JOIN {user_enrolments}
+//         	            AS ue ON ra.userid = ue.userid
+//         	            LEFT JOIN {role} AS r ON ra.roleid = r.id
+//         	            LEFT JOIN {context} AS c ON c.id = ra.contextid
+//         	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
+//         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
+//         $result = $DB->get_records_sql($sql, array( ''));
+//         if ($result) {
+//             // 	       	echo 'admin '.$val;
+// //              $adminuser = true;
+//         }
+//     }
+//     // check the system roles.
+//     if (!$adminuser) {
+//         $systemcontext = context_system::instance();
+//         $roles = get_user_roles($systemcontext, $USER->id, true);
+//         foreach ($adminarray as $val) {
+//             foreach ($roles as $rl) {
+//                 if ($rl->roleid == $val) {
+//                     $adminuser = true;
+//                 }
+//             }
+//         }
+//     }
+// }
+
+// Adds extra controls for admin user filtering.
 if ($adminuser) {
     $portfoliolist = block_questionreport_get_portfolio_list();
     echo html_writer::label(get_string('portfoliofilteronly', $plugin), false, array('class' => 'accesshide'));
@@ -130,7 +133,8 @@ if ($adminuser) {
     echo "<input type=\"hidden\" name=\"portfolio\" value=\"$def\" />\n";
     echo "<input type=\"hidden\" name=\"teacher\" value=\"$teacher\" />\n";
 }
-// Date select.
+
+// Date select. Both plugin admin and non-admin views.
 echo html_writer::start_tag('div', array('class' => 'date-input-group'));
 echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
@@ -160,6 +164,7 @@ if ($ctype == "M") {
     $cname = $COURSE->fullname;
     $roles = get_config('block_questionreport', 'roles');
 
+    // Get array of teachers.
     if (!empty($roles)) {
         $teacherroles = explode(',', $roles);
         $teachers = get_role_users(
@@ -177,6 +182,8 @@ if ($ctype == "M") {
     $rolenames = role_get_names($context, ROLENAME_ALIAS, true);
 
     // Get multiple roles config.
+    // What the fuck is this even used for?!
+    // TODO: Remove this if it's not used.
     $multipleroles = get_config($plugin, 'multipleroles');
 
     // Get the tags list.
@@ -190,7 +197,7 @@ if ($ctype == "M") {
 
     $surveys = $DB->get_record_sql($sqlcourse);
     if (!$surveys) {
-        echo 'Not a valid survey.';
+        echo '<p>No valid survey in course.</p>';
         echo $OUTPUT->footer();
         exit();
     }
@@ -265,16 +272,23 @@ if ($ctype == "M") {
     }
     $surveys = $DB->get_records_sql($sqlcourses);
 
+    // echo '$surveys = '.print_r($surveys);
+    $is_teacher = $teacher !== ''.'<br/>';
+    // echo 'is_teacher = '.!!$is_teacher.'<br/>';
+
     foreach ($surveys as $survey) {
         $valid = false;
-        if (is_siteadmin()) {
+        if ($is_admin || $teacher !== '') {
             $valid = true;
-        } else {
-            $context = context_course::instance($survey->course);
-            if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                $valid = true;
-            }
         }
+        // if (is_siteadmin()) {
+        //     $valid = true;
+        // } else {
+        //     $context = context_course::instance($survey->course);
+        //     if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
+        //         $valid = true;
+        //     }
+        // }
         if ($valid && $portfolio > "" && $portfolio > '0') {
             $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                                          'fieldid' => $portfieldid));
@@ -282,28 +296,31 @@ if ($ctype == "M") {
                 $valid = false;
             }
         }
-        if ($valid and $teacher > "") {
-            $validteacher = false;
-            $context = context_course::instance($survey->course);
-            $contextid = $context->id;
-            $sqlteacher = "SELECT u.id, u.firstname, u.lastname
-                                 FROM {user} u
-                                 JOIN {role_assignments} ra on ra.userid = u.id
-                                 AND   ra.contextid = :context
-                                 AND roleid in ('".$roles."')";
-            $paramteacher = array('context' => $contextid);
-            $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
-            $tlist = '';
-            foreach ($teacherlist as $te) {
-                if ($te->id == $teacher) {
-                    $validteacher = true;
-                }
-            }
+        // }
+        // if ($valid and $teacher > "") {
+        //     // echo 'User is a teacher. '. $teacher;
+        //     $validteacher = false;
+        //     $context = context_course::instance($survey->course);
+        //     $contextid = $context->id;
+        //     $sqlteacher = "SELECT u.id, u.firstname, u.lastname
+        //                          FROM {user} u
+        //                          JOIN {role_assignments} ra on ra.userid = u.id
+        //                          AND   ra.contextid = :context
+        //                          AND roleid in ('".$roles."')";
+        //     $paramteacher = array('context' => $contextid);
+        //     $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
+        //     $tlist = '';
+        //     foreach ($teacherlist as $te) {
+        //         if ($te->id == $teacher) {
+        //             $validteacher = true;
+        //         }
+        //     }
 
-            if (!$validteacher) {
-                $valid = false;
-            }
-        }
+        //     if (!$validteacher) {
+        //         echo 'not valid teacher';
+        //         $valid = false;
+        //     }
+        // }
 
         if ($valid) {
             $sid = $survey->instance;
