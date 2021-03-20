@@ -478,6 +478,11 @@ function block_questionreport_get_question_results_rank(
     // stdate start date for the surveys (0 if not used)
     // nddate end date for the surveys (0 if not used)
     // partner partner - blank if not used.
+
+    if ($questionid == 565) {
+        echo "Processing NPS question, id {$questionid}, survey id {$surveyid}.<br />";
+    }
+
     global $DB, $USER, $COURSE;
     // echo '$questionid = '.$questionid;
     $plugin = 'block_questionreport';
@@ -495,7 +500,9 @@ function block_questionreport_get_question_results_rank(
         $roles = get_config('block_questionreport', 'roles');
         $roles = str_replace('"', "", $roles);
     }
+    // If there is a survey ID, process for only that course.
     if ($surveyid > 0) {
+        // If it's a moodle course...
         if ($ctype == 'M') {
             $totresql  = "SELECT count(rankvalue) ";
             $fromressql = " FROM {questionnaire_response_rank} mr ";
@@ -522,8 +529,11 @@ function block_questionreport_get_question_results_rank(
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
                 if ($qname == 'NPS') {
-                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 9 or rankvalue = 10) ";
-                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 9 ) ";
+                    // Question labels to 0-10, question values go 1-11
+                    // NPS good == 10 & 11 or > 9
+                    // NPS bad == 1 through 7 OR < 8
+                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 10 or rankvalue = 11) ";
+                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 8 ) ";
                 } else {
                     $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 4 or rankvalue = 5) ";
                 }
@@ -541,16 +551,28 @@ function block_questionreport_get_question_results_rank(
                     $paramsql['nddate'] = $ndt;
                 }
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
+                // echo "totsql = {$totsql}<br />";
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
                     if ($qname == 'NPS') {
+                        // NPS = (percent 9 to 10) - (percent 0 to 6) * 100
                         $percent = ($totgood / $totres) * 100;
-                        $totnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
-                        $totnpr = $DB->count_records_sql($totnpr, $paramsql);
-                        $percent2 = ($totnpr / $totres) * 100;
-                        $percent = $percent - $percent2;
+                        $badnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
+                        $bad_npr_count = $DB->count_records_sql($badnpr, $paramsql);
+                        $bad_npr_perc = ($bad_npr_count / $totres) * 100;
+                        // $goodnpr =
+                        // $totnpr = $totgoodsql .' '.$fromgoodsql. ' '.$wherenps;
+                        // echo "bad_npr_count for moodle course = {$bad_npr_count}, totgood = {$totgood}, totres = {$totres}<br />";
+                        // $totnpr = $DB->count_records_sql($totnpr, $paramsql);
+                        // echo "totnpr = ".print_r($totnpr)."<br />";
+                        $good_npr_perc = ($totgood / $totres) * 100;
+                        $nps = $good_npr_perc - $bad_npr_perc; //  * 100;
+                        // $nps = ($totgood / $totres) - ($bad_npr_count / $totres) * 100;
+                        // $percent2 = ($totnpr / $totres) * 100;
+                        // $percent = $percent - $percent2;
+                        // $percent_bad = ($bad_npr_count / $totres) * 100;
                         // $retval = round($percent, 0)."(%)";
-                        $retval = round($percent, 0) < 0 ? "0%" : round($percent, 0)."(%)";
+                        $retval = round($nps, 0);
                     } else {
                         $percent = ($totgood / $totres) * 100;
                         $retval = round($percent, 0)."(%)";
@@ -559,6 +581,7 @@ function block_questionreport_get_question_results_rank(
                     $retval = "0(%)";
                 }
             }
+            // Not a mooodle course.
         } else {
             $sqlext = "SELECT COUNT(ts.courseid) cdtot
                        FROM {local_teaching_survey} ts";
@@ -606,8 +629,9 @@ function block_questionreport_get_question_results_rank(
                     $whereext = "where practice >=4";
                     break;
                     case "8":
+                    // Maximum in this form is 10. Form goes from 0 - 10.
                     $whereext = "where reccomend >= 9";
-                    $where1 = "where reccommend <= 8";
+                    $where1 = "where reccommend <= 6";
                     break;
                 }
                 if ($stdate > 0) {
@@ -632,11 +656,12 @@ function block_questionreport_get_question_results_rank(
                     } else {
                         $percent = ($totgood / $totres) * 100;
                         $sqlnpr = $sqlext .' '.$where1;
+                        // echo "sqlnpr for non-moodle course = {$sqlnpr}<br />";
                         $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
                         $totnpr = $repnpr->cdgood;
                         $gtnpr = ($totnpr / $totres) * 100;
                         $percent = $percent - $gtnpr;
-                        $retval = round($percent, 0)."(%)";
+                        $retval = round($percent, 0);
                     }
                 } else {
                     $retval = "0(%)";
@@ -644,7 +669,9 @@ function block_questionreport_get_question_results_rank(
             }
         }
     } else {
+        // No survey id, process for all courses.
         // Get all the courses;
+        // What the fuck do these represent?! Where are the fucking code comments!?
         $gtres = 0;
         $gttotres = 0;
         $gtnpr = 0;
@@ -658,6 +685,7 @@ function block_questionreport_get_question_results_rank(
             $filtertype = substr($cid, 0, 1);
             $coursefilter = substr($cid, 2);
         }
+        // Get the courses with the tag (this should be its own function wtf).
         $sqlcourses = "SELECT m.course, m.id, m.instance
                          FROM {course_modules} m
                          JOIN {tag_instance} ti on ti.itemid = m.id " .$partnersql. "
@@ -671,17 +699,20 @@ function block_questionreport_get_question_results_rank(
             $sqlcourses = $sqlcourses ." AND 2 = 4";
         }
         $surveys = $DB->get_records_sql($sqlcourses);
+        // Iterate through surveys to do... ?
         foreach ($surveys as $survey) {
             // Check to see if the user has rights.
-            $valid = false;
-            if (is_siteadmin()) {
-                $valid = true;
-            } else {
-                $context = context_course::instance($survey->course);
-                if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-                    $valid = true;
-                }
-            }
+            $valid = block_questionreport_is_admin() | block_questionreport_is_teacher();
+            // echo "valid = {$valid}<br />";
+            // false;
+            // if (is_siteadmin()) {
+            //     $valid = true;
+            // } else {
+            //     $context = context_course::instance($survey->course);
+            //     if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
+            //         $valid = true;
+            //     }
+            // }
             if ($valid && $portfolio > "" && $portfolio > '0') {
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                 'fieldid' => $portfieldid));
@@ -689,6 +720,7 @@ function block_questionreport_get_question_results_rank(
                     $valid = false;
                 }
             }
+            // Teacher value here may be different from user.
             $teacher = trim($teacher);
             $lt = strlen($teacher);
             if ($valid and $lt == 0) {
@@ -734,6 +766,7 @@ function block_questionreport_get_question_results_rank(
                     $teacher = $teacher;
                 }
             }
+
             if ($valid and $teacher > "") {
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
@@ -812,8 +845,11 @@ function block_questionreport_get_question_results_rank(
                 $wheregoodsql = "WHERE mr.question_id = ".$qid ." AND choice_id =".$chid." AND (rankvalue = 4 or rankvalue = 5) ";
                 $wherenps = '';
                 if ($qname == 'NPS') {
-                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 9 or rankvalue = 10) ";
-                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 9 ) ";
+                    // response values in moodle survey go from 1 - 11
+                    // Good values are 10 and 11
+                    // Bad values are from 1 - 7
+                    $wheregoodsql = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue = 10 or rankvalue = 11) ";
+                    $wherenps = "WHERE mr.question_id = ".$questionid ." AND choice_id = ".$choiceid. " AND (rankvalue < 8 ) ";
                 }
                 $paramsql = array();
                 if ($stdate > 0) {
@@ -840,7 +876,7 @@ function block_questionreport_get_question_results_rank(
                     }
                 }
             }
-        }
+        } // End iterate through surveys.
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
                    FROM {local_teaching_survey} ts";
         $whereext = "WHERE 1 = 1";
@@ -903,8 +939,11 @@ function block_questionreport_get_question_results_rank(
                 $whereext = "where practice >=4";
                 break;
                 case "8":
+                // This survey values in DB goes from 0 - 10.
+                // Good = 9 & 10
+                // Bad = 0 - 6
                 $whereext = "where reccomend >= 9";
-                $where1 = "where reccommend <= 8";
+                $where1 = "where reccommend <= 6";
                 break;
             }
             if ($stdate > 0) {
@@ -952,12 +991,17 @@ function block_questionreport_get_question_results_rank(
             $sqlext = $sqlext .' '.$whereext;
             $respext = $DB->get_record_sql($sqlext, $paramsext);
             if ($qname <> 'NPS') {
+                // If not NPS.
                 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
             } else {
+                // If NPS. Why are we doing this differently?
+                // NPS = (percent 9 & 10) - (percent 0-6)
                 $tot2 = $respext->cdgood;
+                echo "gttotres = {$gttotres}, tot2 = {$tot2}<br />";
                 $gttotres = $gttotres + $tot2;
                 $sqlnpr = $sqlext .' '.$where1;
+                echo "sqlnpr = {$sqlnpr}<br />";
                 $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
                 $totnpr = $repnpr->cdgood;
                 $gtnpr = $gtnpr + $totnpr;
@@ -967,13 +1011,17 @@ function block_questionreport_get_question_results_rank(
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 if ($qname  <> 'NPS') {
+                    // If the question name is not NPS...
                     $percent = ($gttotres / $gtres) * 100;
                     $retval = round($percent, 0)."(%)";
                 } else {
+                    // If it's the NPS question?
                     $percent = ($gttotres / $gtres) * 100;
+                    echo "percent: {$percent}<br />";
                     $percent2 = ($gtnpr / $gtres) * 100;
-                    $percent = $percent - $percent2;
-                    $retval = round($percent, 0)."(%)";
+                    echo "percent2: {$percent2}<br />";
+                    // $percent = $percent - $percent2;
+                    $retval = round($percent, 0);
                 }
             } else {
                 $retval = "0(%)";
