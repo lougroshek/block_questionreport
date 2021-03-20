@@ -273,7 +273,7 @@ if ($ctype == "M") {
     $surveys = $DB->get_records_sql($sqlcourses);
 
     // echo '$surveys = '.print_r($surveys);
-    $is_teacher = $teacher !== ''.'<br/>';
+    // $is_teacher = $teacher !== ''.'<br/>';
     // echo 'is_teacher = '.!!$is_teacher.'<br/>';
 
     foreach ($surveys as $survey) {
@@ -328,6 +328,9 @@ if ($ctype == "M") {
             $sqlquestion = $sqltot . $fromtot . $wheretot;
             $respsql = $DB->get_record_sql($sqlquestion, $paramstot);
             $totresp = $respsql->crid + $totresp;
+            // echo '$sqlquestion = '.$sqlquestion.'<br />';
+            // echo '$respsql = '.print_r($respsql).'<br />';
+            // echo '$totresp = '.$totresp.'<br />';
         }
     }
 
