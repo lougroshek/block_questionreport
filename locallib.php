@@ -672,8 +672,11 @@ function block_questionreport_get_question_results_rank(
         // No survey id, process for all courses.
         // Get all the courses;
         // What the fuck do these represent?! Where are the fucking code comments!?
+        // Total responses
         $gtres = 0;
+        // No fucking clue.
         $gttotres = 0;
+        // No fucking clue.
         $gtnpr = 0;
         if ($portfolio > "" && $portfolio > 0) {
             $portfieldid = get_config($plugin, 'portfoliofield');
@@ -916,6 +919,8 @@ function block_questionreport_get_question_results_rank(
             if (!isset($cnt)) {
                 $cnt = 1;
             }
+            echo "cnt = {$cnt}<br />";
+            // TODO: This is failing for nps question, it always has $cnt 1.
             switch ($cnt) {
                 case "1":
                 $whereext = "where satisfied >=4";
@@ -1000,6 +1005,7 @@ function block_questionreport_get_question_results_rank(
                 $tot2 = $respext->cdgood;
                 echo "gttotres = {$gttotres}, tot2 = {$tot2}<br />";
                 $gttotres = $gttotres + $tot2;
+                echo "gttotres = {$gttotres}";
                 $sqlnpr = $sqlext .' '.$where1;
                 echo "sqlnpr = {$sqlnpr}<br />";
                 $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
