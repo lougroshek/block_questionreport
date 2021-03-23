@@ -199,18 +199,38 @@ table.table-adminreport tr th {
 }
 
 /* Admin page */
+#page-blocks-questionreport-report form ul li label,
+#page-blocks-questionreport-report form ul li input,
 #page-admin-setting-blocksettingquestionreport form ul li label {
   display: inline-block;
 }
 
+#page-blocks-questionreport-report .date-input-group label,
+#page-blocks-questionreport-report .date-input-group input {
+  display: inline-block;
+}
+
 /* Admin report */
+#page-blocks-questionreport-report .date-input-group label:first-of-type,
 #page-blocks-questionreport-adminreport .date-input-group label:first-of-type {
   display: block;
 }
 
+#page-blocks-questionreport-report .date-input-group label:nth-of-type(2),
+#page-blocks-questionreport-adminreport .date-input-group label:nth-of-type(2) {
+  margin: 0 0.5rem;
+}
+
+#page-blocks-questionreport-report form select,
+#page-blocks-questionreport-report .date-input-group,
 #page-blocks-questionreport-adminreport form select,
 #page-blocks-questionreport-adminreport .date-input-group {
   margin-bottom: 1rem;
+}
+
+#page-blocks-questionreport-report .btn-submit,
+#page-blocks-questionreport-adminreport .btn-submit {
+  margin-left: 0;
 }
 
 #page-blocks-questionreport-adminreport form select {

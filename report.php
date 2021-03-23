@@ -140,9 +140,10 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
+echo html_writer::end_tag('div');
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
 echo '</form>';
-echo html_writer::end_tag('div');
+
 
 $tagvalue = get_config($plugin, 'tag_value');
 $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
