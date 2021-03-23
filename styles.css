@@ -228,8 +228,8 @@ table.table-adminreport tr th {
   margin-bottom: 1rem;
 }
 
-#page-blocks-questionreport-report .btn-submit,
-#page-blocks-questionreport-adminreport .btn-submit {
+#page-blocks-questionreport-report .btn.btn-submit,
+#page-blocks-questionreport-adminreport .btn.btn-submit {
   margin-left: 0;
 }
 
