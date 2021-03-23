@@ -473,15 +473,16 @@ function block_questionreport_get_question_results_rank(
     // questionid  question #
     // choice id is the choice id for a specific survey. For all courses then which choice option.
     // cid is the current course, if its 0 then its all courses;
+    // echo "course ID, cid = {$cid}<br />";
     // surveyid is the surveyid for the selected course. If its all courses, then it will 0;
     // tagid  is the tagid finding for the matching surveys
     // stdate start date for the surveys (0 if not used)
     // nddate end date for the surveys (0 if not used)
     // partner partner - blank if not used.
 
-    if ($questionid == 565) {
-        echo "Processing NPS question, id {$questionid}, survey id {$surveyid}.<br />";
-    }
+    // if ($questionid == 565) {
+    //     echo "Processing NPS question, id {$questionid}, survey id {$surveyid}.<br />";
+    // }
 
     global $DB, $USER, $COURSE;
     // echo '$questionid = '.$questionid;
@@ -572,12 +573,15 @@ function block_questionreport_get_question_results_rank(
                         // $percent = $percent - $percent2;
                         // $percent_bad = ($bad_npr_count / $totres) * 100;
                         // $retval = round($percent, 0)."(%)";
+                        // echo 'test<br />';
                         $retval = round($nps, 0);
                     } else {
+                        // echo ' non nps<br />';
                         $percent = ($totgood / $totres) * 100;
                         $retval = round($percent, 0)."(%)";
                     }
                 } else {
+                    // echo 'test';
                     $retval = "0(%)";
                 }
             }
@@ -669,6 +673,7 @@ function block_questionreport_get_question_results_rank(
             }
         }
     } else {
+        // echo 'test<br />';
         // No survey id, process for all courses.
         // Get all the courses;
         // What the fuck do these represent?! Where are the fucking code comments!?
@@ -685,6 +690,7 @@ function block_questionreport_get_question_results_rank(
         $coursfilter = '0';
         $filtertype = '0';
         if ($cid <> '0') {
+            // echo "cid <> '0'<br />";
             $filtertype = substr($cid, 0, 1);
             $coursefilter = substr($cid, 2);
         }
@@ -696,12 +702,14 @@ function block_questionreport_get_question_results_rank(
                           AND ti.tagid = ".$tagid . "
                           AND m.deletioninprogress = 0";
         if ($filtertype == 'M' and $coursefilter > '0') {
+            // echo "moodle course, {$filtertype}, {$coursefilter}<br />";
             $sqlcourses = $sqlcourses ." AND m.course = ".$coursefilter;
         }
         if ($filtertype == 'A') {
             $sqlcourses = $sqlcourses ." AND 2 = 4";
         }
         $surveys = $DB->get_records_sql($sqlcourses);
+        // echo "surveys = ".print_r($surveys)."<br />";
         // Iterate through surveys to do... ?
         foreach ($surveys as $survey) {
             // Check to see if the user has rights.
@@ -716,6 +724,8 @@ function block_questionreport_get_question_results_rank(
             //         $valid = true;
             //     }
             // }
+            // Check to see if the survey is in a course with the correct portfolio,
+            // if there's a portfolio argument set.
             if ($valid && $portfolio > "" && $portfolio > '0') {
                 $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                 'fieldid' => $portfieldid));
@@ -770,6 +780,9 @@ function block_questionreport_get_question_results_rank(
                 }
             }
 
+            // echo "teacher = {$teacher}<br />";
+
+            // See if the teacher argument passed is a teacher in the given course.
             if ($valid and $teacher > "") {
                 $validteacher = false;
                 $context = context_course::instance($survey->course);
@@ -796,9 +809,16 @@ function block_questionreport_get_question_results_rank(
                     $valid = false;
                 }
             }
+            // echo "valid = {$valid}<br />";
+            // Survey ID
             $sid = $survey->instance;
-            $qid = $DB->get_field('questionnaire_question', 'id', array('position' => '1', 'surveyid' => $sid, 'type_id' => '8'));
+            // echo "sid = {$sid}<br />";
+            // Question ID
+            // $questionID = $DB->get_record('questionnaire_question', 'id', array('question_id' => $qid));
+            $qid = $DB->get_field('questionnaire_question', 'id', array('surveyid' => $sid, 'type_id' => '8', 'name' => $qname));
+            // echo "qid = {$qid}<br />"; // This is the same for all questions. Problem.
             if (!$valid) {
+                // echo 'not valid';
                 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
                 $cnt = 0;
                 foreach ($choices as $choice) {
@@ -810,10 +830,19 @@ function block_questionreport_get_question_results_rank(
                 }
             }
             if (empty($qid) or !$valid) {
+                // echo 'empty($qid) or !$valid<br />';
                 $totres = 0;
             } else {
+                // Building the choices series.
+                // This is for a question type with multiple ranked statemeents.
+                // The choices are the individual ranked statements.
+                // echo 'Building choices.<br />';
                 $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
+                // echo "choices = ".print_r($choices)."<br />";
                 $cnt = 0;
+                // Don't understand what this does.
+                // Sets the count for the question with several options.
+                // Doesn't really appliy to the NPS question, only the course_ratings question.
                 foreach ($choices as $choice) {
                     $chid = $choice->id;
                     $cnt = $cnt + 1;
@@ -821,6 +850,7 @@ function block_questionreport_get_question_results_rank(
                         break;
                     }
                 }
+                // echo "end of choice count loop I don't understand, {$cnt}<br />";
                 $totresql  = "SELECT count(rankvalue) ";
                 $fromressql = " FROM {questionnaire_response_rank} mr ";
                 $whereressql = "WHERE mr.question_id = ".$qid ." AND choice_id = ".$chid;
@@ -839,9 +869,14 @@ function block_questionreport_get_question_results_rank(
                 }
 
                 $totgoodsql = $totresql .' '. $fromressql. ' '. $whereressql;
+                // echo "totgoodsql = {$totgoodsql}<br />";
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
+                // echo "totres = {$totres}<br />"; // OK, looks right... ?
             }
+            // If total responses greater than 0 (for this survey)...
             if ($totres > 0) {
+                // echo 'totres > 0<br />';
+                // Add total responses to "global total reponses"?
                 $gtres = $gtres + $totres;
                 $totgoodsql  = "SELECT count(rankvalue) ";
                 $fromgoodsql = " FROM {questionnaire_response_rank} mr ";
@@ -872,10 +907,13 @@ function block_questionreport_get_question_results_rank(
                 $totsql = $totgoodsql .' '.$fromgoodsql. ' '.$wheregoodsql;
                 $totgood = $DB->count_records_sql($totsql, $paramsql);
                 if ($totgood > 0) {
+                    // echo 'totgood > 0';
+                    // Total good responses get added to $gttotres, must be global total good?
                     $gttotres = $gttotres + $totgood;
                     if ($qname == 'NPS') {
                         $totnpr = $totgoodql . ' '.$fromgoodsql.' '.$wherenps;
                         $gtnpr = $DB->count_records_sql($totnpr, $paramsql);
+                        // echo 'it is an nps question $gtnpr = '.$gtnpr.'<br />';
                     }
                 }
             }
@@ -913,13 +951,14 @@ function block_questionreport_get_question_results_rank(
         $respext = $DB->get_record_sql($sqlext, $paramsext);
         $where1 = '';
         $gtres = $gtres + $respext->cdtot;
+        // Selections for non moodle course.
         if ($respext->cdtot > 0) {
             $sqlext = "SELECT COUNT(ts.courseid) cdgood
             FROM {local_teaching_survey} ts";
             if (!isset($cnt)) {
                 $cnt = 1;
             }
-            echo "cnt = {$cnt}<br />";
+            // echo "cnt = {$cnt}<br />";
             // TODO: This is failing for nps question, it always has $cnt 1.
             switch ($cnt) {
                 case "1":
@@ -1000,37 +1039,52 @@ function block_questionreport_get_question_results_rank(
                 $tot2 = $respext->cdgood;
                 $gttotres = $gttotres + $tot2;
             } else {
+                // echo 'it is an nps question';
                 // If NPS. Why are we doing this differently?
                 // NPS = (percent 9 & 10) - (percent 0-6)
                 $tot2 = $respext->cdgood;
-                echo "gttotres = {$gttotres}, tot2 = {$tot2}<br />";
+                // echo "gttotres = {$gttotres}, tot2 = {$tot2}<br />";
                 $gttotres = $gttotres + $tot2;
-                echo "gttotres = {$gttotres}";
+                // echo "gttotres = {$gttotres}";
                 $sqlnpr = $sqlext .' '.$where1;
-                echo "sqlnpr = {$sqlnpr}<br />";
+                // echo "sqlnpr = {$sqlnpr}<br />";
                 $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
                 $totnpr = $repnpr->cdgood;
                 $gtnpr = $gtnpr + $totnpr;
             }
         }
         $qname = trim($qname);
+        // echo "gtres = {$gtres}<br />";
+        // echo "gttotres = {$gttotres}<br />";
+        // echo "qname = {$qname}";
+        // If global total responses > 0...
         if ($gtres > 0) {
+            // echo "qname = {$qname}<br />";
             if ($gttotres > 0) {
-                if ($qname  <> 'NPS') {
+                // echo "qname = {$qname}<br />";
+                if ($qname <> 'NPS') {
                     // If the question name is not NPS...
                     $percent = ($gttotres / $gtres) * 100;
                     $retval = round($percent, 0)."(%)";
                 } else {
+                    // echo 'it is an nps question<br />';
                     // If it's the NPS question?
                     $percent = ($gttotres / $gtres) * 100;
-                    echo "percent: {$percent}<br />";
+                    // echo "percent: {$percent}<br />";
                     $percent2 = ($gtnpr / $gtres) * 100;
-                    echo "percent2: {$percent2}<br />";
+                    // echo "percent2: {$percent2}<br />";
                     // $percent = $percent - $percent2;
                     $retval = round($percent, 0);
                 }
             } else {
-                $retval = "0(%)";
+                // $retval = "0(%) blah";
+                if ($qname <> 'NPS') {
+                    // If the question name is not NPS...
+                    $retval = "0(%)";
+                } else {
+                    // If it's an NPS question, it's not a percent.
+                    $retval = "0";
+                }
             }
         } else {
             $retval = get_string('none', $plugin);

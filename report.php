@@ -602,7 +602,7 @@ if ($ctype == 'M') {
         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => 'NPS', 'surveyid' => $surveyid, 'type_id' => '8'));
         $choices = $DB->get_records('questionnaire_quest_choice', array('question_id' => $qid));
         $choicecnt = 0;
-        echo "Processing NPS question. ID is {$qid}.".'<br/>';
+        // echo "Processing NPS question. ID is {$qid}.".'<br/>';
         foreach ($choices as $choice) {
             $obj = new stdClass;
             $obj->question = "Net Promoter Score (NPS): {$choice->content}";
