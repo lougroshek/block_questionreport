@@ -60,7 +60,7 @@ $courselist = block_questionreport_get_courses();
 $surveylist = array("1" => "End of Course Survey", "2" => "Diagnostic Survey");
 
 if ($sid == 1) {
- 	 $tagvalue = get_config($plugin, 'tag_value');
+    $tagvalue = get_config($plugin, 'tag_value');
 } else {
     $tagvalue = get_config($plugin, 'tag_value_diagnostic');
 }
@@ -69,7 +69,7 @@ $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
 $params = array();
 if ($ctype == "M") {
     if ($courseid == 0) {
-	     // Get a survey.
+        // Get a survey.
         $tagid = $DB->get_field('tag', 'id', array('name' => $tagvalue));
         $sqlcourse = "SELECT  max(m.instance) instance
                         FROM {course_modules} m
@@ -80,16 +80,16 @@ if ($ctype == "M") {
                          AND m.deletioninprogress = 0
                         AND c.visible = 1";
 
-         $surveys = $DB->get_record_sql($sqlcourse, $params);
-         if (!$surveys) {
-             // Should never get here.
-             echo 'no surveys';
-             echo $OUTPUT->footer();
-             exit();
-         }
-         $surveyid = $surveys->instance;
-     } else {
-         $sqlcourse = "SELECT m.course, m.id, m.instance
+        $surveys = $DB->get_record_sql($sqlcourse, $params);
+        if (!$surveys) {
+            // Should never get here.
+            echo 'no surveys';
+            echo $OUTPUT->footer();
+            exit();
+        }
+        $surveyid = $surveys->instance;
+    } else {
+        $sqlcourse = "SELECT m.course, m.id, m.instance
                          FROM {course_modules} m
                          JOIN {tag_instance} ti on ti.itemid = m.id
                         WHERE m.module = ".$moduleid. "
@@ -97,19 +97,19 @@ if ($ctype == "M") {
                           AND m.course = ".$courseid . "
                           AND m.deletioninprogress = 0";
 
-          $surveys = $DB->get_record_sql($sqlcourse);
-          if (!$surveys) {
-              echo 'not a valid survey';
-              echo $OUTPUT->footer();
-              exit();
-          }
-          $surveyid = $surveys->instance;
-     }
- } else {
-     $surveyid = 0;
- }
+        $surveys = $DB->get_record_sql($sqlcourse);
+        if (!$surveys) {
+            echo 'not a valid survey';
+            echo $OUTPUT->footer();
+            exit();
+        }
+        $surveyid = $surveys->instance;
+    }
+} else {
+    $surveyid = 0;
+}
 if ($action == 'csv') {
-   $content = block_questionreport_get_adminreport($ctype, $sid, $courseid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action);
+    $content = block_questionreport_get_adminreport($ctype, $sid, $courseid, $partner, $portfolio, $start_date, $end_date, $teacher, $questionid, $action);
 } else {
     echo $OUTPUT->header();
 
@@ -119,35 +119,36 @@ if ($action == 'csv') {
     echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
     echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
     echo "<input type=\"hidden\" name=\"sid\" value=\"1\" />\n";
-    echo html_writer::label(get_string('coursedesc', $plugin), false, array('class' => 'accesshide'));
-    echo html_writer::select($courselist,"cid",$cid, false);
+    echo html_writer::label(get_string('coursedesc', $plugin), 'menucid', false);
+    echo html_writer::select($courselist, "cid", $cid, false);
 
     $partnerlist = block_questionreport_get_partners_list();
 
-    echo html_writer::label(get_string('partnerdesc', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('partnerdesc', $plugin), 'menupartner', false);
     echo html_writer::select($partnerlist, "partner", $partner, get_string("all", $plugin));
 
     $portfoliolist = block_questionreport_get_portfolio_list();
 
-    echo html_writer::label(get_string('portfoliofilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('portfoliofilter', $plugin), 'menuportfolio', false);
     echo html_writer::select($portfoliolist, "portfolio", $portfolio, get_string("all", $plugin));
 
     // Date select.
     echo html_writer::start_tag('div', array('class' => 'date-input-group'));
     echo html_writer::label(get_string('datefilter', $plugin), false, array('class' => 'accesshide'));
-    echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
+    echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'" aria-label="Select start date" />';
     echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
-    echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
+    echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'" aria-label="Select end date"/>';
+    echo html_writer::end_tag('div');
 
     $teacherlist = block_questionreport_get_teachers_list();
 
-    echo html_writer::label(get_string('teacherfilter', $plugin), false, array('class' => 'accesshide'));
+    echo html_writer::label(get_string('teacherfilter', $plugin), 'menuteacher', false);
     echo html_writer::select($teacherlist, "teacher", $teacher, get_string("all", $plugin));
 
     $questionlist = block_questionreport_display_all_questions($ctype, $surveyid);
 
-    echo html_writer::label(get_string('questionlist', $plugin), false, array('class' => 'accesshide'));
-    echo html_writer::select($questionlist,"question",$questionid, false);
+    echo html_writer::label(get_string('questionlist', $plugin), 'menuquestion', false);
+    echo html_writer::select($questionlist, "question", $questionid, false);
 
     echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthesurveys', $plugin).'" />';
     echo '</form>';
@@ -163,7 +164,7 @@ if ($action == 'csv') {
     $content .= $OUTPUT->render_from_template('block_questionreport/admin_table', $data);
     // Write download button to content.
     if ($questionid > '0') {
-     	 $content .= "<form class=\"questionreportform2\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
+        $content .= "<form class=\"questionreportform2\" action=\"$CFG->wwwroot/blocks/questionreport/adminreport.php\" method=\"get\">\n";
         $content .= "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
         $content .= "<input type=\"hidden\" name=\"partner\" value=\"$partner\" />\n";
         $content .= "<input type=\"hidden\" name=\"start_date\" value=\"$start_date\" />\n";

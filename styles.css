@@ -202,3 +202,17 @@ table.table-adminreport tr th {
 #page-admin-setting-blocksettingquestionreport form ul li label {
   display: inline-block;
 }
+
+/* Admin report */
+#page-blocks-questionreport-adminreport .date-input-group label:first-of-type {
+  display: block;
+}
+
+#page-blocks-questionreport-adminreport form select,
+#page-blocks-questionreport-adminreport .date-input-group {
+  margin-bottom: 1rem;
+}
+
+#page-blocks-questionreport-adminreport form select {
+  margin-bottom: 1rem;
+}
