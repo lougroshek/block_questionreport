@@ -462,6 +462,10 @@ if ($ctype == "M") {
 
 // Assembled data for lead facilitator table.
 $data = new stdClass();
+// What kind of user is it?
+// $data->is_admin = $is_admin;
+$data->fac_questions_info = $is_admin ? get_string('fac_questions_info_admin', $plugin) : get_string('fac_questions_info_teacher', $plugin);
+$data->rate_questions_info = $is_admin ? get_string('rate_questions_info_admin', $plugin) : get_string('rate_questions_info_teacher', $plugin);
 // Response data.
 $data->responses = new stdClass();
 $data->responses->this_course = $totrespcourse;
