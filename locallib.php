@@ -1051,8 +1051,10 @@ function block_questionreport_get_question_results_rank(
                 // echo "gttotres = {$gttotres}, tot2 = {$tot2}<br />";
                 $gttotres = $gttotres + $tot2;
                 // echo "gttotres = {$gttotres}";
-                $sqlnpr = $sqlext .' '.$where1;
-                // echo "sqlnpr = {$sqlnpr}<br />";
+                // $sqlnpr = $sqlext .' '.$where1;
+                $sqlnpr = $sqlext; // .' '.$where1;
+                // echo "sqlext = {$sqlext}<br />";
+                // echo "where1 = {$where1}<br />";
                 $repnpr = $DB->get_record_sql($sqlnpr, $paramsext);
                 $totnpr = $repnpr->cdgood;
                 $gtnpr = $gtnpr + $totnpr;
@@ -1318,7 +1320,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
     } else {
         // Get all the courses;
+        // Total responses
         $gtres = 0;
+        // Total good responses.
         $gttotres = 0;
         $coursefilter = '0';
         $filtertype = '0';
@@ -1537,11 +1541,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         }
-        //xxxx
         // Add in the non moodle courses.
         $sqlext = "SELECT COUNT(ts.courseid) cdtot
         FROM {local_teaching_survey} ts";
         $whereext = "WHERE 1 = 1";
+        // $whereext = "WHERE ts.courseid>0";
         $paramsext = array();
         if ($stdate > 0) {
             $std = strtotime($stdate);
@@ -1562,6 +1566,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
 
         if ($filtertype == 'A' and $coursefilter > '0') {
+            echo "coursefilter = {$coursefilter}<br />";
             $whereext = $whereext .' AND ts.courseid ='.$coursefilter;
         }
         if ($filtertype == 'M') {
@@ -1569,30 +1574,41 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
 
         $sqlext = $sqlext .' '.$whereext;
-
+        echo "sqlext = {$sqlext}<br />";
         $respext = $DB->get_record_sql($sqlext, $paramsext);
-
+        // echo "respext = ".print_r($respext)."<br />";
+        // $testquery = `SELECT * FROM mdl_local_teaching_survey WHERE courseid>0 AND courseid =53`;
+        // $testdb = $DB->get_record_sql($testquery);
+        // $testdb = $DB->get_records('local_teaching_survey', array('courseid' => '53'));
+        // echo "testdb count = <br />";
+        // echo sizeof($testdb);
+        // echo "<br />";
+        // echo "$testdb = ".print_r($testdb);
         $gtres = $gtres + $respext->cdtot;
+        // echo "sqlext = {$sqlext}<br />";
         if ($respext->cdtot > 0) {
+            // WTF does this mean?
             if ($ctype == 'M') {
+                // echo 'first type';
+                $whereext = "WHERE courseid=".$coursefilter;
                 if ($qname == 'facilitator_rate_content') {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
-                    $whereext =" where (content1 >=4 or content2 >=4)";
+                    $whereext .= " AND (content1 >=4 or content2 >=4)";
                 } else {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
-                    $whereext =" where (community1 >=4 or community2 >=4)";
+                    $whereext .= " AND (community1 >=4 or community2 >=4)";
                 }
             } else {
                 if ($position == '0') {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
-                    $whereext =" where (content1 >=4 or content2 >=4)";
+                    $whereext .= " AND (content1 >=4 or content2 >=4)";
                 } else {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
-                    $whereext =" where (community1 >=4 or community2 >=4)";
+                    $whereext .= " AND (community1 >=4 or community2 >=4)";
                 }
             }
             if ($stdate > 0) {
@@ -1614,10 +1630,17 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             }
 
             $sqlext = $sqlext .' '.$whereext;
+            // echo "sqlext = {$sqlext}<br />";
             $respext = $DB->get_record_sql($sqlext, $paramsext);
+            // echo "respext = ".print_r($respext)."<br />";
+            // Total good responses.
             $tot2 = $respext->cdgood;
+            // echo "tot2 = {$tot2}<br />";
             $gttotres = $gttotres + $tot2;
+            // echo "gttotres = {$gttotres}<br />";
         }
+        echo "gtres = {$gtres}<br />";
+        echo "gttotres = {$gttotres}<br />";
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
