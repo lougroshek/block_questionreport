@@ -36,7 +36,7 @@ $action       = optional_param('action', 'view', PARAM_ALPHAEXT);
 $start_date   = optional_param('start_date', '0', PARAM_RAW);
 $end_date     = optional_param('end_date', '0', PARAM_RAW);
 $questionid   = optional_param('question', 0, PARAM_INT);
-$chart        = optional_param('chart','Bar1', PARAM_RAW); //Chart id.
+$chart        = optional_param('chart', 'Bar1', PARAM_RAW); //Chart id.
 
 global $CFG, $OUTPUT, $USER, $DB;
 require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
@@ -68,7 +68,7 @@ $surveys = $DB->get_record_sql($sqlcourse);
 if (!$surveys) {
     echo 'not a valid survey';
     echo $OUTPUT->footer();
-    exit();        
+    exit();
 }
 $surveyid = $surveys->instance;
 echo "<form class=\"questionreportform\" action=\"$CFG->wwwroot/blocks/questionreport/charts.php\" method=\"get\">\n";
@@ -76,10 +76,10 @@ echo "<input type=\"hidden\" name=\"action\" value=\"view\" />\n";
 echo "<input type=\"hidden\" name=\"cid\" value=\"$cid\" />\n";
 
 echo html_writer::label(get_string('surveyfilter', $plugin), false, array('class' => 'accesshide'));
-echo html_writer::select($surveylist,"sid",$sid, false);
+echo html_writer::select($surveylist, "sid", $sid, false);
 echo html_writer::label(get_string('chartquestion', $plugin), false, array('class' => 'accesshide'));
 $questionlist = block_questionreport_get_chartquestions($surveyid);
-echo html_writer::select($questionlist,"question",$questionid, false);
+echo html_writer::select($questionlist, "question", $questionid, false);
 
 // Date select.
 echo html_writer::start_tag('div', array('class' => 'date-input-group'));
@@ -87,6 +87,8 @@ echo html_writer::label(get_string('datefilter', $plugin), false, array('class' 
 echo '<input type="date" id="start-date" name="start_date" value="'.$start_date.'"/>';
 echo html_writer::label(get_string('to'), false, array('class' => 'inline'));
 echo '<input type="date" id="end-date" name="end_date" value="'.$end_date .'"/>';
+echo html_writer::end_tag('div');
+echo html_writer::start_tag('div', array('class' => 'chart-radio-group'));
 echo html_writer::label(get_string('selectchart', $plugin), false, array('class' => 'accesshide'));
 $checked1 =  '';
 $checked2 =  '';
@@ -108,15 +110,16 @@ if ($chart == 'Bar4') {
     $checked4 = 'checked';
 }
 echo '<input type="radio" id="chart" name="chart" value="Bar1" '.$checked1. ' />Bar Chart: Percent of reponses 4 and 5 by Partner Site<br>';
+echo html_writer::end_tag('div');
 echo '<input type="submit" class="btn btn-primary btn-submit" value="'.get_string('getthechart', $plugin).'" />';
 echo '</form>';
 echo html_writer::end_tag('div');
 if ($questionid <> '0') {
     $genchart = block_questionreport_setchart($ctype, $chart, $start_date, $end_date, $courseid, $sid, $questionid);
     if ($genchart == '0') {
-        echo get_string('nochart', $plugin);    
+        echo get_string('nochart', $plugin);
     } else {
         echo $OUTPUT->render($genchart);
-    }    
-}   
+    }
+}
 echo $OUTPUT->footer();

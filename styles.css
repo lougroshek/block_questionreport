@@ -206,33 +206,49 @@ table.table-adminreport tr th {
 }
 
 #page-blocks-questionreport-report .date-input-group label,
-#page-blocks-questionreport-report .date-input-group input {
+#page-blocks-questionreport-report .date-input-group input,
+#page-blocks-questionreport-charts .date-input-group label,
+#page-blocks-questionreport-charts .date-input-group input {
   display: inline-block;
 }
 
 /* Admin report */
 #page-blocks-questionreport-report .date-input-group label:first-of-type,
-#page-blocks-questionreport-adminreport .date-input-group label:first-of-type {
+#page-blocks-questionreport-adminreport .date-input-group label:first-of-type,
+#page-blocks-questionreport-charts .date-input-group label:first-of-type,
+#page-blocks-questionreport-charts .date-input-group label:first-of-type {
   display: block;
 }
 
 #page-blocks-questionreport-report .date-input-group label:nth-of-type(2),
-#page-blocks-questionreport-adminreport .date-input-group label:nth-of-type(2) {
+#page-blocks-questionreport-adminreport .date-input-group label:nth-of-type(2),
+#page-blocks-questionreport-charts .date-input-group label:nth-of-type(2) {
   margin: 0 0.5rem;
 }
 
 #page-blocks-questionreport-report form select,
 #page-blocks-questionreport-report .date-input-group,
 #page-blocks-questionreport-adminreport form select,
-#page-blocks-questionreport-adminreport .date-input-group {
+#page-blocks-questionreport-adminreport .date-input-group,
+#page-blocks-questionreport-charts form select,
+#page-blocks-questionreport-charts .date-input-group {
   margin-bottom: 1rem;
 }
 
 #page-blocks-questionreport-report .btn.btn-submit,
-#page-blocks-questionreport-adminreport .btn.btn-submit {
+#page-blocks-questionreport-adminreport .btn.btn-submit,
+#page-blocks-questionreport-charts .btn.btn-submit {
   margin-left: 0;
 }
 
 #page-blocks-questionreport-adminreport form select {
   margin-bottom: 1rem;
+}
+
+#page-blocks-questionreport-charts .chart-radio-group label {
+  display: block;
+}
+
+#page-blocks-questionreport-charts .chart-radio-group input {
+  margin-right: 0.5rem;
 }
