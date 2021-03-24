@@ -581,8 +581,13 @@ function block_questionreport_get_question_results_rank(
                         $retval = round($percent, 0)."(%)";
                     }
                 } else {
+                    if ($qname == 'NPS') {
+                        $retval = "0";
+                    } else {
+                        $retval = "0(%)";
+                    }
                     // echo 'test';
-                    $retval = "0(%)";
+                    // $retval = "0(%)";
                 }
             }
             // Not a mooodle course.
