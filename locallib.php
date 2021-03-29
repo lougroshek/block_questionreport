@@ -1566,7 +1566,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
 
         if ($filtertype == 'A' and $coursefilter > '0') {
-            echo "coursefilter = {$coursefilter}<br />";
+            // echo "coursefilter = {$coursefilter}<br />";
             $whereext = $whereext .' AND ts.courseid ='.$coursefilter;
         }
         if ($filtertype == 'M') {
@@ -1574,7 +1574,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         }
 
         $sqlext = $sqlext .' '.$whereext;
-        echo "sqlext = {$sqlext}<br />";
+        // echo "sqlext = {$sqlext}<br />";
         $respext = $DB->get_record_sql($sqlext, $paramsext);
         // echo "respext = ".print_r($respext)."<br />";
         // $testquery = `SELECT * FROM mdl_local_teaching_survey WHERE courseid>0 AND courseid =53`;
@@ -1590,7 +1590,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             // WTF does this mean?
             if ($ctype == 'M') {
                 // echo 'first type';
-                $whereext = "WHERE courseid=".$coursefilter;
+                // $whereext = "WHERE courseid=".$coursefilter;
                 if ($qname == 'facilitator_rate_content') {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
@@ -1601,6 +1601,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $whereext .= " AND (community1 >=4 or community2 >=4)";
                 }
             } else {
+                $whereext = "WHERE courseid=".$coursefilter;
                 if ($position == '0') {
                     $sqlext = "SELECT COUNT(ts.courseid) cdgood
                     FROM {local_teaching_survey} ts";
@@ -1639,8 +1640,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             $gttotres = $gttotres + $tot2;
             // echo "gttotres = {$gttotres}<br />";
         }
-        echo "gtres = {$gtres}<br />";
-        echo "gttotres = {$gttotres}<br />";
+        // echo "gtres = {$gtres}<br />";
+        // echo "gttotres = {$gttotres}<br />";
         if ($gtres > 0) {
             if ($gttotres > 0) {
                 $percent = ($gttotres / $gtres) * 100;
