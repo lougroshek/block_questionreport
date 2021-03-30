@@ -86,10 +86,10 @@ $string['table_header_facilitator_info'] = 'For these two questions, participant
 
 
 $string['fac_questions_info_admin'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays an average for all lead facilitators in the course. The "This Course" column displays an average for all surveys. Apply filters to the "All Courses" column using the controls above.';
-$string['fac_questions_info_teacher'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays your individual scores. The "This Course" column displays scores for all surveys. Apply filters to the "All Courses" column using the controls above.';
+$string['fac_questions_info_teacher'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays your individual scores. The "All Courses" column displays an average for surveys in your courses. Apply filters to the "All Courses" column using the controls above.';
 
 $string['rate_questions_info_admin'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys.';
-$string['rate_questions_info_teacher'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys.';
+$string['rate_questions_info_teacher'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys. Apply filters to the "All Courses" column using the controls above.';
 
 
 $string['table_header_session_info'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators.';
