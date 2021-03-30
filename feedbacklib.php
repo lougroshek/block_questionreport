@@ -172,8 +172,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           foreach($options_old as $val) {
           	 $tablestart .='<th style="background-color:#ccf5ff">'.$val.'</th>';
           }
+
        	 $tablestart .='<th style="background-color:#ccf5ff">Grand Total</th>';
-          
           $content .= $tablestart.'</tr>';
           $line1 = '<tr><td>Number of Survey Responses</td>';
           $yr2 = $yrnum + 1;
@@ -187,27 +187,26 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
                $line1 .= '<td>'.$mn1.'</td>';
           }
           $rows = $x;
-          $x = '0';  
+          $x = '0';
           $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $x, '', $port);
           $line1 .= '<td>'.$mn1.'</td></tr>';
           $content .= $line1;
-         
           $content .= '<tr><td colspan = "'.$rows.'">&nbsp;</td></tr>';
           $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
           for ($ql = 1; $ql < 9; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
                $x = 0;
                foreach($options_old as $val) {
-          	      $x = $x + 1;
+          	  $x = $x + 1;
                   $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, $x, $val, $port);
                   $line1 .= '<td>'.$mn1.'</td>';
                }
                $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, 0, $val, $port);
                $line1 .= '<td>'.$mn1.'</td>';
-               $content = $content .$line1.'</tr>'; 
+               $content = $content .$line1.'</tr>';
           }
           $content = $content .'<tr><td colspan = "'.$rows.'">&nbsp;</td></tr>';
-       
+
           $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
           for ($ql = 100; $ql < 102; $ql++) {
                $x = 0;
@@ -223,7 +222,7 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
                $content = $content .$line1.'</tr>';            
           }
           $content = $content.'</table>';
-        	 $doc = new pdf;
+       	  $doc = new pdf;
           $doc->setPrintFooter(false);
           $doc->setFont('helvetica',' ', '4');
           $doc->SetFillColor(0,255,0);
@@ -259,49 +258,53 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           $nddate = '01-06-'.$yr2;
           $x = 0;
           $rows = 0;
-         
           foreach($options as $val) {
-          	   $x = $x + 1;
+       	       $x = $x + 1;
                $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $port, $val, $x);
                $line1 .= '<td>'.$mn1.'</td>';
           }
           $rows = $x;
-          $x = '0';  
+          $x = '0';
           $mn1 = block_questionreport_choicequestion(0, $stdate, $nddate, $port, '', $x);
           $line1 .= '<td>'.$mn1.'</td></tr>';
           $content .= $line1;
           $content .= '<tr><td colspan = "'.$rows.'">&nbsp;</td></tr>';
-          */
-          $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
+
+         // $content = $content.'<tr><th><b>Session Summary (% Agree and Strongly Agree)</b></th></tr>';
+
           for ($ql = 1; $ql < 9; $ql++) {
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
                $x = 0;
                foreach($options as $val) {
-          	      $x = $x + 1;
+       	          $x = $x + 1;
                   $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, $port, $val, $x);
                   $line1 .= '<td>'.$mn1.'</td>';
                }
                $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, $port, '', $x);
                $line1 .= '<td>'.$mn1.'</td>';
-               $content = $content .$line1.'</tr>'; 
+               $content = $content .$line1.'</tr>';
           }
+
           $content = $content .'<tr><td colspan = "'.$rows.'">&nbsp;</td></tr>';
-          $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
+
+         // $content = $content.'<tr><th><b>Facilitation Summary (% Agree and Strongly Agree)</b></th>'.$tablestart.'</tr>';
+
           for ($ql = 100; $ql < 102; $ql++) {
                $x = 0;
                $line1 = '<tr><td>'.$qlist[$ql].'</td>';
                foreach($options as $val) {
-          	      $x = $x + 1;
+          	  $x = $x + 1;
                   $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, $port, $val, $x);
                   $line1 .= '<td>'.$mn1.'</td>';
                }
                $mn1 = block_questionreport_choicequestion($ql, $stdate, $nddate, $port, '', $x);
                $line1 .= '<td>'.$mn1.'</td>';
 
-               $content = $content .$line1.'</tr>';            
+               $content = $content .$line1.'</tr>';
           }
+
           $content = $content.'</table>';
-        	 $doc = new pdf;
+       	   $doc = new pdf;
           $doc->setPrintFooter(false);
           $doc->setFont('helvetica',' ', '4');
           $doc->SetFillColor(0,255,0);
@@ -310,8 +313,8 @@ function block_questionreport_genfeedback($reportnum, $yrnum, $port) {
           $name = 'Participant Feedback by partner site for'.$yrnum.'.pdf';
           $doc->Output($name);
           exit();
-          break; 
-     }         
+          break;
+     }
 }
 // Function to return the % of question
 
@@ -322,7 +325,7 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
    $fromressql = "" ;
    $whereressql = " ";
    $where1 = " ";
-   $whereext = " ";  
+   $whereext = " ";
    $plugin = 'block_questionreport';
    if ($partner > 0 and $portfolio > '') {
    	 // get the name we need.
@@ -334,17 +337,17 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
        $options_old = preg_split("/\s*\n\s*/", $opts);
        $x = 0;
        foreach($options_old as $val) {
-     	     $x = $x + 1;
+     	   $x = $x + 1;
            if ($x == $partner) {
-               $portval = $val;                  
+               $portval = $val;
            }
-       }       
+       }
    }
    switch ($qnum) {
       case "0" :
         $mdlsql = "WHERE content = 'I am satisfied with the overall quality of this course.'";
         $nonmdl = "WHERE  1 = 1";
-        break;           
+        break;
       case "1":
         $mdlsql = "AND content = 'I am satisfied with the overall quality of this course.'";
         $nonmdl = "WHERE satisfied >=4";
@@ -410,7 +413,7 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
    }
    if ($partner > 0 ) {
        $whereext = $whereext . " AND ( district = :district )";
-       $paramsext['district'] = $portdisplay;  
+       $paramsext['district'] = $portdisplay;
        if ($portfolio > '') {
            $whereext = $whereext . " AND ( port1name = :port1name or port2name = :port2name)";
            $paramsext['port1name'] = $portval;
@@ -421,14 +424,13 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
            $whereext = $whereext . " AND ( port1name = :port1name or port2name = :port2name)";
            $paramsext['port1name'] = $portdisplay;
            $paramsext['port2name'] = $portdisplay;
-       }   
+       }
    }
    // Get the total responses.
    $sqlext = "SELECT COUNT(ts.courseid) cdtot
               FROM {local_teaching_survey} ts ";
    $sqlext = $sqlext .$nonmdl.$whereext;
    $sqlnonmoodle = $DB->get_record_sql($sqlext, $paramsext);
-   
    $cntnonmoodle = $sqlnonmoodle->cdtot;
    $sqlmoodle = " SELECT COUNT(qr.id) crid 
                     FROM {questionnaire_response} qr 
@@ -441,17 +443,15 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
                                   AND cd.intvalue = ".$partner;
        if ($portfolio > '0') {
            $portfieldid = get_config($plugin, 'portfoliofield');
-                  
            $sqlmoodle = $sqlmoodle. " JOIN {customfield_data} cd1 on cd1.instanceid = q.course 
                                   AND cd1.fieldid = ".$portfieldid . "
                                   AND cd1.intvalue = ".$portfolio;
-       }              
-                                  
+       }
   } else {
        if ($portfolio > '0') {
            $sqlmoodle = $sqlmoodle ." JOIN {customfield_data} cd on cd.instanceid = q.course and cd.value=".$portfolio;     
        }
-   }                
+   }
    $sqlmoodle = $sqlmoodle. " WHERE q.name = 'End-of-Course Survey' 
                      AND qr.complete = 'y'
                      AND qr.submitted >= :stdate 
@@ -545,7 +545,7 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
                  $ans1 = $sql2->crid;
              } else {
                   $recs = $DB->get_records_sql($sqlmoodle, $paramsql);
-                  $ans1 = count($recs);             
+                  $ans1 = count($recs);
              }
         }
      }
@@ -584,10 +584,8 @@ function block_questionreport_choicequestion($qnum, $stdate, $nddate, $portfolio
                 $ret = $ans1 - $ans1a;
                 $ret = round($ret, 0);   
             }
-            return $ret; 
+            return $ret;
         } else {
-           return '-';        
-        }  
-                  
-   }    
-                               
+           return '-';
+        }
+   }

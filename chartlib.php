@@ -29,14 +29,13 @@ function block_questionreport_get_portfolio_list() {
     $options = array();
     $fieldid = get_config($plugin, 'portfoliofield');
     $content = $DB->get_field('customfield_field', 'configdata', array('id' => $fieldid));
-    
     $x = json_decode($content);
     $opts = $x->options;
     $options_old = preg_split("/\s*\n\s*/", $opts);
     $x = 1;
     foreach($options_old as $val) {
        $options[$x] = $val;
-       $x = $x + 1;    
+       $x = $x + 1;
     }
     return $options;
 
@@ -62,8 +61,25 @@ function block_questionreport_get_teachers_list() {
            $teacherlist[$alt->id] = $alt->teachername;
         }
     }
-    asort($teacherlist);
-    return $teacherlist;
+    // flip the last name / first name then sort.
+    $newlist = array();
+    foreach($teacherlist as $key=>$value) {
+       $name = explode(' ', $value);
+       $newname = $name[1]. ' '.$name[0];
+       $newlist[$key] = $newname;
+           
+    }
+    asort($newlist);
+    // flip them back to display properly.
+    
+    $sortlist = array();
+    foreach($newlist as $key=>$value) {
+       $name = explode(' ', $value);
+       $newname = $name[1]. ' '.$name[0];
+       $sortlist[$key] = $newname;    
+    }
+   
+    return $sortlist;
 }
 
 function block_questionreport_get_allessay() {
@@ -117,7 +133,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $allquest = "1";
     }
   //  echo 'all quest '.$allquest;
-  //  exit(); 
+  //  exit();
     $plugin = 'block_questionreport';
     $na = get_string('none', $plugin);
     $fieldid = get_config($plugin, 'partnerfield');
@@ -130,66 +146,66 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $qname = $DB->get_field('questionnaire_question', 'name', array('id' => $questionid));
         $nquestionid = $questionid;
     } else {
-    	  $nquestionid = $questionid;
-    	  $choiceid = -1;
-        $questionid = 0; 
+        $nquestionid = $questionid;
+        $choiceid = -1;
+        $questionid = 0;
         $qname = 'course_ratings';
         $sqladmin = "select qr.id, rankvalue response , qu.course courseid, content, q.submitted
-                      from {questionnaire_quest_choice} qc 
-                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id 
-                      join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id 
+                      from {questionnaire_quest_choice} qc
+                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
+                      join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id
                       JOIN {questionnaire} qu on qu.id = q.questionnaireid
-                      where content = '";    	  
+                      where content = '";
         switch($nquestionid) {
-        	  case '10':
-             $nqname = 'I am satisfied with the overall quality of this course.';
-        	    break;
-        	  case '11' :    
-        	    $nqname = 'The topics for this course were relevant for my role.';
-             break;
-           case '12':  
+             case '10':
+                $nqname = 'I am satisfied with the overall quality of this course.';
+                break;
+             case '11' :
+                $nqname = 'The topics for this course were relevant for my role.';
+                break;
+           case '12':
              $nqname = 'The independent online work activities were well-designed to help me meet the learning targets.';
              break;
-           case '13' :      
+           case '13' :
              $nqname = 'The Zoom meeting activities were well-designed to help me meet the learning targets.';
              break;
-           case '14':  
+           case '14':
              $nqname = 'I felt a sense of community with the other participants in this course even though we were meeting virtually.';
              break;
-          case '15' :       
+          case '15' :
             $nqname = 'This course helped me navigate remote and/or hybrid learning during COVID-19.';
             break;
-          case '16':       
+          case '16':
             $nqname = 'I will apply my learning from this course to my practice in the next 4-6 weeks.';
             break;
-          case '17':  
+          case '17':
             $nqname = 'Recommend this course to a colleague or friend.';
             break;
          case '18':
             $nqname = 'facilitator_rate_content';
-            $sqladmin = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
-                           FROM {questionnaire_response_rank} mr 
-                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
-                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+            $sqladmin = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                           FROM {questionnaire_response_rank} mr
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
                           WHERE qq.name = '".$nqname;
-             $nqname = "";                  
-                  
+             $nqname = "";
+
             break;
-         case '19':   
+         case '19':
             $nqname = 'facilitator_rate_community';
-            $sqladmin = "SELECT qr.id, rankvalue response, qr.submitted, qq.content, course courseid
-                           FROM {questionnaire_response_rank} mr 
-                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
-                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+            $sqladmin = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
+                           FROM {questionnaire_response_rank} mr
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
                           WHERE qq.name = '".$nqname;
-             $nqname = "";                  
+             $nqname = "";
             break;
           }
           $sqladmin = $sqladmin .$nqname."'";
-    
-    } 
+
+    }
     if ($ctype == 'M' or $questionid > 20)  {
         // Get the question id for Non Moodle courses;
        switch($qname) {
@@ -229,7 +245,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                       WHERE qq.name = :qname and qr.complete = 'y'";
           $paramsql = array('qname' => $qname);
     } else {
-    	    if ($choiceid > 1 ) { 
+    	    if ($choiceid > 1 ) {
               $sqladmin = "SELECT mr.id, mr.rankvalue response, qq.surveyid, qr.userid, qs.courseid, qr.submitted
                             FROM {questionnaire_response_rank} mr
                             JOIN {questionnaire_question} qq on qq.id = mr.question_id
@@ -239,7 +255,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                             AND qr.complete = 'y'
                             AND choice_id = :choiceid";
             $paramsql = array ('questionid' => $questionid, 'choiceid' => $choiceid);
-         }         
+         }
     }
     if ($allquest == '1') {
         $sqladmin = "SELECT qt.id qtid, qq.id, qq.surveyid, qr.userid, qt.response, qr.submitted, qs.courseid, qq.content, qq.name
@@ -261,15 +277,14 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
         $paramsql['nddate'] = $ndt;
     }
     if ($cid > 0) {
-    	  if ($choiceid > -1) {
+          if ($choiceid > -1) {
              $sqladmin = $sqladmin . ' AND qs.courseid = :courseid';
         } else {
-             $sqladmin = $sqladmin . ' AND qu.course = :courseid';        
-        }     
+             $sqladmin = $sqladmin . ' AND qu.course = :courseid';
+        }
         $paramsql['courseid'] = $cid;
     }
     $sqladmin = $sqladmin. ' '.$orderby;
-    
     $results = $DB->get_records_sql($sqladmin, $paramsql);
     $displaycnt = 0;
     $display = true;
@@ -420,8 +435,8 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                                join {questionnaire_response_rank} qr on qr.question_id = qc.question_id 
                                join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id 
                                JOIN {questionnaire} qu on qu.id = q.questionnaireid
-                               where content = ";    	  
-            
+                               where content = ";
+
                    $where1 = "  WHERE qq.name = 'covid_prepare_text' AND userid = ".$user;
                    $where2 = "  WHERE qq.name = 'went_well_text' AND userid = ".$user;
                    $where3 = "  WHERE qq.name = 'supported_text' AND userid = ".$user;
@@ -429,22 +444,36 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    $where5 = "  WHERE qq.name = 'why_NPS' AND userid = ".$user;
                    $where6 = "  WHERE qq.name = 'additional_comments_text' AND userid = ".$user;
                    $where7 = "'I am satisfied with the overall quality of this course.' AND userid = ".$user ." AND  qu.course = ".$qid;
-        	          $where8 = "'The topics for this course were relevant for my role.' AND userid = ".$user ." AND  qu.course = ".$qid;
-                   $where9 = "'The independent online work activities were well-designed to help me meet the learning targets.' 
+       	          $where8 = "'The topics for this course were relevant for my role.' AND userid = ".$user ." AND  qu.course = ".$qid;
+                   $where9 = "'The independent online work activities were well-designed to help me meet the learning targets.'
                                AND userid = ".$user ." AND  qu.course = ".$qid;
-                   $where10 = "'The Zoom meeting activities were well-designed to help me meet the learning targets.' 
+                   $where10 = "'The Zoom meeting activities were well-designed to help me meet the learning targets.'
                                 AND userid = ".$user ." AND  qu.course = ".$qid;
-                   $where11 = "'I felt a sense of community with the other participants in this course even though we were meeting virtually.' 
+                   $where11 = "'I felt a sense of community with the other participants in this course even though we were meeting virtually.'
                                 AND userid =".$user ." AND  qu.course = ".$qid;
-                   $where12 = "'This course helped me navigate remote and/or hybrid learning during COVID-19.' 
+                   $where12 = "'This course helped me navigate remote and/or hybrid learning during COVID-19.'
                                 AND userid = ".$user ." AND  qu.course = ".$qid;
-                   $where13 = "'I will apply my learning from this course to my practice in the next 4-6 weeks.' 
+                   $where13 = "'I will apply my learning from this course to my practice in the next 4-6 weeks.'
                                AND userid = ".$user ." AND  qu.course = ".$qid;
                    $where14 = "'Recommend this course to a colleague or friend.' AND userid = ".$user ." AND  qu.course = ".$qid;
                    $where15 = "'Recommend this course to a colleague or friend.' AND userid = ".$user ." AND  qu.course = ".$qid;
                    $where16 = "'Recommend this course to a colleague or friend.' AND userid = ".$user ." AND  qu.course = ".$qid;
-                             
-                
+                   $r1 = '';
+                   $r2 = '';
+                   $r3 = '';
+                   $r4 = '';
+                   $r5 = '';
+                   $r6 = '';
+                   $r7 = '';
+                   $r8 = '';
+                   $r9 = '';
+                   $r10 = '';
+                   $r11 = '';
+                   $r12 = '';
+                   $r13 = '';
+                   $r14 = '';
+                   $r15 = '';
+                   $r16 = '';
                    $params = array();
                    $sqlnew = $sql2. $where1;
                    $res1 = $DB->get_records_sql($sqlnew, $params);
@@ -552,23 +581,23 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
 
                    $nqname = 'facilitator_rate_content';
                    $sqlnew = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
-                           FROM {questionnaire_response_rank} mr 
-                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
-                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+                           FROM {questionnaire_response_rank} mr
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
                           WHERE qq.name = '".$nqname. "' AND userid = ".$user ." AND  qu.course = ".$qid;
-                
+
                    $res15 = $DB->get_records_sql($sqlnew, array());
                    foreach($res15 as $res) {
                       $r15 = $res->response;
+                      $r15 =  str_replace("&nbsp;", '', trim(strip_tags($r15)));
                    }
-                   $r15 =  str_replace("&nbsp;", '', trim(strip_tags($r15)));
 
                    $nqname = 'facilitator_rate_community';
                    $sqlnew = "SELECT mr.id, rankvalue response, qr.submitted, qq.content, course courseid
-                           FROM {questionnaire_response_rank} mr 
-                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id 
-                           JOIN {questionnaire_response} qr on qr.id = mr.response_id 
+                           FROM {questionnaire_response_rank} mr
+                           JOIN {questionnaire_question} qq ON qq.id = mr.question_id
+                           JOIN {questionnaire_response} qr on qr.id = mr.response_id
                            JOIN {questionnaire} qu on qu.id = qr.questionnaireid
                           WHERE qq.name = '".$nqname. "' AND userid = ".$user ." AND  qu.course = ".$qid;
 
@@ -578,22 +607,21 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    }
                    $r16 =  str_replace("&nbsp;", '', trim(strip_tags($r16)));
 
-                   $q6 =  'Do you have additional comments about  this course';               
-                 	 $q7 = "I am satisfied with the overall quality of this course";
-               	 $q8 = "The topics for this course were relevant for my role.";
-                	$q9 = "The independent online work activities were well-designed to help me meet the learning targets.";
+                   $q6 =  'Do you have additional comments about  this course';
+                   $q7 = "I am satisfied with the overall quality of this course";
+               	   $q8 = "The topics for this course were relevant for my role.";
+                   $q9 = "The independent online work activities were well-designed to help me meet the learning targets.";
                	$q10 = "The Zoom meeting activities were well-designed to help me meet the learning targets.";
                	$q11 = "I felt a sense of community with the other participants in this course even though we were meeting virtually.";
                	$q12 = "This course helped me navigate remote and/or hybrid learning during COVID-19.";
                	$q13 = "I will apply my learning from this course to my practice in the next 4-6 weeks.";
                	$q14 = "Recommend this course to a colleague or friend.";
                	$q15 = "He/she/they facilitated the content clearly.";
-               	$q16 = "He/she/they effectively built a community of learners";    
+               	$q16 = "He/she/they effectively built a community of learners";
                    $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr,
-                                    $q1, $r1, $q2, $r2, $q3, $r3, $q4, $r4, $q5, $r5, $q6, $r6, 
+                                    $q1, $r1, $q2, $r2, $q3, $r3, $q4, $r4, $q5, $r5, $q6, $r6,
                                     $q8, $r8, $q9, $r9,$q10, $r10, $q11, $r11, $q12, $r12, $q13, $r13, $q14, $r14,
-                                    $q15, $r15, $q16, $r16);                                    
-                                    
+                                    $q15, $r15, $q16, $r16);
                } else {
                   $output[] = array($sub, $partnerdisplay, $portdisplay, $tlist, $cfname, $quest, $cr);
                }
