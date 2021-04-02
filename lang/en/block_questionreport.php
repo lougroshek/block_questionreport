@@ -85,7 +85,7 @@ $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partne
 $string['table_header_facilitator_info'] = 'For these two questions, participants rank lead facilitators separately. When viewing as a lead facilitator, the "This Course" column displays your individual scores. When viewing with administrative access, the "This Course" column displays an average for all lead facilitators in the course.';
 
 
-$string['fac_questions_info_admin'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays an average for all lead facilitators in the course. The "This Course" column displays an average for all surveys. Apply filters to the "All Courses" column using the controls above.';
+$string['fac_questions_info_admin'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays an average for all lead facilitators in the course. The "All Courses" column displays an average for all surveys. Apply filters to the "All Courses" column using the controls above.';
 $string['fac_questions_info_teacher'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays your individual scores. The "All Courses" column displays an average for surveys in your courses. Apply filters to the "All Courses" column using the controls above.';
 
 $string['rate_questions_info_admin'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys.';
