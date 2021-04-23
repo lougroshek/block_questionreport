@@ -180,6 +180,14 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
             break;
           case '17':
             $nqname = 'Recommend this course to a colleague or friend.';
+            // Decrement the rankvalue entry for NPS score since labels are 0-10
+            // but form field values are 10-13.
+            $sqladmin = "select qr.id, (rankvalue - 1) response , qu.course courseid, content, q.submitted
+                      from {questionnaire_quest_choice} qc
+                      join {questionnaire_response_rank} qr on qr.question_id = qc.question_id
+                      join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id
+                      JOIN {questionnaire} qu on qu.id = q.questionnaireid
+                      where content = '";
             break;
          case '18':
             $nqname = 'facilitator_rate_content';
@@ -233,7 +241,7 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
          case 'course_ratings':
             $nquestionid = $questionid;
             break;
-         }	              
+         }
     }
     $orderby = "ORDER BY ID";
     if ($choiceid == 0) {
@@ -572,7 +580,14 @@ function block_questionreport_get_adminreport($ctype, $surveytype, $cid, $partne
                    }
                    $r13 =  str_replace("&nbsp;", '', trim(strip_tags($r13)));
 
-                   $sqlnew = $sql3. $where14;
+                   // Here is what needs changing.
+                   $npssql = "select qr.id, (rankvalue - 1) response , qu.course courseid, content, q.submitted
+                               from {questionnaire_quest_choice} qc 
+                               join {questionnaire_response_rank} qr on qr.question_id = qc.question_id 
+                               join {questionnaire_response} q on q.id = qr.response_id and qc.id = qr.choice_id 
+                               JOIN {questionnaire} qu on qu.id = q.questionnaireid
+                               where content = ";
+                   $sqlnew = $npssql . $where14;
                    $res14 = $DB->get_records_sql($sqlnew, $params);
                    foreach($res14 as $res) {
                       $r14 = $res->response;
