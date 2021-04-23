@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Block "people"
+ * Block "questionreport"
  *
- * @package    block_people
+ * @package    block_questionreport
  * @copyright  2013 Alexander Bias, Ulm University <alexander.bias@uni-ulm.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -30,12 +30,14 @@ defined('MOODLE_INTERNAL') || die();
  * @package    block_questionreport
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class block_questionreport extends block_base {
+class block_questionreport extends block_base
+{
     /**
      * init function
      * @return void
      */
-    public function init() {
+    public function init()
+    {
         $this->title = get_string('pluginname', 'block_questionreport');
     }
 
@@ -43,7 +45,8 @@ class block_questionreport extends block_base {
      * applicable_formats function
      * @return array
      */
-    public function applicable_formats() {
+    public function applicable_formats()
+    {
         return array('course-view' => true, 'site' => true);
     }
 
@@ -51,7 +54,8 @@ class block_questionreport extends block_base {
      * has_config function
      * @return bool
      */
-    public function has_config() {
+    public function has_config()
+    {
         return true;
     }
 
@@ -59,7 +63,8 @@ class block_questionreport extends block_base {
      * instance_allow_multiple function
      * @return bool
      */
-    public function instance_allow_multiple() {
+    public function instance_allow_multiple()
+    {
         return false;
     }
 
@@ -67,7 +72,8 @@ class block_questionreport extends block_base {
      * instance_can_be_hidden function
      * @return bool
      */
-    public function instance_can_be_hidden() {
+    public function instance_can_be_hidden()
+    {
         // By default, instances can be hidden by the user.
         $hideblock = true;
         // If config 'hideblock' is disabled.
@@ -82,7 +88,8 @@ class block_questionreport extends block_base {
      * get_content function
      * @return string
      */
-    public function get_content() {
+    public function get_content()
+    {
         global $COURSE, $CFG, $OUTPUT, $USER, $DB;
         require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 
@@ -104,9 +111,8 @@ class block_questionreport extends block_base {
 
         // Get context.
         $this->content->text = block_questionreport_get_evaluations();
-        
-        return $this->content; 
-        
+
+        return $this->content;
     }
 
     /**
@@ -115,7 +121,8 @@ class block_questionreport extends block_base {
      * @return stdClass the configs for both the block instance and plugin
      * @since Moodle 3.8
      */
-    public function get_config_for_external() {
+    public function get_config_for_external()
+    {
 
         // Return all settings for all users since it is safe (no private keys, etc..).
         $instanceconfigs = !empty($this->config) ? $this->config : new stdClass();

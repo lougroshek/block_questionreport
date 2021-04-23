@@ -49,24 +49,27 @@ $string['setting_rolesheading'] = 'Roles';
 $string['setting_roles'] = 'Show these roles';
 $string['setting_roles_desc'] = 'This setting allows you to control which users appear in this block. Users need to have at least one of these roles in a course to be shown in the block.';
 
+$string['setting_admin_roles'] = 'Admin report roles';
+$string['setting_admin_roles_desc'] = 'This setting allows you to control which roles can view the admin reports.';
+
 // Notifications.
 $string['resetvisibilitysuccess'] = 'Success! All "block_people" instances are visible (again). <br/> The setting "Reset visibility" has been reset.';
 $string['resetvisibilityerror'] = 'Oops... Something went wrong updating the database tables... <br/> The setting "Reset visibility" has been reset.';
 $string['summary'] = 'Facilitation summary (% Agree & Strongly Agree)';
 $string['thiscourse'] = 'This Course';
 $string['allcourses'] = 'All Courses';
-$string['session'] = 'Session (% Agree & Strongly Agree)'; 
+$string['session'] = 'Session (% Agree & Strongly Agree)';
 $string['surveyresp'] = 'Number of survey responses';
-$string['reports'] = 'Access Data';
+$string['reports'] = 'Access Survey Reports';
+$string['adminreports'] = 'Access Admin Reports';
 $string['charts'] = 'Access Charts';
-$string['nocoursevals'] = '<p>
-No course evaluations have been completed for this course.
+$string['nocoursevals'] = '<p>There are no survey questions related to your facilitation in this course available at this time. Either no course evaluations have been completed for this course, your you were not enrolled in a lead facilitator role when they were completed.
 </p>
 <p>
-To access results from previously courses, select <strong>Access Data</strong>.
+To access results from previously courses, select <strong>Access Survey Reports</strong>.
 </p>';
 $string['reportheader'] = 'Questionnaire Report Data';
-$string['chartsheader'] = 'Questionnaire Report Charts';
+$string['chartsheader'] = 'Survey Reports Block Charts';
 $string['coursefilter'] = 'Filter by Course (applies to This Course column)';
 $string['datefilter'] = 'Filter by Date Range';
 $string['partnerfilter'] = 'Filter by Partner Site (applies to All Courses column)';
@@ -79,6 +82,18 @@ $string['tagvalue_desc_diagnostic'] = 'Questionnaires must have this value in th
 $string['getthesurveys'] = 'Get the survey results';
 $string['partnerfield'] = 'Custom course menu field used for Partners';
 $string['partnerfieldhelp'] = 'Pick the custom course field used to store Partners';
+$string['table_header_facilitator_info'] = 'For these two questions, participants rank lead facilitators separately. When viewing as a lead facilitator, the "This Course" column displays your individual scores. When viewing with administrative access, the "This Course" column displays an average for all lead facilitators in the course.';
+
+
+$string['fac_questions_info_admin'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays an average for all lead facilitators in the course. The "All Courses" column displays the average for all surveys. Apply filters to the "All Courses" column using the controls above.';
+$string['fac_questions_info_teacher'] = 'For these two questions, participants rank lead facilitators separately. The "This Course" column displays your individual scores. The "All Courses" column displays the average for surveys in your courses. Apply filters to the "All Courses" column using the controls above.';
+
+$string['rate_questions_info_admin'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys. Apply filters to the "All Courses" column using the controls above.';
+$string['rate_questions_info_teacher'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators. The "All Courses" column displays the average for all surveys. Apply filters to the "All Courses" column using the controls above.';
+
+
+$string['table_header_session_info'] = 'For these two questions, all lead facilitators in the course are evaluated together. The "This Course" column displays an average for all lead facilitators.';
+$string['word_cloud_info'] = 'The word cloud and text response list are composed of questions in which all lead facilitators are evaluated together.';
 
 // Initial view.
 $string['contentq_desc'] = 'He/She/They facilitated the content clearly.';
@@ -94,10 +109,57 @@ $string['by_question_instr'] = 'To see anonymous responses to survey questions, 
 $string['tables_heading'] = 'Survey Data and Historical Responses';
 $string['table_header_facilitator'] = 'Facilitation Summary (% Agree and Strongly Agree)';
 $string['table_header_session'] = 'Session Summary (% Agree and Strongly Agree)';
-
+$string['courseonly'] = 'Filter by Course - (applies to All Courses column)';
 // Word Cloud template.
 $string['text_responses'] = 'Text Responses';
 $string['word_cloud_heading'] = 'Text Responses Word Cloud';
 $string['questionlist'] = 'Question list';
 $string['getthequestion'] = 'Display question results';
+$string['pdfquestion'] = 'Download survey results as a pdf';
 $string['none'] = '-';
+
+// Charts
+$string['surveyfilter'] = 'Select a survey';
+$string['getthesurvey'] = 'Get the surveys';
+$string['selectchart'] = 'Select a chart';
+$string['portfoliofield'] = 'Custom course menu field used for Portfolios';
+$string['portfoliofieldhelp'] = 'Pick the custom course field used to store Portfolio';
+$string['portfoliofilter'] = 'Filter by Portfolio';
+$string['teacherfilter'] = 'Filter by Facilitator';
+$string['generatecsv'] = 'Download CSV File';
+$string['data_preview'] = 'Data Preview';
+
+// Admin report table
+$string['h_date'] = 'Date';
+$string['h_portfolio'] = 'Portfolio';
+$string['h_partner'] = 'Partner Site';
+$string['h_course'] = 'Course';
+$string['h_course_id'] = 'Course ID';
+$string['h_facilitator'] = 'Facilitator(s)';
+$string['h_question'] = 'Question';
+$string['h_response'] = 'Response';
+$string['partnerdesc'] = 'Filter by Partner Site';
+$string['coursedesc'] = 'Filter by Course';
+//Chart report
+$string['chartquestion'] = 'Select a question';
+$string['getthechart'] = 'Generate the chart';
+$string['nochart'] = 'No chart can be generated ';
+$string['portfoliofilteronly'] = 'Filter by Portfolio (applies to All Courses column)';
+$string['teacherfilteronly'] = 'Filter by Facilitator (applies to All Courses column)';
+// Feedback Report
+$string['feedbackheader'] = 'Feedback reports';
+$string['feedback'] = 'Participant Feedback Reports';
+$string['feedbacktype'] = 'Report Type';
+$string['noreport'] = 'Choose a report';
+$string['report1'] = 'Participant feedback, by month';
+$string['report2'] = 'Participant feedback, by portfolio';
+$string['report3'] = 'Participant feedback, by partner site';
+$string['year'] = 'Starting Year';
+$string['getthereports'] = 'Generate the reports';
+$string['portreport'] = 'Porfolio List - only applies to partner site report';
+$string['logofile'] = 'Logo Image for Facilator Report';
+$string['logo_desc'] = 'The image displayed at the top of the facilator report';
+$string['width'] = ' Width of Logo Image for Facilator Report';
+$string['width_desc'] = 'The width image displayed at the top of the facilator report';
+$string['height'] = 'Height of the logo Image for Facilator Report';
+$string['height_desc'] = 'The height image displayed at the top of the facilator report';

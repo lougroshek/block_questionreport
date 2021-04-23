@@ -25,7 +25,6 @@ defined('MOODLE_INTERNAL') || die();
 
 if ($ADMIN->fulltree) {
     global $CFG;
-    // Locallib for updatedcallback function.
     require_once($CFG->dirroot.'/blocks/questionreport/locallib.php');
 
     // Settings title to group role related settings together with a common heading. We don't want a description here.
@@ -41,6 +40,13 @@ if ($ADMIN->fulltree) {
     $default = array('editingteacher');
     $settings->add(new admin_setting_pickroles($name, $title, $description, $default));
 
+    // Setting to configure the roles to view the admin reports.
+    $name = 'block_questionreport/adminroles';
+    $title = get_string('setting_admin_roles', 'block_questionreport', null, true);
+    $description = get_string('setting_admin_roles_desc', 'block_questionreport', null, true);
+    $default = array('editingteacher');
+    $settings->add(new admin_setting_pickroles($name, $title, $description, $default));
+ 
     // Setting to show multiple roles within the block.
     $name = 'block_questionreport/multipleroles';
     $title = get_string('setting_multipleroles', 'block_questionreport', null, true);
@@ -65,6 +71,30 @@ if ($ADMIN->fulltree) {
     $setting = new admin_setting_configselect('partnerfield',
          get_string('partnerfield', 'block_questionreport'), get_string('partnerfieldhelp', 'block_questionreport'), 0, $customcoursefields);
     $setting->plugin = 'block_questionreport';
+    $settings->add($setting);
+    
+    $setting = new admin_setting_configselect('portfoliofield',
+         get_string('portfoliofield', 'block_questionreport'), get_string('portfoliofieldhelp', 'block_questionreport'), 0, $customcoursefields);
+    $setting->plugin = 'block_questionreport';
     $settings->add($setting); 
+    
+    // logo Image file
+/*
+    $name = get_string('logofile', 'block_questionreport');
+    $title = get_string('logofile','block_questionreport');
+    $description = get_string('logo_desc', 'block_questionreport');
+    $setting = new admin_setting_configstoredfile('block_questionreport/logofile', $title, $description, 'preset', 0,
+        array('maxfiles' => 1, 'accepted_types' => array('.png, .img, jpg')));
+    $settings->add($setting);
+    
+    $settings->add(new admin_setting_configtext(
+         'block_questionreport/width_value',get_string('width', 'block_questionreport'),
+          get_string('width_desc', 'block_questionreport'),'200', PARAM_RAW ));
+          
+    $settings->add(new admin_setting_configtext(
+         'block_questionreport/height_value',get_string('height', 'block_questionreport'),
+          get_string('height_desc', 'block_questionreport'),'200', PARAM_RAW ));
+      
+*/
 }
 
