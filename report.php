@@ -87,37 +87,6 @@ $is_admin = block_questionreport_is_admin();
 if (!!$is_admin) {
     $adminuser = true;
 }
-// else {
-//     // Checking course roles? Why isn't this fucking done in the overall function?
-//     $context = context_course::instance($COURSE->id);
-//     $roles = get_user_roles($context, $USER->id, true);
-//     foreach ($adminarray as $val) {
-//         $sql = "SELECT * FROM {role_assignments}
-//        	            AS ra LEFT JOIN {user_enrolments}
-//         	            AS ue ON ra.userid = ue.userid
-//         	            LEFT JOIN {role} AS r ON ra.roleid = r.id
-//         	            LEFT JOIN {context} AS c ON c.id = ra.contextid
-//         	            LEFT JOIN {enrol} AS e ON e.courseid = c.instanceid AND ue.enrolid = e.id
-//         	            WHERE r.id= ".$val." AND ue.userid = ".$USER->id. " AND e.courseid = ".$COURSE->id;
-//         $result = $DB->get_records_sql($sql, array( ''));
-//         if ($result) {
-//             // 	       	echo 'admin '.$val;
-// //              $adminuser = true;
-//         }
-//     }
-//     // check the system roles.
-//     if (!$adminuser) {
-//         $systemcontext = context_system::instance();
-//         $roles = get_user_roles($systemcontext, $USER->id, true);
-//         foreach ($adminarray as $val) {
-//             foreach ($roles as $rl) {
-//                 if ($rl->roleid == $val) {
-//                     $adminuser = true;
-//                 }
-//             }
-//         }
-//     }
-// }
 
 // Adds extra controls for admin user filtering.
 if ($adminuser) {
@@ -158,6 +127,7 @@ if ($coursefilter > '0') {
 $content = '';
 $cname = '';
 if ($ctype == "M") {
+  // echo 'line 130<br />';
     // Is a moodle course.
     $content = '';
     // Get teachers separated by roles.
@@ -197,6 +167,7 @@ if ($ctype == "M") {
                      AND m.deletioninprogress = 0";
 
     $surveys = $DB->get_record_sql($sqlcourse);
+    // echo 'line 170<br />';
     if (!$surveys) {
         echo '<p>No valid survey in course.</p>';
         echo $OUTPUT->footer();
@@ -272,6 +243,7 @@ if ($ctype == "M") {
         }
     }
     $surveys = $DB->get_records_sql($sqlcourses);
+    // echo 'line 246<br />';
 
     // echo '$surveys = '.print_r($surveys);
     // $is_teacher = $teacher !== ''.'<br/>';
@@ -282,14 +254,6 @@ if ($ctype == "M") {
         if ($is_admin || $teacher !== '') {
             $valid = true;
         }
-        // if (is_siteadmin()) {
-        //     $valid = true;
-        // } else {
-        //     $context = context_course::instance($survey->course);
-        //     if (has_capability('moodle/question:editall', $context, $USER->id, false)) {
-        //         $valid = true;
-        //     }
-        // }
         if ($valid && $portfolio > "" && $portfolio > '0') {
             $courseport = $DB->get_field('customfield_data', 'intvalue', array('instanceid' => $survey->course,
                                          'fieldid' => $portfieldid));
@@ -297,31 +261,6 @@ if ($ctype == "M") {
                 $valid = false;
             }
         }
-        // }
-        // if ($valid and $teacher > "") {
-        //     // echo 'User is a teacher. '. $teacher;
-        //     $validteacher = false;
-        //     $context = context_course::instance($survey->course);
-        //     $contextid = $context->id;
-        //     $sqlteacher = "SELECT u.id, u.firstname, u.lastname
-        //                          FROM {user} u
-        //                          JOIN {role_assignments} ra on ra.userid = u.id
-        //                          AND   ra.contextid = :context
-        //                          AND roleid in ('".$roles."')";
-        //     $paramteacher = array('context' => $contextid);
-        //     $teacherlist = $DB->get_records_sql($sqlteacher, $paramteacher);
-        //     $tlist = '';
-        //     foreach ($teacherlist as $te) {
-        //         if ($te->id == $teacher) {
-        //             $validteacher = true;
-        //         }
-        //     }
-
-        //     if (!$validteacher) {
-        //         echo 'not valid teacher';
-        //         $valid = false;
-        //     }
-        // }
 
         if ($valid) {
             $sid = $survey->instance;
@@ -369,6 +308,7 @@ if ($ctype == "M") {
     }
 
     $respext = $DB->get_record_sql($sqlext, $paramsext);
+    // echo 'line 311<br />';
 
     $totresp = $totresp + $respext->cdtot;
 } else {
@@ -390,8 +330,9 @@ if ($ctype == "M") {
         $paramsext['endtd'] = $endtd;
     }
     $sqlext = $sqlext .' '.$whereext;
-
+    // echo 'line 333<br />';
     $respext = $DB->get_record_sql($sqlext, $paramsext);
+    // echo 'line 335<br />';
     $totrespcourse = $respext->cdtot;
     $sqlext = "SELECT COUNT(ts.courseid) cdtot
                   FROM {local_teaching_survey} ts";
@@ -418,7 +359,9 @@ if ($ctype == "M") {
         $paramsext['endtd'] = $endtd;
     }
     $sqlext = $sqlext .' '.$whereext;
+    // echo 'line 361<br />';
     $respext = $DB->get_record_sql($sqlext, $paramsext);
+    // echo 'line 362<br />';
     $totresp = $respext->cdtot;
     $sqlcourses = "SELECT m.course, m.id, m.instance
                       FROM {course_modules} m
@@ -449,8 +392,9 @@ if ($ctype == "M") {
     if ($filtertype == 'A') {
         $sqlcourses = $sqlcourses .' AND m.course = -1';
     }
-
+    // echo 'line 392<br />';
     $surveys = $DB->get_records_sql($sqlcourses);
+    // echo 'line 394<br />';
     foreach ($surveys as $survey) {
         $sid = $survey->instance;
         $paramstot['questionnaireid'] = $sid;
@@ -473,7 +417,9 @@ $data->responses->all_courses = $totresp;
 echo '<br><b>Selected Course : </b><i>'. $cname. '</i>';
 // Facilitator data container.
 $data->facilitator = [];
+// echo 'line 420<br />';
 if ($ctype == 'M') {
+  // echo 'line 422<br />';
     $params = array();
     // $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     // $records = $DB->get_record_sql($sql, $params);
@@ -488,8 +434,11 @@ if ($ctype == 'M') {
         }
         $qcontent = $DB->get_field('questionnaire_question', 'content', array('name' => $qname, 'surveyid' => $surveyid, 'type_id' => '11'));
         // Course
+        // echo 'line 437<br />';
         $course = block_questionreport_get_question_results($ctype, $x, $courseid, $surveyid, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
+        // echo 'line 439<br />';
         $all = block_questionreport_get_question_results($ctype, $x, $coursefilter, 0, $moduleid, $tagid, $start_date, $end_date, $partner, $portfolio, $teacher);
+        // echo 'line 441<br />';
         // Build object from data and assign it to the $data object passed to the template.
         $obj = new stdClass();
         $obj->question = str_replace("&nbsp;", ' ', trim(strip_tags($qcontent)));
