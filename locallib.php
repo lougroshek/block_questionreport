@@ -1113,6 +1113,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
     // stdate start date for the surveys (0 if not used)
     // nddate end date for the surveys (0 if not used)
     // partner partner - blank if not used.
+
+    // echo 'block_questionreport_get_question_results() '.$surveyid.'<br />';
+
     global $DB, $USER, $COURSE;
     $plugin = 'block_questionreport';
     $retval = get_string('none', $plugin);
@@ -1319,6 +1322,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             }
         }
     } else {
+      // echo 'getting results for all surveys<br />';
         // Get all the courses;
         // Total responses
         $gtres = 0;
@@ -1411,6 +1415,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $context = context_course::instance($COURSE->id);
         $roles = get_user_roles($context, $USER->id, true);
         $surveys = $DB->get_records_sql($sqlcourses);
+        // echo 'locallib.php 1418<br />';
         foreach ($surveys as $survey) {
             // Check to see if the user has rights.
             $valid = true;
@@ -1493,6 +1498,8 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $totres = $DB->count_records_sql($totgoodsql, $paramsql);
                 }
             }
+
+            // echo 'locallib.php 1502<br />';
 
             if ($totres > 0) {
                 $gtres = $gtres + $totres;
@@ -1587,6 +1594,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
         $gtres = $gtres + $respext->cdtot;
         // echo "sqlext = {$sqlext}<br />";
         if ($respext->cdtot > 0) {
+          // echo 'locallib.php 1597<br />';
             // WTF does this mean?
             if ($ctype == 'M') {
                 // echo 'first type';
@@ -1612,17 +1620,17 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                     $whereext .= " AND (community1 >=4 or community2 >=4)";
                 }
             }
-            if ($stdate > 0) {
-                $std = strtotime($stdate);
-                $whereext = $whereext . " AND coursedate >= :std";
-                $paramsext['std'] = $std;
-            }
+            // if ($stdate > 0) {
+            //     $std = strtotime($stdate);
+            //     $whereext = $whereext . " AND coursedate >= :std";
+            //     $paramsext['std'] = $std;
+            // }
 
-            if ($nddate > 0) {
-                $endtd = strtotime($nddate);
-                $whereext = $whereext . " AND coursedate <= :endtd";
-                $paramsext['endtd'] = $endtd;
-            }
+            // if ($nddate > 0) {
+            //     $endtd = strtotime($nddate);
+            //     $whereext = $whereext . " AND coursedate <= :endtd";
+            //     $paramsext['endtd'] = $endtd;
+            // }
             if ($portfolio > "") {
                 $whereext = $whereext . " AND (port1id = ".$portfolio. " or port2id = ".$portfolio ." )" ;
             }
@@ -1632,7 +1640,9 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 
             $sqlext = $sqlext .' '.$whereext;
             // echo "sqlext = {$sqlext}<br />";
+            // echo 'locallib.php 1642<br />';
             $respext = $DB->get_record_sql($sqlext, $paramsext);
+            // echo 'locallib.php 1644<br />';
             // echo "respext = ".print_r($respext)."<br />";
             // Total good responses.
             $tot2 = $respext->cdgood;
@@ -1653,6 +1663,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             $retval = get_string('none', $plugin);
         }
     }
+    // echo 'locallib.php 1663<br />';
     return $retval;
 }
 function block_questionreport_get_essay($ctype, $surveyid)
