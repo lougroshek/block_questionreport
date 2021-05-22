@@ -111,6 +111,7 @@ function block_questionreport_is_admin()
 
 function block_questionreport_get_evaluations()
 {
+  // echo 'block_questionreport_get_evaluations() <br />';
     global $DB, $CFG, $COURSE, $USER, $PAGE, $OUTPUT;
     $plugin = 'block_questionreport';
     $ctype = "M";
@@ -236,7 +237,9 @@ function block_questionreport_get_evaluations()
     // Get the first instructor question - type 11.
     $sql = 'select min(position) mp from {questionnaire_question} where surveyid = '.$surveyid .' and type_id = 11 order by position desc';
     $records = $DB->get_record_sql($sql, $params);
+    // echo '$records: '.print_r($records).'<br />';
     $stp = $records->mp;
+    // echo '$stp: '.print_r($stp).'<br />';
     $cnt = block_questionreport_get_question_results($ctype, $stp, $cid, $surveyid, $moduleid, $tagid, 0, 0, '', 0, 0);
     // if ($cnt == '-') {
     //     $questionid = $DB->get_field('questionnaire_question', 'id', array('position' => $stp, 'surveyid' => $surveyid));
@@ -1139,9 +1142,11 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
 
     // There's a survey ID, that means we are getting results for 1 survey.
     if ($surveyid > 0) {
+      // echo 'getting restults for a single survey <br />';
         // Get the question id;
         // If the course isn't a Moodle course...
         if ($ctype <> 'M') {
+
             $sqlext = "SELECT COUNT(ts.courseid) cdtot
             FROM {local_teaching_survey} ts";
             $whereext = "WHERE courseid = ".$courseid;
@@ -1192,6 +1197,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                 }
             }
         } else {
+          // echo 'its a moodle survey <br />';
             // If the course *is* a Moodle course,
             // see if the user is a lead facilitator
             //  echo "the course is a moodle course ".$retval;
@@ -1234,7 +1240,7 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
             // If a lead fac, update total responses in a different way.
             $choiceids = array();
             if ($teacher > 0) {
-                // echo 'end of is moodle course section: $retval = '.$retval;
+                // echo 'end of is moodle course section: $retval = '.$retval.'<br />';
                 // echo '$teacher > 0'.$teacher.'<br/>';
                 // echo '$questionid > 0'.$questionid.'<br/>';
                 $totres = 0;
@@ -1255,20 +1261,27 @@ function block_questionreport_get_question_results($ctype, $position, $courseid,
                               AND r.contextid = {$course_context->id}
                               AND r.roleid IN ({$student_roles})", array(''));
                 // echo '$studentids = '.print_r($studentids).'<br/>';
+                // echo '$studentids length = '.count($studentids).'<br/>';
 
                 $studentids_str = implode(",", array_keys($studentids));
                 // echo '$studentids_str = '.$studentids_str.'<br/>';
 
-                $choiceids = $DB->get_records_sql("SELECT id
-                                                      FROM mdl_questionnaire_quest_ins
-                                                      WHERE question_id = {$questionid}
-                                                      AND userid IN ({$studentids_str})
-                                                      AND staffid = {$teacher}
-                                                      ", array(''));
+                if (count($studentids) == 0) {
+                  $totres = 0;
+                } else {
+                  $choiceids = $DB->get_records_sql("SELECT id
+                    FROM mdl_questionnaire_quest_ins
+                    WHERE question_id = {$questionid}
+                    AND userid IN ({$studentids_str})
+                    AND staffid = {$teacher}
+                    ", array(''));
+                  // echo '$choiceids = '.print_r($choiceids).'<br/>';
+                  $totres = count($choiceids);
+                }
 
-                // echo '$choiceids = '.print_r($choiceids).'<br/>';
 
-                $totres = count($choiceids);
+
+                // $totres = count($choiceids);
             } else {
                 $totres = $DB->count_records_sql($totgoodsql, $paramsql);
             }
